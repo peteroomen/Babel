@@ -65,6 +65,7 @@ function TerrainTile({
 }
 
 type Props = {
+  className?: string;
   state: GameState;
   selected: Coord | null;
   rotation: Rotation;
@@ -123,6 +124,7 @@ function riverPath(river: TileDraw['river'], rotation: Rotation): ReactElement[]
 }
 
 export function Board({
+  className,
   state,
   selected,
   rotation,
@@ -157,19 +159,31 @@ export function Board({
     BABEL_COORD,
   ];
 
+  /**
+   * Keep a minimum window around the board. Without it the opening position —
+   * two tiles — scales up to fill the whole panel, and every tile lurches
+   * smaller as the map grows. A floor makes the frame feel stable.
+   */
+  const MIN_SPAN = 9;
   const xs = coords.map((c) => c.x);
   const ys = coords.map((c) => c.y);
-  const minX = Math.min(...xs) - 1;
-  const minY = Math.min(...ys) - 1;
-  const width = (Math.max(...xs) + 2 - minX) * CELL;
-  const height = (Math.max(...ys) + 2 - minY) * CELL;
+  const padX = Math.max(1, Math.ceil((MIN_SPAN - (Math.max(...xs) - Math.min(...xs) + 1)) / 2));
+  const padY = Math.max(1, Math.ceil((MIN_SPAN - (Math.max(...ys) - Math.min(...ys) + 1)) / 2));
+
+  const minX = Math.min(...xs) - padX;
+  const minY = Math.min(...ys) - padY;
+  const width = (Math.max(...xs) + padX + 1 - minX) * CELL;
+  const height = (Math.max(...ys) + padY + 1 - minY) * CELL;
 
   const px = (c: Coord) => ({ x: (c.x - minX) * CELL, y: (c.y - minY) * CELL });
 
   return (
     <svg
       viewBox={`0 0 ${width} ${height}`}
-      style={{ width: '100%', height: 'auto', background: '#f3ece1', borderRadius: 10 }}
+      /* Fit the board inside whatever space the layout gives it: the page
+         itself never scrolls. */
+      preserveAspectRatio="xMidYMid meet"
+      className={className}
       role="img"
       aria-label="BABEL board"
     >

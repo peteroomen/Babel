@@ -12,12 +12,15 @@
  * Rather than keep guessing, publish to both. This is deliberately redundant
  * and should be deleted once the project's Root Directory setting is known.
  */
-import { cp, mkdir } from 'node:fs/promises';
+import { cp, mkdir, rm } from 'node:fs/promises';
 import { fileURLToPath, URL } from 'node:url';
 
 const from = fileURLToPath(new URL('../dist', import.meta.url));
 const to = fileURLToPath(new URL('../../../dist', import.meta.url));
 
+/* Clear first: copying over the top leaves every previous build's hashed
+   bundles behind, which then ship with the site forever. */
+await rm(to, { recursive: true, force: true });
 await mkdir(to, { recursive: true });
 await cp(from, to, { recursive: true });
 console.log(`mirrored ${from} -> ${to}`);

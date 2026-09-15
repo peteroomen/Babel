@@ -1,8 +1,9 @@
 /**
- * Milestones 1-3 — spatial economy, industry, Babel, and Heaven.
+ * BABEL — one screen, no page scrolling.
  *
- * All legality questions go to `game-core`; nothing here reimplements a rule.
- * The UI renders what the core says is possible and sends back commands.
+ * The board takes whatever space is left; everything else lives in a fixed
+ * header, a fixed rail and a contextual action bar at the bottom. All legality
+ * questions go to `game-core`; nothing here reimplements a rule.
  */
 import { useMemo, useState } from 'react';
 import {
@@ -19,8 +20,8 @@ import {
   getLegalActions,
   getLegalTilePlacements,
   hitsRemaining,
-  neighbours,
   isPassableAt,
+  neighbours,
   previewPlacement,
   setupGame,
   type Command,
@@ -28,11 +29,27 @@ import {
   type GameState,
   type Rotation,
 } from '@babel-game/game-core';
-import { Board } from './Board.js';
-import { BabelPanel, ConfusionPanel, LeaderPanel, LogPanel } from './Panels.js';
-import { BUILDING_LABEL, HOST_LABEL, RESOURCE_LABEL, TERRAIN_LABEL, INK } from './theme.js';
+import { BookOpenIcon, PanelRightIcon, RotateCcwIcon, ScrollTextIcon } from 'lucide-react';
+import { Board } from './Board';
+import { BabelCard, ConfusionCard, LeaderRow, LogCard, LogList } from './Panels';
+import { ActionButtons, Act } from './ActionBar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { HOST_LABEL, RESOURCE_LABEL, TERRAIN_LABEL } from './theme';
 
 const NAMES = ['Ada', 'Peter', 'Rook', 'Vex'];
+
 type Mode =
   | { kind: 'idle' }
   | { kind: 'build' }
@@ -41,30 +58,24 @@ type Mode =
   | { kind: 'barter' }
   | { kind: 'prophet'; hostId: string | null };
 
-const panel: React.CSSProperties = {
-  marginTop: 12,
-  padding: 12,
-  border: '1px solid #00000022',
-  borderRadius: 10,
-  background: '#fffdf8',
-};
-
 export function App() {
   const [leaderCount, setLeaderCount] = useState(2);
-  const [seed, setSeed] = useState('babel-1');
   const [state, setState] = useState<GameState>(() => setupGame(NAMES.slice(0, 2), 'babel-1'));
   const [selected, setSelected] = useState<Coord | null>(null);
   const [rotationIndex, setRotationIndex] = useState(0);
   const [mode, setMode] = useState<Mode>({ kind: 'idle' });
   const [spend, setSpend] = useState<ResourceType[]>([]);
   const [hits, setHits] = useState<Record<string, number>>({});
-  const [wallPicks, setWallPicks] = useState<{ a: Coord; b: Coord }[]>([]);
+  const [wallPicks, setWallPicks] = useState<Coord extends never ? never : { a: Coord; b: Coord }[]>(
+    [],
+  );
 
   const options = useMemo(
     () => (state.drawnTile ? getLegalTilePlacements(state.board, state.drawnTile) : []),
     [state.board, state.drawnTile],
   );
   const active = currentPlayer(state);
+  const leader = state.leaders[active];
   const legal = useMemo(() => getLegalActions(state, active), [state, active]);
 
   const selectedOption = selected
@@ -78,13 +89,8 @@ export function App() {
       : null;
 
   const buildAction = legal.find((a) => a.type === 'buildHarvester');
-  const babelAction = legal.find((a) => a.type === 'buildBabel');
   const towerAction = legal.find((a) => a.type === 'buildTower');
   const wallsAction = legal.find((a) => a.type === 'buildWalls');
-  const schemeAction = legal.find((a) => a.type === 'buyScheme');
-  const attackAction = legal.find((a) => a.type === 'attack');
-  const musterAction = legal.find((a) => a.type === 'muster');
-  const canBarter = legal.some((a) => a.type === 'barter');
 
   const reset = () => {
     setSelected(null);
@@ -94,357 +100,429 @@ export function App() {
     setHits({});
     setWallPicks([]);
   };
-
   const dispatch = (command: Command) => {
     setState(applyMove(state, command).state);
     reset();
   };
-
-  const restart = (count: number, nextSeed: string) => {
+  const restart = (count: number) => {
     setLeaderCount(count);
-    setSeed(nextSeed);
-    setState(setupGame(NAMES.slice(0, count), nextSeed));
+    setState(setupGame(NAMES.slice(0, count), `babel-${Date.now()}`));
     reset();
   };
 
-  const leader = state.leaders[active];
-  const buildingsOf = (id: string) =>
-    Object.values(state.buildings).filter((b) => b.owner === id).length;
-
   const assigned = Object.values(hits).reduce((sum, n) => sum + n, 0);
   const successes = state.pendingAttack?.successes ?? 0;
-
-  /** Click a Host while assigning: add a hit, wrapping back to zero when full. */
   const tapHost = (id: string) => {
     const host = state.hosts.find((h) => h.id === id);
     if (!host) return;
     setHits((current) => {
       const now = current[id] ?? 0;
       const max = Math.min(hitsRemaining(host), successes - assigned + now);
-      const next = now >= max ? 0 : now + 1;
-      return { ...current, [id]: next };
+      return { ...current, [id]: now >= max ? 0 : now + 1 };
     });
   };
 
-  return (
-    <main
-      style={{
-        fontFamily: 'system-ui, sans-serif',
-        color: INK,
-        padding: 16,
-        maxWidth: 1200,
-        margin: '0 auto',
-      }}
-    >
-      <header style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'baseline' }}>
-        <h1 style={{ margin: 0, fontSize: 28, letterSpacing: '-0.02em' }}>BABEL</h1>
-        <span style={{ fontSize: 13, opacity: 0.7 }}>
-          Round {state.round} · Stage {state.stage} · {state.hosts.length} Host
-          {state.hosts.length === 1 ? '' : 's'} · hot-seat
-        </span>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, fontSize: 13 }}>
-          <label>
-            Leaders{' '}
-            <select value={leaderCount} onChange={(e) => restart(Number(e.target.value), seed)}>
-              {[2, 3, 4].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button onClick={() => restart(leaderCount, `babel-${Date.now()}`)}>New game</button>
-        </div>
-      </header>
-
-      <div className="layout" style={{ marginTop: 16 }}>
-        <section style={{ minWidth: 0 }}>
-          <Board
-            state={state}
-            selected={selected}
-            rotation={rotation}
-            onSelect={(at) => {
-              setSelected(at);
-              setRotationIndex(0);
-            }}
-            buildSites={
-              mode.kind === 'build' && buildAction
-                ? buildAction.sites.map((s) => s.at)
-                : mode.kind === 'tower' && towerAction
-                  ? towerAction.sites
-                  : []
-            }
-            onBuildSite={(at) => {
-              if (mode.kind === 'tower') {
-                dispatch({ type: 'buildTower', player: active, at });
-                return;
-              }
-              const site = buildAction?.sites.find((s) => coordKey(s.at) === coordKey(at));
-              if (site) {
-                dispatch({
-                  type: 'buildHarvester',
-                  player: active,
-                  at: site.at,
-                  building: site.type as BuildingType,
-                });
-              }
-            }}
-            wallEdges={mode.kind === 'walls' && wallsAction ? wallsAction.edges : []}
-            onWallEdge={
-              mode.kind === 'walls'
-                ? (edge) =>
-                    setWallPicks((picks) => {
-                      const key = `${edge.a.x},${edge.a.y}|${edge.b.x},${edge.b.y}`;
-                      const already = picks.some(
-                        (p) => `${p.a.x},${p.a.y}|${p.b.x},${p.b.y}` === key,
-                      );
-                      if (already) {
-                        return picks.filter(
-                          (p) => `${p.a.x},${p.a.y}|${p.b.x},${p.b.y}` !== key,
-                        );
-                      }
-                      const cap = wallsAction?.segments ?? 2;
-                      return picks.length >= cap ? picks : [...picks, edge];
-                    })
-                : undefined
-            }
-            chosenWalls={wallPicks.map((p) => `${p.a.x},${p.a.y}|${p.b.x},${p.b.y}`)}
-            beaconSites={state.pendingBeacon?.sites ?? []}
-            onBeaconSite={(at) => dispatch({ type: 'placeBeacon', player: active, at })}
-            onHost={state.pendingAttack ? tapHost : undefined}
-            selectedHosts={hits}
+  const rail = (
+    <>
+      <BabelCard state={state} />
+      <ConfusionCard state={state} />
+      <div className="grid gap-1.5">
+        {state.order.map((id, seat) => (
+          <LeaderRow
+            key={id}
+            leader={state.leaders[id]!}
+            isActive={id === active}
+            seat={seat}
+            buildings={Object.values(state.buildings).filter((b) => b.owner === id).length}
           />
+        ))}
+      </div>
+      <LogCard state={state} />
+    </>
+  );
 
-          {state.phase === 'gameOver' ? (
-            <div style={panel}>
-              {state.lossReason ? (
-                <>
-                  <strong>Heaven breaches the Foundation. Humanity falls.</strong>
-                  <div style={{ fontSize: 13, marginTop: 6 }}>
-                    Babel stood at {state.babel.stack.length} pieces when the second Host
-                    arrived. Nobody is remembered.
+  return (
+    <TooltipProvider>
+      <div className="flex h-full flex-col overflow-hidden">
+        {/* ── Header ─────────────────────────────────────────────── */}
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
+          <span className="text-lg font-bold tracking-tight">BABEL</span>
+          <Badge variant="secondary" className="tabular-nums">
+            R{state.round}
+          </Badge>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="secondary">Stage {state.stage}</Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              Babel's permanent difficulty Stage. It never goes back down.
+            </TooltipContent>
+          </Tooltip>
+          {state.hosts.length > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="destructive" className="tabular-nums">
+                  {state.hosts.length} Host{state.hosts.length === 1 ? '' : 's'}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>Heavenly forces on the board, advancing on Babel.</TooltipContent>
+            </Tooltip>
+          )}
+
+          <div className="ml-auto flex items-center gap-1">
+            <Dialog>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" aria-label="How to play">
+                      <BookOpenIcon />
+                    </Button>
+                  </DialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent>How to play</TooltipContent>
+              </Tooltip>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>How to play</DialogTitle>
+                  <DialogDescription>
+                    Build Babel to reach Heaven and kill a tyrannical God. Everyone survives
+                    together, or nobody does.
+                  </DialogDescription>
+                </DialogHeader>
+                <ScrollArea className="max-h-[60vh] pr-3">
+                  <div className="space-y-3 text-sm">
+                    <p>
+                      <strong>Your turn:</strong> draw a tile, place it, take exactly one action.
+                      A tile pays 1 resource plus 1 for each adjacent tile of the same terrain.
+                    </p>
+                    <p>
+                      <strong>Shared industry:</strong> when you expand a feature where another
+                      Leader owns a matching building, they get paid the same as you — and you get
+                      +1 on top. Cooperation is the fastest economy.
+                    </p>
+                    <p>
+                      <strong>Heaven:</strong> Beacons spawn Hosts, which walk the shortest land
+                      route to Babel. Rivers block them permanently. A Host anywhere in a feature
+                      shuts down that whole feature's economy.
+                    </p>
+                    <p>
+                      <strong>Losing:</strong> a Host reaching Babel knocks off its newest piece.
+                      With Babel at zero, the first Host occupies the Foundation and the second
+                      one ends the game for everybody.
+                    </p>
+                    <p>
+                      <strong>Winning:</strong> finish Babel. Then the most Prestige wins — but
+                      only if humanity survived. Prestige on a dead world counts for nothing.
+                    </p>
+                    <p className="text-muted-foreground">
+                      Everything else explains itself: hover any button or badge.
+                    </p>
                   </div>
-                </>
-              ) : (
-                <>
-                  <strong>Babel is complete. Humanity survives.</strong>
-                  <div style={{ fontSize: 13, marginTop: 6 }}>
-                    {state.winner
-                      ? `${state.leaders[state.winner]?.name} is remembered as its greatest hero.`
-                      : 'Prestige is tied — nobody is remembered above the rest.'}
-                  </div>
-                </>
-              )}
-            </div>
-          ) : state.pendingBeacon ? (
-            <div style={panel}>
-              <strong>Where does Heaven land?</strong>
-              <div style={{ fontSize: 13, marginTop: 6 }}>
-                The table chooses together. {state.pendingBeacon.sites.length} legal frontier
-                tiles are highlighted — a Beacon needs a land route to Babel, so rivers and
-                Lakes are out. Every Beacon spawns one Host per Heaven Phase, for the rest of
-                the game.
-              </div>
-            </div>
-          ) : state.phase === 'confusion' && state.confusion.card ? (
-            <div style={panel}>
-              <strong>{CONFUSION[state.confusion.card].label} is revealed</strong>
-              <div style={{ fontSize: 13, margin: '6px 0 10px' }}>
-                {CONFUSION[state.confusion.card].text} Somebody holds Common Tongue and may
-                cancel it now.
-              </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {state.order
-                  .filter((id) => state.leaders[id]?.schemeHand.includes('common-tongue'))
-                  .map((id) => (
+                </ScrollArea>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" aria-label="Full log">
+                      <ScrollTextIcon />
+                    </Button>
+                  </DialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Full history</TooltipContent>
+              </Tooltip>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Game log</DialogTitle>
+                </DialogHeader>
+                <ScrollArea className="max-h-[60vh] pr-3">
+                  <LogList state={state} />
+                </ScrollArea>
+              </DialogContent>
+            </Dialog>
+
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="xl:hidden" aria-label="Status">
+                  <PanelRightIcon />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="gap-2">
+                <SheetTitle>Status</SheetTitle>
+                <div className="flex min-h-0 flex-1 flex-col gap-2">{rail}</div>
+              </SheetContent>
+            </Sheet>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="New game" onClick={() => restart(leaderCount)}>
+                  <RotateCcwIcon />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>New game</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex overflow-hidden rounded-md border">
+                  {[2, 3, 4].map((n) => (
                     <button
-                      key={id}
-                      onClick={() =>
-                        dispatch({ type: 'playScheme', player: id, scheme: 'common-tongue' })
-                      }
+                      key={n}
+                      onClick={() => restart(n)}
+                      className={`h-8 w-7 text-xs tabular-nums transition-colors ${
+                        n === leaderCount ? 'bg-primary text-primary-foreground' : 'hover:bg-secondary'
+                      }`}
                     >
-                      {state.leaders[id]?.name} plays Common Tongue
+                      {n}
                     </button>
                   ))}
-                <button onClick={() => dispatch({ type: 'beginRound', player: active })}>
-                  Let it stand
-                </button>
-              </div>
-            </div>
-          ) : state.bonusWindow ? (
-            <div style={panel}>
-              <strong>{state.leaders[state.bonusWindow]?.name} holds Frenzied Works</strong>
-              <div style={{ fontSize: 13, margin: '6px 0 10px' }}>
-                {SCHEMES['frenzied-works'].text}
-              </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <button
-                  onClick={() =>
-                    dispatch({
-                      type: 'playScheme',
-                      player: state.bonusWindow as string,
-                      scheme: 'frenzied-works',
-                    })
-                  }
-                >
-                  Play it — take another action
-                </button>
-                <button
-                  onClick={() =>
-                    dispatch({ type: 'endTurn', player: state.bonusWindow as string })
-                  }
-                >
-                  End turn
-                </button>
-              </div>
-            </div>
-          ) : state.phase === 'heaven' ? (
-            <div style={panel}>
-              <strong>Heaven Phase — round {state.round}</strong>
-              <div style={{ fontSize: 13, margin: '6px 0 10px' }}>
-                {state.hosts.length === 0
-                  ? 'Nothing stirs yet.'
-                  : `${state.hosts.length} Host${
-                      state.hosts.length === 1 ? '' : 's'
-                    } advance along the shortest route to Babel, then every Beacon spawns another.`}
-              </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                <button onClick={() => dispatch({ type: 'resolveHeaven', player: active })}>
-                  Resolve Heaven Phase
-                </button>
-                {mode.kind !== 'prophet' &&
-                  !state.falseProphet &&
-                  state.order.some((id) =>
-                    state.leaders[id]?.schemeHand.includes('false-prophet'),
-                  ) && (
-                    <button onClick={() => setMode({ kind: 'prophet', hostId: null })}>
-                      Play False Prophet
-                    </button>
-                  )}
-                {state.falseProphet && (
-                  <span style={{ fontSize: 13 }}>
-                    A Host has been led astray — resolve the phase to see it wander.
-                  </span>
-                )}
-              </div>
-
-              {mode.kind === 'prophet' && (
-                <div style={{ fontSize: 13, marginTop: 10 }}>
-                  {mode.hostId === null ? (
-                    <>
-                      <div>Which Host is misled?</div>
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
-                        {state.hosts.map((host) => (
-                          <button
-                            key={host.id}
-                            onClick={() => setMode({ kind: 'prophet', hostId: host.id })}
-                          >
-                            {HOST_LABEL[host.kind]} ({host.at.x}, {host.at.y})
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div>Send it where? It may go sideways, or away from Babel.</div>
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
-                        {neighbours(
-                          state.hosts.find((h) => h.id === mode.hostId)?.at ?? { x: 0, y: 0 },
-                        )
-                          .filter((at) => isPassableAt(state.board, at))
-                          .map((at) => (
-                            <button
-                              key={coordKey(at)}
-                              onClick={() => {
-                                const holder = state.order.find((id) =>
-                                  state.leaders[id]?.schemeHand.includes('false-prophet'),
-                                );
-                                if (holder) {
-                                  dispatch({
-                                    type: 'playScheme',
-                                    player: holder,
-                                    scheme: 'false-prophet',
-                                    hostId: mode.hostId as string,
-                                    to: at,
-                                  });
-                                }
-                              }}
-                            >
-                              ({at.x}, {at.y})
-                            </button>
-                          ))}
-                      </div>
-                    </>
-                  )}{' '}
-                  <button onClick={() => setMode({ kind: 'idle' })}>Cancel</button>
                 </div>
-              )}
-            </div>
-          ) : state.pendingAttack ? (
-            <div style={panel}>
-              <strong>
-                {assigned} / {successes} hits assigned
-              </strong>
-              <div style={{ fontSize: 13, margin: '6px 0 10px' }}>
-                Rolled {state.pendingAttack.rolls.join(', ')} against Defence{' '}
-                {state.pendingAttack.defence}. Click a Host to put a hit on it; a Seraph needs
-                two, the first breaking its shield.
-              </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {state.hosts.map((host) => (
-                  <button key={host.id} onClick={() => tapHost(host.id)}>
-                    {HOST_LABEL[host.kind]} ({host.at.x}, {host.at.y}){' '}
-                    {host.kind === 'seraph' && host.shieldUp ? '🛡' : ''} — {hits[host.id] ?? 0}
-                  </button>
-                ))}
-              </div>
-              <button
-                style={{ marginTop: 10 }}
-                onClick={() =>
-                  dispatch({ type: 'assignHits', player: active, assignments: hits })
-                }
-              >
-                Confirm hits
-              </button>
-            </div>
-          ) : state.turnStep === 'place' && state.drawnTile ? (
-            <div style={panel}>
-              <div style={{ fontSize: 14 }}>
-                <strong>{leader?.name}</strong> drew{' '}
-                <strong>{TERRAIN_LABEL[state.drawnTile.terrain]}</strong>
-                {state.drawnTile.river !== 'none' && ` with a ${state.drawnTile.river} river`}.{' '}
-                {selectedOption
-                  ? 'Confirm or rotate.'
-                  : `Choose one of ${options.length} legal squares.`}
-              </div>
+              </TooltipTrigger>
+              <TooltipContent>Leaders — starts a new game</TooltipContent>
+            </Tooltip>
+          </div>
+        </header>
 
-              {selectedOption && (
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: 10,
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    marginTop: 10,
-                  }}
-                >
-                  <span style={{ fontSize: 13 }}>
-                    Projected payout:{' '}
-                    <strong>
-                      {preview
-                        ? `${preview.amount} ${RESOURCE_LABEL[preview.resource]}`
-                        : state.drawnTile.terrain === 'desert'
-                          ? 'none (Desert)'
-                          : 'none (feature occupied)'}
-                    </strong>
-                  </span>
-                  {selectedOption.rotations.length > 1 && (
-                    <button onClick={() => setRotationIndex((r) => r + 1)}>
-                      Rotate ({(rotationIndex % selectedOption.rotations.length) + 1}/
-                      {selectedOption.rotations.length})
-                    </button>
+        {/* ── Board + rail ───────────────────────────────────────── */}
+        <div className="flex min-h-0 flex-1">
+          <main className="min-w-0 flex-1 p-2">
+            <Board
+              className="bg-parchment size-full rounded-lg border"
+              state={state}
+              selected={selected}
+              rotation={rotation}
+              onSelect={(at) => {
+                setSelected(at);
+                setRotationIndex(0);
+              }}
+              buildSites={
+                mode.kind === 'build' && buildAction
+                  ? buildAction.sites.map((s) => s.at)
+                  : mode.kind === 'tower' && towerAction
+                    ? towerAction.sites
+                    : []
+              }
+              onBuildSite={(at) => {
+                if (mode.kind === 'tower') {
+                  dispatch({ type: 'buildTower', player: active, at });
+                  return;
+                }
+                const site = buildAction?.sites.find((s) => coordKey(s.at) === coordKey(at));
+                if (site) {
+                  dispatch({
+                    type: 'buildHarvester',
+                    player: active,
+                    at: site.at,
+                    building: site.type as BuildingType,
+                  });
+                }
+              }}
+              wallEdges={mode.kind === 'walls' && wallsAction ? wallsAction.edges : []}
+              onWallEdge={
+                mode.kind === 'walls'
+                  ? (edge) =>
+                      setWallPicks((picks) => {
+                        const key = `${edge.a.x},${edge.a.y}|${edge.b.x},${edge.b.y}`;
+                        const has = picks.some(
+                          (p) => `${p.a.x},${p.a.y}|${p.b.x},${p.b.y}` === key,
+                        );
+                        if (has) {
+                          return picks.filter(
+                            (p) => `${p.a.x},${p.a.y}|${p.b.x},${p.b.y}` !== key,
+                          );
+                        }
+                        const cap = wallsAction?.segments ?? 2;
+                        return picks.length >= cap ? picks : [...picks, edge];
+                      })
+                  : undefined
+              }
+              chosenWalls={wallPicks.map((p) => `${p.a.x},${p.a.y}|${p.b.x},${p.b.y}`)}
+              beaconSites={state.pendingBeacon?.sites ?? []}
+              onBeaconSite={(at) => dispatch({ type: 'placeBeacon', player: active, at })}
+              onHost={state.pendingAttack ? tapHost : undefined}
+              selectedHosts={hits}
+            />
+          </main>
+
+          <aside className="hidden w-[19rem] shrink-0 flex-col gap-2 border-l p-2 xl:flex">
+            {rail}
+          </aside>
+        </div>
+
+        {/* ── Action bar ─────────────────────────────────────────── */}
+        <footer className="bg-card min-h-14 shrink-0 border-t px-3 py-2">
+          {state.phase === 'gameOver' ? (
+            <div className="flex items-center gap-3">
+              <span className="font-semibold">
+                {state.lossReason
+                  ? 'Heaven breaches the Foundation. Humanity falls.'
+                  : 'Babel is complete. Humanity survives.'}
+              </span>
+              <span className="text-muted-foreground text-sm">
+                {state.lossReason
+                  ? 'Nobody is remembered.'
+                  : state.winner
+                    ? `${state.leaders[state.winner]?.name} is remembered as its greatest hero.`
+                    : 'Prestige is tied.'}
+              </span>
+              <Button size="sm" className="ml-auto" onClick={() => restart(leaderCount)}>
+                New game
+              </Button>
+            </div>
+          ) : state.pendingBeacon ? (
+            <Bar
+              title="Where does Heaven land?"
+              hint={`${state.pendingBeacon.sites.length} legal frontier tiles are lit. Every Beacon spawns a Host each Heaven Phase, for the rest of the game.`}
+            />
+          ) : state.phase === 'confusion' && state.confusion.card ? (
+            <Bar title={`${CONFUSION[state.confusion.card].label} revealed`} hint={CONFUSION[state.confusion.card].text}>
+              {state.order
+                .filter((id) => state.leaders[id]?.schemeHand.includes('common-tongue'))
+                .map((id) => (
+                  <Act
+                    key={id}
+                    label={`${state.leaders[id]?.name}: Common Tongue`}
+                    variant="accent"
+                    hint="Cancel this Confusion for the round."
+                    onClick={() =>
+                      dispatch({ type: 'playScheme', player: id, scheme: 'common-tongue' })
+                    }
+                  />
+                ))}
+              <Act
+                label="Let it stand"
+                hint="Begin the round under this Confusion."
+                onClick={() => dispatch({ type: 'beginRound', player: active })}
+              />
+            </Bar>
+          ) : state.bonusWindow ? (
+            <Bar
+              title={`${state.leaders[state.bonusWindow]?.name} holds Frenzied Works`}
+              hint={SCHEMES['frenzied-works'].text}
+            >
+              <Act
+                label="Play it"
+                variant="accent"
+                hint="Take one more action now. It cannot buy a Scheme."
+                onClick={() =>
+                  dispatch({
+                    type: 'playScheme',
+                    player: state.bonusWindow as string,
+                    scheme: 'frenzied-works',
+                  })
+                }
+              />
+              <Act
+                label="End turn"
+                hint="Keep the card for later."
+                onClick={() => dispatch({ type: 'endTurn', player: state.bonusWindow as string })}
+              />
+            </Bar>
+          ) : state.phase === 'heaven' ? (
+            <Bar
+              title={`Heaven Phase · round ${state.round}`}
+              hint={
+                state.hosts.length === 0
+                  ? 'Nothing stirs yet.'
+                  : `${state.hosts.length} Host${state.hosts.length === 1 ? '' : 's'} advance, then every Beacon spawns another.`
+              }
+            >
+              {mode.kind === 'prophet' ? (
+                <ProphetPicker state={state} mode={mode} setMode={setMode} dispatch={dispatch} />
+              ) : (
+                <>
+                  <Act
+                    label="Resolve Heaven"
+                    variant="default"
+                    hint="Hosts move, strike Babel, then Beacons spawn."
+                    onClick={() => dispatch({ type: 'resolveHeaven', player: active })}
+                  />
+                  {!state.falseProphet &&
+                    state.order.some((id) =>
+                      state.leaders[id]?.schemeHand.includes('false-prophet'),
+                    ) && (
+                      <Act
+                        label="False Prophet"
+                        variant="accent"
+                        hint="Send one Host to any adjacent tile instead — sideways, or away from Babel."
+                        onClick={() => setMode({ kind: 'prophet', hostId: null })}
+                      />
+                    )}
+                  {state.falseProphet && (
+                    <span className="text-muted-foreground text-sm">A Host has been misled.</span>
                   )}
-                  <button
+                </>
+              )}
+            </Bar>
+          ) : state.pendingAttack ? (
+            <Bar
+              title={`${assigned}/${successes} hits assigned`}
+              hint={`Rolled ${state.pendingAttack.rolls.join(', ')} vs Defence ${state.pendingAttack.defence}. A Seraph needs two — the first breaks its shield.`}
+            >
+              {state.hosts.map((host) => (
+                <Act
+                  key={host.id}
+                  label={`${HOST_LABEL[host.kind]} ${host.at.x},${host.at.y}${
+                    hits[host.id] ? ` ·${hits[host.id]}` : ''
+                  }`}
+                  variant={hits[host.id] ? 'default' : 'outline'}
+                  hint={
+                    host.kind === 'seraph' && host.shieldUp
+                      ? 'Shielded: two hits to kill.'
+                      : 'One hit kills it.'
+                  }
+                  onClick={() => tapHost(host.id)}
+                />
+              ))}
+              <Act
+                label="Confirm"
+                variant="accent"
+                hint="Apply the hits and end your turn."
+                onClick={() => dispatch({ type: 'assignHits', player: active, assignments: hits })}
+              />
+            </Bar>
+          ) : state.turnStep === 'place' && state.drawnTile ? (
+            <Bar
+              title={
+                <>
+                  <span className="font-semibold">{leader?.name}</span> drew{' '}
+                  <span className="font-semibold">{TERRAIN_LABEL[state.drawnTile.terrain]}</span>
+                  {state.drawnTile.river !== 'none' && ` · ${state.drawnTile.river} river`}
+                </>
+              }
+              hint={
+                selectedOption
+                  ? 'Confirm, or rotate to fit the river.'
+                  : `${options.length} legal squares. Rivers must meet rivers.`
+              }
+            >
+              {!selectedOption && (
+                <span className="text-muted-foreground text-sm">
+                  Click a highlighted square · {options.length} legal
+                </span>
+              )}
+              {selectedOption && (
+                <>
+                  <Badge variant={preview ? 'default' : 'muted'}>
+                    {preview
+                      ? `+${preview.amount} ${RESOURCE_LABEL[preview.resource]}`
+                      : state.drawnTile.terrain === 'desert'
+                        ? 'no payout'
+                        : 'occupied'}
+                  </Badge>
+                  {selectedOption.rotations.length > 1 && (
+                    <Act
+                      label={`Rotate ${(rotationIndex % selectedOption.rotations.length) + 1}/${selectedOption.rotations.length}`}
+                      hint="Turn the tile so its river edges line up."
+                      onClick={() => setRotationIndex((r) => r + 1)}
+                    />
+                  )}
+                  <Act
+                    label="Place"
+                    variant="accent"
+                    hint="Commit the tile and take the payout."
                     onClick={() =>
                       dispatch({
                         type: 'placeTile',
@@ -453,201 +531,169 @@ export function App() {
                         rotation,
                       })
                     }
-                  >
-                    Place here
-                  </button>
-                  <button onClick={() => setSelected(null)}>Cancel</button>
-                </div>
+                  />
+                  <Act label="Cancel" variant="ghost" hint="Pick a different square." onClick={() => setSelected(null)} />
+                </>
               )}
-            </div>
+            </Bar>
+          ) : mode.kind === 'build' || mode.kind === 'tower' ? (
+            <Bar
+              title={mode.kind === 'tower' ? 'Choose a Tower site' : 'Choose a building site'}
+              hint="Highlighted tiles on the board are legal."
+            >
+              <Act label="Cancel" variant="ghost" hint="Back to your actions." onClick={reset} />
+            </Bar>
+          ) : mode.kind === 'walls' && wallsAction ? (
+            <Bar
+              title={`Walls · ${wallPicks.length}/${wallsAction.segments}`}
+              hint="Click the edges between tiles. A Host crossing one destroys it and loses its movement."
+            >
+              <Act
+                label="Build walls"
+                variant="accent"
+                disabled={wallPicks.length === 0}
+                hint="Raise the chosen segments."
+                onClick={() => dispatch({ type: 'buildWalls', player: active, edges: wallPicks })}
+              />
+              <Act label="Cancel" variant="ghost" hint="Back to your actions." onClick={reset} />
+            </Bar>
+          ) : mode.kind === 'barter' && leader ? (
+            <Bar title={`Barter · ${spend.length}/3`} hint="Discard any three cards for one of your choice.">
+              {RESOURCE_TYPES.map((resource) => {
+                const held = leader.resources[resource] - spend.filter((s) => s === resource).length;
+                return (
+                  <Act
+                    key={resource}
+                    label={`${RESOURCE_LABEL[resource]} ${held}`}
+                    disabled={held <= 0 || spend.length >= 3}
+                    hint={`Discard one ${RESOURCE_LABEL[resource]}.`}
+                    onClick={() => setSpend((s) => [...s, resource])}
+                  />
+                );
+              })}
+              {spend.length === 3 && (
+                <>
+                  <span className="text-muted-foreground text-sm">Gain:</span>
+                  {RESOURCE_TYPES.map((resource) => (
+                    <Act
+                      key={resource}
+                      label={RESOURCE_LABEL[resource]}
+                      variant="accent"
+                      hint={`Take one ${RESOURCE_LABEL[resource]}.`}
+                      onClick={() =>
+                        dispatch({ type: 'barter', player: active, spend, gain: resource })
+                      }
+                    />
+                  ))}
+                </>
+              )}
+              <Act label="Cancel" variant="ghost" hint="Back to your actions." onClick={reset} />
+            </Bar>
           ) : (
-            <div style={panel}>
-              <div style={{ fontSize: 14, marginBottom: 10 }}>
-                <strong>{leader?.name}</strong> takes exactly one action.
-              </div>
-
-              {mode.kind === 'idle' && (
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <button
-                    disabled={!buildAction}
-                    title={buildAction ? 'Choose a site on the board' : 'No legal building site'}
-                    onClick={() => setMode({ kind: 'build' })}
-                  >
-                    Build
-                  </button>
-                  <button
-                    disabled={!babelAction}
-                    title={
-                      babelAction
-                        ? `Costs ${Object.entries(babelAction.cost)
-                            .map(([r, n]) => `${n} ${RESOURCE_LABEL[r as ResourceType]}`)
-                            .join(' + ')}`
-                        : 'Cannot afford a piece, or the Foundation is occupied'
-                    }
-                    onClick={() => dispatch({ type: 'buildBabel', player: active })}
-                  >
-                    Babel
-                  </button>
-                  <button
-                    disabled={!towerAction}
-                    title={
-                      towerAction
-                        ? '2 Wood + 1 Metal. One Tower per connected feature.'
-                        : 'Cannot afford, or every feature is already defended'
-                    }
-                    onClick={() => setMode({ kind: 'tower' })}
-                  >
-                    Tower
-                  </button>
-                  <button
-                    disabled={!wallsAction}
-                    title={
-                      wallsAction
-                        ? `1 Wood for ${wallsAction.segments} Wall segment(s)`
-                        : 'Cannot afford, or nowhere to build'
-                    }
-                    onClick={() => setMode({ kind: 'walls' })}
-                  >
-                    Walls
-                  </button>
-                  <button
-                    disabled={!attackAction}
-                    title={
-                      attackAction
-                        ? `Roll ${attackAction.dice} dice against Defence ${attackAction.defence}`
-                        : 'No Hosts on the board'
-                    }
-                    onClick={() => dispatch({ type: 'attack', player: active })}
-                  >
-                    Attack
-                  </button>
-                  <button
-                    disabled={!musterAction}
-                    title={
-                      musterAction
-                        ? `1 Food + 1 Metal for a ${musterAction.army}th die`
-                        : 'Cannot afford, or already at 5 dice'
-                    }
-                    onClick={() => dispatch({ type: 'muster', player: active })}
-                  >
-                    Muster
-                  </button>
-                  <button
-                    disabled={!canBarter}
-                    title={canBarter ? 'Discard 3 cards for 1' : 'Need 3 resource cards'}
-                    onClick={() => setMode({ kind: 'barter' })}
-                  >
-                    Barter
-                  </button>
-                  <button
-                    disabled={!schemeAction}
-                    title={
-                      schemeAction
-                        ? '1 Food + 1 Metal for a blind Scheme'
-                        : 'Cannot afford, no Schemes left, or not on a bonus action'
-                    }
-                    onClick={() => dispatch({ type: 'buyScheme', player: active })}
-                  >
-                    Scheme
-                  </button>
-                  <button onClick={() => dispatch({ type: 'pass', player: active })}>Pass</button>
-                </div>
-              )}
-
-              {mode.kind === 'build' && buildAction && (
-                <div style={{ fontSize: 13 }}>
-                  Choose one of {buildAction.sites.length} highlighted sites.{' '}
-                  {[...new Set(buildAction.sites.map((s) => s.type))]
-                    .map((t) => BUILDING_LABEL[t as BuildingType])
-                    .join(', ')}
-                  . <button onClick={() => setMode({ kind: 'idle' })}>Cancel</button>
-                </div>
-              )}
-
-              {mode.kind === 'tower' && towerAction && (
-                <div style={{ fontSize: 13 }}>
-                  Choose one of {towerAction.sites.length} highlighted tiles. A Tower adds one
-                  support die whenever any Leader Attacks into its feature — but only while
-                  that feature is occupied.{' '}
-                  <button onClick={() => setMode({ kind: 'idle' })}>Cancel</button>
-                </div>
-              )}
-
-              {mode.kind === 'walls' && wallsAction && (
-                <div style={{ fontSize: 13 }}>
-                  Click edges between tiles to place {wallsAction.segments} Wall segment
-                  {wallsAction.segments === 1 ? '' : 's'} ({wallPicks.length}/
-                  {wallsAction.segments} chosen). A Host crossing one destroys it and spends
-                  its whole movement doing so.{' '}
-                  <button
-                    disabled={wallPicks.length === 0}
-                    onClick={() =>
-                      dispatch({ type: 'buildWalls', player: active, edges: wallPicks })
-                    }
-                  >
-                    Build walls
-                  </button>{' '}
-                  <button onClick={() => reset()}>Cancel</button>
-                </div>
-              )}
-
-              {mode.kind === 'barter' && leader && (
-                <div style={{ fontSize: 13 }}>
-                  <div>Discard any 3 cards ({spend.length}/3 chosen):</div>
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '8px 0' }}>
-                    {RESOURCE_TYPES.map((resource) => {
-                      const held =
-                        leader.resources[resource] - spend.filter((s) => s === resource).length;
-                      return (
-                        <button
-                          key={resource}
-                          disabled={held <= 0 || spend.length >= 3}
-                          onClick={() => setSpend((s) => [...s, resource])}
-                        >
-                          {RESOURCE_LABEL[resource]} ({held})
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {spend.length === 3 && (
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                      <span>Gain:</span>
-                      {RESOURCE_TYPES.map((resource) => (
-                        <button
-                          key={resource}
-                          onClick={() =>
-                            dispatch({ type: 'barter', player: active, spend, gain: resource })
-                          }
-                        >
-                          {RESOURCE_LABEL[resource]}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  <button onClick={() => reset()} style={{ marginTop: 8 }}>
-                    Cancel
-                  </button>
-                </div>
-              )}
-            </div>
+            <Bar
+              title={
+                <>
+                  <span className="font-semibold">{leader?.name}</span> · one action
+                </>
+              }
+            >
+              <ActionButtons
+                state={state}
+                legal={legal}
+                onBuild={() => setMode({ kind: 'build' })}
+                onTower={() => setMode({ kind: 'tower' })}
+                onWalls={() => setMode({ kind: 'walls' })}
+                onBabel={() => dispatch({ type: 'buildBabel', player: active })}
+                onAttack={() => dispatch({ type: 'attack', player: active })}
+                onMuster={() => dispatch({ type: 'muster', player: active })}
+                onScheme={() => dispatch({ type: 'buyScheme', player: active })}
+                onBarter={() => setMode({ kind: 'barter' })}
+                onPass={() => dispatch({ type: 'pass', player: active })}
+              />
+            </Bar>
           )}
-        </section>
-
-        <aside style={{ display: 'grid', gap: 12, minWidth: 0 }}>
-          <ConfusionPanel state={state} />
-          <BabelPanel state={state} />
-          {state.order.map((id, seat) => (
-            <LeaderPanel
-              key={id}
-              leader={state.leaders[id]!}
-              isActive={id === active}
-              seat={seat}
-              buildings={buildingsOf(id)}
-            />
-          ))}
-          <LogPanel state={state} />
-        </aside>
+        </footer>
       </div>
-    </main>
+    </TooltipProvider>
+  );
+}
+
+/** One line of context, then the controls. Keeps the bar to a fixed height. */
+function Bar({
+  title,
+  hint,
+  children,
+}: {
+  title: React.ReactNode;
+  hint?: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+      <div className="flex min-w-0 items-baseline gap-2">
+        <span className="truncate text-sm">{title}</span>
+        {hint && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-muted-foreground hidden cursor-help text-xs underline decoration-dotted underline-offset-2 sm:inline">
+                why?
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{hint}</TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+      <div className="flex flex-wrap items-center gap-1.5">{children}</div>
+    </div>
+  );
+}
+
+function ProphetPicker({
+  state,
+  mode,
+  setMode,
+  dispatch,
+}: {
+  state: GameState;
+  mode: { kind: 'prophet'; hostId: string | null };
+  setMode: (m: Mode) => void;
+  dispatch: (c: Command) => void;
+}) {
+  const holder = state.order.find((id) => state.leaders[id]?.schemeHand.includes('false-prophet'));
+  const host = state.hosts.find((h) => h.id === mode.hostId);
+
+  return (
+    <>
+      {host === undefined
+        ? state.hosts.map((h) => (
+            <Act
+              key={h.id}
+              label={`${HOST_LABEL[h.kind]} ${h.at.x},${h.at.y}`}
+              hint="Mislead this one."
+              onClick={() => setMode({ kind: 'prophet', hostId: h.id })}
+            />
+          ))
+        : neighbours(host.at)
+            .filter((at) => isPassableAt(state.board, at))
+            .map((at) => (
+              <Act
+                key={coordKey(at)}
+                label={`${at.x}, ${at.y}`}
+                variant="accent"
+                hint="Send it here, ending its movement."
+                onClick={() =>
+                  holder &&
+                  dispatch({
+                    type: 'playScheme',
+                    player: holder,
+                    scheme: 'false-prophet',
+                    hostId: host.id,
+                    to: at,
+                  })
+                }
+              />
+            ))}
+      <Act label="Cancel" variant="ghost" hint="Leave the Hosts alone." onClick={() => setMode({ kind: 'idle' })} />
+    </>
   );
 }

@@ -73,7 +73,7 @@ export type LeaderState = {
   /** GDD §15. Army size is a count of d6 attack dice. */
   readonly army: number;
   /** Hidden from other players. GDD §18. */
-  readonly schemeHand: readonly string[];
+  readonly schemeHand: readonly SchemeId[];
 };
 
 /**

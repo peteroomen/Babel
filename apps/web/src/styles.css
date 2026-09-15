@@ -1,42 +1,81 @@
+@import 'tailwindcss';
+
+/*
+ * BABEL's palette. ART_DIRECTION.md: warm, handmade, printed-on-matte-card —
+ * a cheerful civic project, with Heaven's gold intruding on it.
+ */
+@theme {
+  --color-parchment: #f7f2ea;
+  --color-card-warm: #fffdf8;
+  --color-ink: #2b2622;
+  --color-babel: #3a3330;
+  --color-heaven: #d9a441;
+  --color-river: #2f7fb0;
+}
+
 :root {
-  color-scheme: light;
+  --radius: 0.625rem;
+  --background: #f7f2ea;
+  --foreground: #2b2622;
+  --card: #fffdf8;
+  --card-foreground: #2b2622;
+  --popover: #fffdf8;
+  --popover-foreground: #2b2622;
+  --primary: #2b2622;
+  --primary-foreground: #fffdf8;
+  --secondary: #ece4d6;
+  --secondary-foreground: #2b2622;
+  --muted: #ece4d6;
+  --muted-foreground: #6b6257;
+  --accent: #e3bc5f;
+  --accent-foreground: #2b2622;
+  --destructive: #b5452f;
+  --border: #0000001f;
+  --input: #00000026;
+  --ring: #b5452f;
 }
 
-* {
-  box-sizing: border-box;
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
-body {
-  margin: 0;
-  background: #f7f2ea;
-  font-family: system-ui, sans-serif;
-}
-
-button {
-  font: inherit;
-  padding: 4px 10px;
-  border: 1px solid #00000033;
-  border-radius: 6px;
-  background: #fff;
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* Board beside the panels on a desktop; stacked on a phone, where a squeezed
-   two-column grid would crush the board to a few pixels wide. */
-.layout {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
-  gap: 16px;
-  align-items: start;
-}
-
-@media (max-width: 900px) {
-  .layout {
-    grid-template-columns: 1fr;
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    /* The whole game is one screen: nothing outside a panel ever scrolls. */
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 }

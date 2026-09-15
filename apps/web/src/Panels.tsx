@@ -8,22 +8,14 @@ import {
   type GameState,
   type LeaderState,
 } from '@babel-game/game-core';
-import {
-  BUILDING_LABEL,
-  HOST_LABEL,
-  LEADER_COLOUR,
-  RESOURCE_LABEL,
-  TERRAIN_LABEL,
-} from './theme.js';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
+import { BUILDING_LABEL, HOST_LABEL, LEADER_COLOUR, RESOURCE_LABEL, TERRAIN_LABEL } from './theme';
 
-const card_: React.CSSProperties = {
-  border: '1px solid #00000022',
-  borderRadius: 10,
-  padding: 12,
-  background: '#fffdf8',
-};
-
-export function LeaderPanel({
+export function LeaderRow({
   leader,
   isActive,
   seat,
@@ -35,277 +27,283 @@ export function LeaderPanel({
   buildings: number;
 }) {
   return (
-    <div style={{ ...card_, outline: isActive ? '2px solid #2b2622' : 'none' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-        <strong>
-          <span
-            style={{
-              display: 'inline-block',
-              width: 10,
-              height: 10,
-              borderRadius: 3,
-              marginRight: 6,
-              background: LEADER_COLOUR[seat % LEADER_COLOUR.length],
-            }}
-          />
-          {leader.name}
-        </strong>
-        {isActive && <span style={{ fontSize: 12 }}>active</span>}
+    <div
+      className={cn(
+        'rounded-lg border px-2.5 py-2 transition-colors',
+        isActive ? 'bg-secondary/70 border-foreground/25' : 'bg-card',
+      )}
+    >
+      <div className="flex items-center gap-1.5">
+        <span
+          className="size-2.5 shrink-0 rounded-sm"
+          style={{ background: LEADER_COLOUR[seat % LEADER_COLOUR.length] }}
+        />
+        <span className="truncate text-sm font-semibold">{leader.name}</span>
+        <span className="ml-auto flex items-center gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="default" className="tabular-nums">
+                {leader.prestige}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              Prestige. Only decides the winner if humanity survives.
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="outline" className="tabular-nums">
+                {leader.army}d
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              {leader.army} Army {leader.army === 1 ? 'die' : 'dice'}, each d6 + 2 versus Host
+              Defence.
+            </TooltipContent>
+          </Tooltip>
+        </span>
       </div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '8px 0' }}>
+
+      <div className="mt-1.5 grid grid-cols-4 gap-1">
         {RESOURCE_TYPES.map((resource) => (
-          <span
-            key={resource}
-            style={{
-              border: '1px solid #00000033',
-              borderRadius: 6,
-              padding: '2px 6px',
-              fontSize: 12,
-              background: leader.resources[resource] > 0 ? '#fff' : '#0000000a',
-            }}
-          >
-            {RESOURCE_LABEL[resource]} {leader.resources[resource]}
-          </span>
+          <Tooltip key={resource}>
+            <TooltipTrigger asChild>
+              <div
+                className={cn(
+                  'flex items-baseline justify-center gap-1 rounded border px-1 py-0.5 text-xs',
+                  leader.resources[resource] > 0 ? 'bg-card' : 'bg-secondary/40 opacity-50',
+                )}
+              >
+                {/* A bare number is unreadable at a glance: which one is Metal?
+                    The initials are unique across Food/Wood/Brick/Metal. */}
+                <span className="text-[10px] opacity-55">
+                  {RESOURCE_LABEL[resource].charAt(0)}
+                </span>
+                <span className="font-medium tabular-nums">{leader.resources[resource]}</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>{RESOURCE_LABEL[resource]}</TooltipContent>
+          </Tooltip>
         ))}
       </div>
-      <div style={{ fontSize: 12, opacity: 0.8 }}>
-        Prestige <strong>{leader.prestige}</strong> · Army {leader.army}{' '}
-        {leader.army === 1 ? 'die' : 'dice'} · {buildings}{' '}
-        {buildings === 1 ? 'building' : 'buildings'}
-      </div>
-      {leader.schemeHand.length > 0 && (
-        <div style={{ fontSize: 12, marginTop: 6 }}>
-          {/* GDD §18: hands are hidden, so in hot-seat only the Leader whose
-              turn it is sees their own cards. */}
-          {isActive ? (
-            <span>
-              Schemes:{' '}
-              {leader.schemeHand
-                .map((id) => SCHEMES[id as keyof typeof SCHEMES]?.label ?? id)
-                .join(', ')}
-            </span>
-          ) : (
-            <span style={{ opacity: 0.6 }}>
-              {leader.schemeHand.length} Scheme
-              {leader.schemeHand.length === 1 ? '' : 's'} held, face down
-            </span>
-          )}
+
+      {(buildings > 0 || leader.schemeHand.length > 0) && (
+        <div className="text-muted-foreground mt-1.5 flex items-center gap-2 text-xs">
+          {buildings > 0 && <span>{buildings} built</span>}
+          {leader.schemeHand.length > 0 &&
+            (isActive ? (
+              <span className="truncate">
+                {leader.schemeHand.map((id) => SCHEMES[id]?.label ?? id).join(', ')}
+              </span>
+            ) : (
+              <span>{leader.schemeHand.length} Scheme face down</span>
+            ))}
         </div>
       )}
     </div>
   );
 }
 
-/** Human-readable log. Every complex transition emits a structured event. */
-function describe(event: GameEvent, state: GameState): string {
-  const who = (id: string) => state.leaders[id]?.name ?? id;
-  switch (event.type) {
-    case 'roundStarted':
-      return `— Round ${event.round} —`;
-    case 'tileDrawn':
-      return `${who(event.player)} drew ${TERRAIN_LABEL[event.terrain]}${
-        event.river === 'none' ? '' : ` (${event.river} river)`
-      }`;
-    case 'tileDiscarded':
-      return `${TERRAIN_LABEL[event.terrain]} (${event.river}) had nowhere legal to go — redrawn`;
-    case 'tilePlaced':
-      return `${who(event.player)} placed ${TERRAIN_LABEL[event.terrain]} at (${event.at.x}, ${event.at.y})`;
-    case 'resourcesGained':
-      return `${who(event.player)} gained ${event.amount} ${RESOURCE_LABEL[event.resource]}`;
-    case 'payoutSuppressed':
-      return `No payout — that feature is occupied`;
-    case 'actionTaken':
-      return `${who(event.player)} took action: ${event.action}`;
-    case 'harvestTriggered':
-      return `Shared industry: ${event.owners.map(who).join(' and ')} paid ${event.amount} ${
-        RESOURCE_LABEL[event.resource]
-      }; ${who(event.placer)} +${event.placerBonus}`;
-    case 'buildingConstructed':
-      return `${who(event.player)} built a ${BUILDING_LABEL[event.building]} at (${
-        event.at.x
-      }, ${event.at.y})`;
-    case 'babelPieceBuilt':
-      return `${who(event.player)} added Babel piece ${event.pieces}`;
-    case 'stageEscalated':
-      return `Heaven escalates permanently — Stage ${event.to}: ${STAGE_LABEL[event.to]}`;
-    case 'bartered':
-      return `${who(event.player)} bartered 3 cards for 1 ${RESOURCE_LABEL[event.gained]}`;
-    case 'prestigeGained':
-      return `${who(event.player)} +${event.amount} Prestige (${event.source})`;
-    case 'beaconPlaced':
-      return `A Beacon is planted at (${event.at.x}, ${event.at.y}) — ${event.total} in play`;
-    case 'beaconDeferred':
-      return `No legal Beacon site yet; ${event.owed} deferred`;
-    case 'hostSpawned':
-      return `${HOST_LABEL[event.kind]} descends at (${event.at.x}, ${event.at.y})`;
-    case 'hostMoved':
-      return `Host ${event.id} advances to (${event.to.x}, ${event.to.y})${
-        event.hadChoice ? ' (route chosen)' : ''
-      }`;
-    case 'babelPieceLost':
-      return `Heaven smashes Babel's newest piece — ${event.remaining} left`;
-    case 'foundationOccupied':
-      return `A Host stands on the bare Foundation. Babel cannot be built.`;
-    case 'humanityLoses':
-      return `The Foundation is breached a second time. Humanity falls.`;
-    case 'attackRolled':
-      return `${who(event.player)} rolls ${event.rolls.join(', ')} against Defence ${
-        event.defence
-      } — ${event.successes} hit${event.successes === 1 ? '' : 's'}`;
-    case 'hostHit':
-      return event.shieldBroken
-        ? `${who(event.player)} shatters a Seraph's shield`
-        : `${who(event.player)} hits Host ${event.id}`;
-    case 'hostKilled':
-      return `${who(event.player)} destroys Host ${event.id}`;
-    case 'mustered':
-      return `${who(event.player)} musters — Army now ${event.army}`;
-    case 'wallsBuilt':
-      return `${who(event.player)} throws up ${event.edges.length} Wall segment${
-        event.edges.length === 1 ? '' : 's'
-      }`;
-    case 'wallBroken':
-      return `A Wall is smashed down — the Host spent its movement on it`;
-    case 'confusionRevealed':
-      return `Confusion: ${CONFUSION[event.card].label} — ${CONFUSION[event.card].text}`;
-    case 'confusionCancelled':
-      return `${who(event.player)} plays Common Tongue — ${
-        CONFUSION[event.card].label
-      } is cancelled`;
-    case 'confusionAdded':
-      return `Heaven grows stranger: ${event.cards
-        .map((c) => CONFUSION[c].label)
-        .join(', ')} shuffled into the Confusion deck`;
-    case 'schemeBought':
-      return `${who(event.player)} buys a Scheme`;
-    case 'schemePlayed':
-      return `${who(event.player)} plays ${SCHEMES[event.scheme].label}`;
-    case 'schemeDeckEmpty':
-      return `No Schemes remain`;
-    case 'towerSupport':
-      return event.hit
-        ? `Tower at (${event.at.x}, ${event.at.y}) fires — ${event.roll} + 2 vs ${event.defence}, hit`
-        : `Tower at (${event.at.x}, ${event.at.y}) fires — ${event.roll} + 2 vs ${event.defence}, misses`;
-    case 'humanityWins':
-      return `Babel is complete. Humanity survives. Top Prestige: ${event.topPrestige
-        .map(who)
-        .join(', ')}`;
-    case 'turnEnded':
-      return `${who(event.player)} ended their turn`;
-    case 'heavenPhase':
-      return `Heaven Phase (round ${event.round})`;
-    case 'voteOpened':
-      return `Vote opened: ${event.question}`;
-    case 'voteCast':
-      return `${who(event.player)} voted`;
-    case 'voteResolved':
-      return `Vote resolved: ${event.choice}${event.byCoinFlip ? ' (coin flip)' : ''}`;
-  }
-}
-
-export function LogPanel({ state }: { state: GameState }) {
-  const recent = [...state.log].slice(-40).reverse();
-  return (
-    <div style={{ ...card_, maxHeight: 340, overflowY: 'auto' }}>
-      <strong style={{ fontSize: 13 }}>Game log</strong>
-      <ol style={{ listStyle: 'none', padding: 0, margin: '8px 0 0', fontSize: 12 }}>
-        {recent.map((event, i) => (
-          <li
-            key={recent.length - i}
-            style={{
-              padding: '3px 0',
-              borderTop: i === 0 ? 'none' : '1px solid #00000010',
-              fontWeight: event.type === 'roundStarted' ? 600 : 400,
-            }}
-          >
-            {describe(event, state)}
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
-
-/** GDD §12: how close Babel is to its next permanent escalation. */
-export function BabelPanel({ state }: { state: GameState }) {
+/** GDD §12: pieces built, and how close the next permanent escalation is. */
+export function BabelCard({ state }: { state: GameState }) {
   const leaders = state.order.length;
   const built = state.babel.stack.length;
   const total = totalPieces(leaders);
   const toNext = piecesToNextEscalation(state.babel, state.stage, leaders);
 
   return (
-    <div style={card_}>
-      <strong style={{ fontSize: 13 }}>Babel</strong>
-      <div style={{ fontSize: 12, marginTop: 6 }}>
-        Stage {state.stage} — {STAGE_LABEL[state.stage]}
-      </div>
-      <div
-        style={{
-          display: 'flex',
-          gap: 3,
-          flexWrap: 'wrap',
-          margin: '8px 0',
-        }}
-      >
-        {Array.from({ length: total }, (_, i) => (
-          <span
-            key={i}
-            title={
-              i < built ? `Built by ${state.leaders[state.babel.stack[i]!]?.name}` : 'Not built'
-            }
-            style={{
-              width: 12,
-              height: 12,
-              borderRadius: 2,
-              background: i < built ? '#3a3330' : '#00000014',
-              /* Mark where each Stage boundary falls. */
-              outline:
-                (i + 1) % piecesPerStage(leaders) === 0 ? '1px solid #b5452f' : 'none',
-            }}
-          />
-        ))}
-      </div>
-      <div style={{ fontSize: 12, opacity: 0.8 }}>
-        {built} / {total} pieces
-        {toNext === null
-          ? ' · final Stage'
-          : toNext === 0
-            ? ' · escalation imminent'
-            : ` · ${toNext} to next escalation`}
-      </div>
-    </div>
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <CardTitle>Babel · Stage {state.stage}</CardTitle>
+        <span className="text-xs tabular-nums opacity-60">
+          {built}/{total}
+        </span>
+      </CardHeader>
+      <CardContent>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex flex-wrap gap-0.5">
+              {Array.from({ length: total }, (_, i) => (
+                <span
+                  key={i}
+                  className={cn(
+                    'h-3 flex-1 min-w-1.5 rounded-[2px]',
+                    i < built ? 'bg-babel' : 'bg-foreground/10',
+                    (i + 1) % piecesPerStage(leaders) === 0 && 'ring-1 ring-destructive/70',
+                  )}
+                />
+              ))}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            {STAGE_LABEL[state.stage]}.{' '}
+            {toNext === null
+              ? 'Final Stage — finish Babel to win.'
+              : toNext === 0
+                ? 'The next piece escalates Heaven permanently.'
+                : `${toNext} more piece${toNext === 1 ? '' : 's'} escalates Heaven permanently.`}{' '}
+            Marks show Stage boundaries.
+          </TooltipContent>
+        </Tooltip>
+      </CardContent>
+    </Card>
   );
 }
 
 /** GDD §19: the card that changes this round, in one sentence. */
-export function ConfusionPanel({ state }: { state: GameState }) {
+export function ConfusionCard({ state }: { state: GameState }) {
   const card = state.confusion.card;
   if (!card) return null;
   const spec = CONFUSION[card];
   const cancelled = activeConfusion(state) === null;
 
   return (
-    <div
-      style={{
-        ...card_,
-        background: cancelled ? '#f1f1ee' : '#f6ecd8',
-        borderColor: cancelled ? '#00000018' : '#b5452f55',
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-        <strong style={{ fontSize: 13 }}>Confusion — {spec.label}</strong>
-        {cancelled && <span style={{ fontSize: 12 }}>cancelled</span>}
-      </div>
-      <div
-        style={{
-          fontSize: 12,
-          marginTop: 6,
-          opacity: cancelled ? 0.5 : 0.9,
-          textDecoration: cancelled ? 'line-through' : 'none',
-        }}
-      >
-        {spec.text}
-      </div>
-    </div>
+    <Card className={cn(!cancelled && 'border-destructive/40 bg-accent/10')}>
+      <CardHeader className="flex-row items-center justify-between">
+        <CardTitle>Confusion</CardTitle>
+        {cancelled && <span className="text-xs opacity-60">cancelled</span>}
+      </CardHeader>
+      <CardContent>
+        <div className={cn('text-sm font-medium', cancelled && 'line-through opacity-50')}>
+          {spec.label}
+        </div>
+        <div className={cn('text-muted-foreground mt-0.5 text-xs', cancelled && 'opacity-50')}>
+          {spec.text}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/** Human-readable log. Every complex transition emits a structured event. */
+export function describe(event: GameEvent, state: GameState): string {
+  const who = (id: string) => state.leaders[id]?.name ?? id;
+  switch (event.type) {
+    case 'roundStarted':
+      return `Round ${event.round}`;
+    case 'tileDrawn':
+      return `${who(event.player)} drew ${TERRAIN_LABEL[event.terrain]}${
+        event.river === 'none' ? '' : ` (${event.river})`
+      }`;
+    case 'tileDiscarded':
+      return `${TERRAIN_LABEL[event.terrain]} had nowhere to go — redrawn`;
+    case 'tilePlaced':
+      return `${who(event.player)} placed ${TERRAIN_LABEL[event.terrain]} at ${event.at.x}, ${event.at.y}`;
+    case 'resourcesGained':
+      return `${who(event.player)} +${event.amount} ${RESOURCE_LABEL[event.resource]}`;
+    case 'payoutSuppressed':
+      return event.reason === 'lostLedgers'
+        ? `No payout — Lost Ledgers`
+        : `No payout — that feature is occupied`;
+    case 'harvestTriggered':
+      return `Shared industry: ${event.owners.map(who).join(' and ')} paid ${event.amount} ${
+        RESOURCE_LABEL[event.resource]
+      }`;
+    case 'buildingConstructed':
+      return `${who(event.player)} built a ${BUILDING_LABEL[event.building]}`;
+    case 'babelPieceBuilt':
+      return `${who(event.player)} added Babel piece ${event.pieces}`;
+    case 'stageEscalated':
+      return `Heaven escalates — Stage ${event.to}: ${STAGE_LABEL[event.to]}`;
+    case 'bartered':
+      return `${who(event.player)} bartered for 1 ${RESOURCE_LABEL[event.gained]}`;
+    case 'prestigeGained':
+      return `${who(event.player)} +${event.amount} Prestige (${event.source})`;
+    case 'actionTaken':
+      return `${who(event.player)}: ${event.action}`;
+    case 'turnEnded':
+      return `${who(event.player)} ends their turn`;
+    case 'heavenPhase':
+      return `Heaven Phase`;
+    case 'beaconPlaced':
+      return `Beacon planted at ${event.at.x}, ${event.at.y} — ${event.total} in play`;
+    case 'beaconDeferred':
+      return `No legal Beacon site yet`;
+    case 'hostSpawned':
+      return `${HOST_LABEL[event.kind]} descends at ${event.at.x}, ${event.at.y}`;
+    case 'hostMoved':
+      return `Host advances to ${event.to.x}, ${event.to.y}`;
+    case 'babelPieceLost':
+      return `Heaven smashes Babel's newest piece — ${event.remaining} left`;
+    case 'foundationOccupied':
+      return `A Host stands on the bare Foundation`;
+    case 'humanityLoses':
+      return `The Foundation is breached twice. Humanity falls.`;
+    case 'attackRolled':
+      return `${who(event.player)} rolls ${event.rolls.join(', ')} vs ${event.defence} — ${
+        event.successes
+      } hit${event.successes === 1 ? '' : 's'}`;
+    case 'hostHit':
+      return event.shieldBroken
+        ? `${who(event.player)} shatters a Seraph's shield`
+        : `${who(event.player)} hits a Host`;
+    case 'hostKilled':
+      return `${who(event.player)} destroys a Host`;
+    case 'mustered':
+      return `${who(event.player)} musters — Army ${event.army}`;
+    case 'wallsBuilt':
+      return `${who(event.player)} raises ${event.edges.length} Wall segment${
+        event.edges.length === 1 ? '' : 's'
+      }`;
+    case 'wallBroken':
+      return `A Wall is smashed down — the Host spent its movement`;
+    case 'towerSupport':
+      return `Tower fires — ${event.roll} + 2 vs ${event.defence}, ${event.hit ? 'hit' : 'miss'}`;
+    case 'confusionRevealed':
+      return `Confusion: ${CONFUSION[event.card].label}`;
+    case 'confusionCancelled':
+      return `${who(event.player)} cancels ${CONFUSION[event.card].label}`;
+    case 'confusionAdded':
+      return `Heaven grows stranger: ${event.cards.map((c) => CONFUSION[c].label).join(', ')}`;
+    case 'schemeBought':
+      return `${who(event.player)} buys a Scheme`;
+    case 'schemePlayed':
+      return `${who(event.player)} plays ${SCHEMES[event.scheme].label}`;
+    case 'schemeDeckEmpty':
+      return `No Schemes remain`;
+    case 'voteOpened':
+      return `Vote: ${event.question}`;
+    case 'voteCast':
+      return `${who(event.player)} voted`;
+    case 'voteResolved':
+      return `Vote resolved: ${event.choice}${event.byCoinFlip ? ' (coin flip)' : ''}`;
+    case 'humanityWins':
+      return `Babel is complete. Humanity survives.`;
+  }
+}
+
+export function LogList({ state, limit = 400 }: { state: GameState; limit?: number }) {
+  const recent = [...state.log].slice(-limit).reverse();
+  return (
+    <ol className="space-y-px text-xs">
+      {recent.map((event, i) => (
+        <li
+          key={recent.length - i}
+          className={cn(
+            'border-border/60 border-t px-0.5 py-1 first:border-t-0',
+            event.type === 'roundStarted' && 'text-foreground font-semibold',
+            event.type === 'humanityLoses' && 'text-destructive font-semibold',
+            event.type === 'stageEscalated' && 'text-destructive font-medium',
+          )}
+        >
+          {describe(event, state)}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+export function LogCard({ state }: { state: GameState }) {
+  return (
+    <Card className="flex min-h-0 flex-1 flex-col">
+      <CardHeader>
+        <CardTitle>Log</CardTitle>
+      </CardHeader>
+      <CardContent className="min-h-0 flex-1 pb-2">
+        <ScrollArea className="h-full pr-2">
+          <LogList state={state} limit={80} />
+        </ScrollArea>
+      </CardContent>
+    </Card>
   );
 }
