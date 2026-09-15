@@ -58,12 +58,22 @@ npm run typecheck
 npm run dev       # hot-seat app
 ```
 
-## Next implementation step
+## Progress
 
-Milestone 0 is complete: see `docs/ADR-001-framework.md` for the orchestration
-decision and `docs/RULES_DECISIONS.md` for interpretations of under-specified
-canon.
+- **Milestone 0 — framework spike.** Complete. See
+  `docs/ADR-001-framework.md` for the orchestration decision.
+- **Milestone 1 — spatial economy.** Complete. Square grid, five terrain types,
+  river shapes with free rotation and symmetric edge matching, connected-feature
+  detection, adjacency payouts with occupation suppression, 2–4 hot-seat
+  Leaders, and a board UI that highlights legal squares and projects the payout
+  before you commit.
+- **Milestone 2 — industry, Babel and Prestige.** Next.
 
-Milestone 1 is next — the spatial-economy vertical slice in
-`IMPLEMENTATION_PLAN.md`: river-aware tile placement, connected-feature
-detection, resource payouts, and the board UI.
+Interpretations of under-specified canon are recorded in
+`docs/RULES_DECISIONS.md`.
+
+## What Milestone 1 does not do yet
+
+Only Pass is implemented as an action; Build, Babel, Attack, Muster, Scheme and
+Barter arrive in Milestones 2–5 and appear disabled in the UI. There are no
+Hosts, so `occupiedTiles` is populated only by tests until Milestone 3.

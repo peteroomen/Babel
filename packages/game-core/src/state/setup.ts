@@ -1,15 +1,14 @@
-import { TERRAIN_WEIGHTS, type TerrainType } from '@babel-game/game-data';
+import { RIVER_WEIGHTS, TERRAIN_WEIGHTS } from '@babel-game/game-data';
+import { coordKey } from '../map/edges.js';
+import { hasAnyLegalPlacement, type Board } from '../map/placement.js';
 import { createRng, nextInt, weightedPick, type RngState } from '../rng/index.js';
-import { coordKey, type GameState, type LeaderState, type PlayerId } from './types.js';
+import { BABEL_COORD, START_TILE_COORD } from './babel.js';
+import type { GameState, LeaderState, PlayerId, TileDraw } from './types.js';
 
-/** GDD §5. Babel's Foundation sits at the centre of the world. */
-export const BABEL_COORD = { x: 0, y: 0 } as const;
+export { BABEL_COORD, START_TILE_COORD };
 
-/**
- * GDD §5: a fixed Farmland tile with a north-south river sits immediately
- * north of Babel and feeds it. Screen coordinates, so north is -y.
- */
-export const START_TILE_COORD = { x: 0, y: -1 } as const;
+/** How many unplaceable tiles to discard before giving up. See RD-002. */
+const MAX_REDRAWS = 50;
 
 function newLeader(id: PlayerId, name: string): LeaderState {
   return {
@@ -23,8 +22,36 @@ function newLeader(id: PlayerId, name: string): LeaderState {
   };
 }
 
-export function drawTerrain(rng: RngState): [TerrainType, RngState] {
-  return weightedPick(rng, TERRAIN_WEIGHTS);
+/** GDD §6 / §22: blind draw from the bag, with replacement per RD-003. */
+export function drawTile(rng: RngState): [TileDraw, RngState] {
+  const [terrain, afterTerrain] = weightedPick(rng, TERRAIN_WEIGHTS);
+  const [river, afterRiver] = weightedPick(afterTerrain, RIVER_WEIGHTS[terrain]);
+  return [{ terrain, river }, afterRiver];
+}
+
+/**
+ * Draw a tile that can actually be placed.
+ *
+ * RD-002: a drawn tile with no legal placement in any rotation is discarded and
+ * redrawn. The bag is infinite, so nothing is exhausted by this.
+ */
+export function drawPlaceableTile(
+  board: Board,
+  rng: RngState,
+): { draw: TileDraw; rng: RngState; discarded: TileDraw[] } {
+  const discarded: TileDraw[] = [];
+  let state = rng;
+
+  for (let attempt = 0; attempt < MAX_REDRAWS; attempt++) {
+    const [draw, next] = drawTile(state);
+    state = next;
+    if (hasAnyLegalPlacement(board, draw)) return { draw, rng: state, discarded };
+    discarded.push(draw);
+  }
+
+  throw new Error(
+    `no placeable tile after ${MAX_REDRAWS} draws; the board or the river bag is malformed`,
+  );
 }
 
 export function setupGame(names: readonly string[], seed: string): GameState {
@@ -37,13 +64,15 @@ export function setupGame(names: readonly string[], seed: string): GameState {
     names.map((name, i) => [`p${i}`, newLeader(`p${i}`, name)]),
   );
 
-  /* GDD §5: randomise the First Player. */
-  let rng = createRng(seed);
-  const [first, afterFirst] = nextInt(rng, order.length);
-  rng = afterFirst;
+  /* GDD §5: the fixed Farmland tile, river running north-south into Babel. */
+  const board: Board = {
+    [coordKey(START_TILE_COORD)]: { terrain: 'farmland', river: 'straight', rotation: 0 },
+  };
 
-  const [tile, afterDraw] = drawTerrain(rng);
-  rng = afterDraw;
+  /* GDD §5: randomise the First Player. */
+  const [first, afterFirst] = nextInt(createRng(seed), order.length);
+  const { draw, rng, discarded } = drawPlaceableTile(board, afterFirst);
+  const opener = order[first] as PlayerId;
 
   return {
     round: 1,
@@ -54,15 +83,24 @@ export function setupGame(names: readonly string[], seed: string): GameState {
     currentPlayerIndex: first,
     firstPlayerIndex: first,
     leaders,
-    board: {
-      [coordKey(START_TILE_COORD)]: { terrain: 'farmland', riverEdges: ['n', 's'] },
-    },
-    drawnTile: tile,
+    board,
+    drawnTile: draw,
+    occupiedTiles: [],
     pendingVote: null,
     rng,
     log: [
       { type: 'roundStarted', round: 1 },
-      { type: 'tileDrawn', player: order[first] as PlayerId, terrain: tile },
+      ...discarded.map(
+        (tile) =>
+          ({
+            type: 'tileDiscarded',
+            player: opener,
+            terrain: tile.terrain,
+            river: tile.river,
+            reason: 'noLegalPlacement',
+          }) as const,
+      ),
+      { type: 'tileDrawn', player: opener, terrain: draw.terrain, river: draw.river },
     ],
     winner: null,
   };

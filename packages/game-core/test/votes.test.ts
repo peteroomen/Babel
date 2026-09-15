@@ -85,7 +85,7 @@ describe('collective decisions', () => {
     const state = withVote(['Ada', 'Peter']);
     const me = state.order[state.currentPlayerIndex] as string;
     expect(() =>
-      applyMove(state, { type: 'placeTile', player: me, at: { x: 1, y: 0 } }),
+      applyMove(state, { type: 'placeTile', player: me, at: { x: 1, y: 0 }, rotation: 0 }),
     ).toThrow(/vote is open/);
   });
 });

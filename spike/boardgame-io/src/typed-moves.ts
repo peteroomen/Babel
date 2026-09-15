@@ -9,10 +9,10 @@
  * Type safety stops at the framework boundary, so we restore it with one
  * explicit cast in one place rather than scattering assertions through the UI.
  */
-import type { Coord } from '@babel-game/game-core';
+import type { Coord, Rotation } from '@babel-game/game-core';
 
 export type BabelMoves = {
-  placeTile(at: Coord): void;
+  placeTile(at: Coord, rotation: Rotation): void;
   takeAction(action: string): void;
   castVote(option: number): void;
   openVote(): void;

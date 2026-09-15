@@ -13,6 +13,7 @@ import {
   currentPlayer,
   setupGame,
   type Coord,
+  type Rotation,
   type GameState,
   type PendingVote,
 } from '@babel-game/game-core';
@@ -57,9 +58,10 @@ export const BabelStagesSpike: Game<GameState> = {
   },
 
   moves: {
-    placeTile: ({ G, playerID }, at: Coord) => {
+    placeTile: ({ G, playerID }, at: Coord, rotation: Rotation) => {
       try {
-        return applyMove(G, { type: 'placeTile', player: toCore(playerID), at }).state;
+        return applyMove(G, { type: 'placeTile', player: toCore(playerID), at, rotation })
+          .state;
       } catch {
         return INVALID_MOVE;
       }

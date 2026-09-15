@@ -1,4 +1,5 @@
-import type { ResourceType, TerrainType } from '@babel-game/game-data';
+import type { ResourceType, RiverShape, TerrainType } from '@babel-game/game-data';
+import type { Coord, Rotation } from '../map/edges.js';
 import type { RngState } from '../rng/index.js';
 
 export type PlayerId = string;
@@ -9,15 +10,14 @@ export type Phase = 'confusion' | 'turns' | 'heaven' | 'gameOver';
 /** GDD §11 turn structure: draw, place, resolve, then exactly one action. */
 export type TurnStep = 'place' | 'action';
 
-export type Coord = { readonly x: number; readonly y: number };
-
-export type PlacedTile = {
+/** A tile as drawn from the bag, before the player chooses a rotation. */
+export type TileDraw = {
   readonly terrain: TerrainType;
-  /** Which of the tile's four edges carry river geometry, after rotation. */
-  readonly riverEdges: readonly Edge[];
+  readonly river: RiverShape;
 };
 
-export type Edge = 'n' | 'e' | 's' | 'w';
+/** A tile on the board. River edges are derived from shape + rotation. */
+export type PlacedTile = TileDraw & { readonly rotation: Rotation };
 
 export type LeaderState = {
   readonly id: PlayerId;
@@ -32,18 +32,12 @@ export type LeaderState = {
 
 /**
  * A decision the table makes together rather than the active player.
- *
- * GDD §13 (Beacon siting) and §14 (choosing between equally short Host routes)
- * both say "the players choose" without naming an arbiter. That is fine at a
- * kitchen table and in hot-seat; it is not implementable over a network. The
- * resolution rule adopted here is majority vote, ties broken by a seeded coin
- * flip, so the outcome stays deterministic and replayable.
+ * See RD-005: majority, ties broken by a seeded coin flip.
  */
 export type PendingVote = {
   readonly id: string;
   readonly question: string;
   readonly options: readonly string[];
-  /** Ballots cast so far, by player. Resolves once every leader has voted. */
   readonly votes: Readonly<Record<PlayerId, number>>;
 };
 
@@ -58,7 +52,12 @@ export type GameState = {
   readonly leaders: Readonly<Record<PlayerId, LeaderState>>;
   readonly board: Readonly<Record<string, PlacedTile>>;
   /** The tile drawn at the start of the current turn, awaiting placement. */
-  readonly drawnTile: TerrainType | null;
+  readonly drawnTile: TileDraw | null;
+  /**
+   * Coordinate keys currently holding a Host. GDD §10 shuts down the whole
+   * connected feature. Populated by the Heaven Phase in Milestone 3.
+   */
+  readonly occupiedTiles: readonly string[];
   readonly pendingVote: PendingVote | null;
   readonly rng: RngState;
   readonly log: readonly GameEvent[];
@@ -67,12 +66,41 @@ export type GameState = {
 
 export type GameEvent =
   | { readonly type: 'roundStarted'; readonly round: number }
-  | { readonly type: 'tileDrawn'; readonly player: PlayerId; readonly terrain: TerrainType }
+  | {
+      readonly type: 'tileDrawn';
+      readonly player: PlayerId;
+      readonly terrain: TerrainType;
+      readonly river: RiverShape;
+    }
+  /** RD-002: drawn tile had no legal placement in any rotation. */
+  | {
+      readonly type: 'tileDiscarded';
+      readonly player: PlayerId;
+      readonly terrain: TerrainType;
+      readonly river: RiverShape;
+      readonly reason: 'noLegalPlacement';
+    }
   | {
       readonly type: 'tilePlaced';
       readonly player: PlayerId;
       readonly at: Coord;
       readonly terrain: TerrainType;
+      readonly river: RiverShape;
+      readonly rotation: Rotation;
+    }
+  | {
+      readonly type: 'resourcesGained';
+      readonly player: PlayerId;
+      readonly resource: ResourceType;
+      readonly amount: number;
+      readonly source: 'placement';
+    }
+  /** GDD §10: the placement fell inside an occupied feature. */
+  | {
+      readonly type: 'payoutSuppressed';
+      readonly player: PlayerId;
+      readonly at: Coord;
+      readonly reason: 'featureOccupied';
     }
   | { readonly type: 'actionTaken'; readonly player: PlayerId; readonly action: string }
   | { readonly type: 'turnEnded'; readonly player: PlayerId }
@@ -83,12 +111,16 @@ export type GameEvent =
       readonly type: 'voteResolved';
       readonly id: string;
       readonly choice: string;
-      /** True when the majority tied and the seeded coin flip decided it. */
       readonly byCoinFlip: boolean;
     };
 
 export type Command =
-  | { readonly type: 'placeTile'; readonly player: PlayerId; readonly at: Coord }
+  | {
+      readonly type: 'placeTile';
+      readonly player: PlayerId;
+      readonly at: Coord;
+      readonly rotation: Rotation;
+    }
   | { readonly type: 'takeAction'; readonly player: PlayerId; readonly action: string }
   | { readonly type: 'castVote'; readonly player: PlayerId; readonly option: number };
 
@@ -96,5 +128,3 @@ export type ApplyResult = {
   readonly state: GameState;
   readonly events: readonly GameEvent[];
 };
-
-export const coordKey = (c: Coord): string => `${c.x},${c.y}`;

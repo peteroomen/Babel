@@ -1,35 +1,16 @@
+import { placementPayout } from '../economy/payout.js';
+import { coordKey } from '../map/edges.js';
+import { isLegalPlacement, type Board } from '../map/placement.js';
 import { nextInt } from '../rng/index.js';
-import { BABEL_COORD, drawTerrain } from './setup.js';
-import {
-  coordKey,
-  type ApplyResult,
-  type Command,
-  type Coord,
-  type GameEvent,
-  type GameState,
-  type PendingVote,
-  type PlayerId,
+import { drawPlaceableTile } from './setup.js';
+import type {
+  ApplyResult,
+  Command,
+  GameEvent,
+  GameState,
+  PendingVote,
+  PlayerId,
 } from './types.js';
-
-const ORTHOGONAL: readonly Coord[] = [
-  { x: 0, y: -1 },
-  { x: 1, y: 0 },
-  { x: 0, y: 1 },
-  { x: -1, y: 0 },
-];
-
-/** GDD §6: a tile must be orthogonally adjacent to the board or to Babel. */
-export function isLegalPlacement(state: GameState, at: Coord): boolean {
-  if (state.board[coordKey(at)]) return false;
-  if (coordKey(at) === coordKey(BABEL_COORD)) return false;
-  return ORTHOGONAL.some((d) => {
-    const neighbour = { x: at.x + d.x, y: at.y + d.y };
-    return (
-      Boolean(state.board[coordKey(neighbour)]) ||
-      coordKey(neighbour) === coordKey(BABEL_COORD)
-    );
-  });
-}
 
 export function currentPlayer(state: GameState): PlayerId {
   return state.order[state.currentPlayerIndex] as PlayerId;
@@ -37,12 +18,12 @@ export function currentPlayer(state: GameState): PlayerId {
 
 /**
  * Resolve a completed vote. Majority wins; a tie is broken by a seeded coin
- * flip so that the result is deterministic and replays identically.
+ * flip so the result is deterministic and replays identically. See RD-005.
  */
 function resolveVote(
   state: GameState,
   vote: PendingVote,
-): { state: GameState; events: GameEvent[]; choice: number } {
+): { state: GameState; events: GameEvent[] } {
   const tally = vote.options.map(
     (_, i) => Object.values(vote.votes).filter((v) => v === i).length,
   );
@@ -68,7 +49,6 @@ function resolveVote(
         byCoinFlip,
       },
     ],
-    choice,
   };
 }
 
@@ -92,11 +72,23 @@ function endTurn(state: GameState): { state: GameState; events: GameEvent[] } {
     events.push({ type: 'roundStarted', round });
   }
 
-  const [terrain, rng] = drawTerrain(state.rng);
+  const nextPlayer = state.order[turnIndex] as PlayerId;
+  const { draw, rng, discarded } = drawPlaceableTile(state.board, state.rng);
+
+  for (const tile of discarded) {
+    events.push({
+      type: 'tileDiscarded',
+      player: nextPlayer,
+      terrain: tile.terrain,
+      river: tile.river,
+      reason: 'noLegalPlacement',
+    });
+  }
   events.push({
     type: 'tileDrawn',
-    player: state.order[turnIndex] as PlayerId,
-    terrain,
+    player: nextPlayer,
+    terrain: draw.terrain,
+    river: draw.river,
   });
 
   return {
@@ -106,7 +98,7 @@ function endTurn(state: GameState): { state: GameState; events: GameEvent[] } {
       firstPlayerIndex,
       currentPlayerIndex: turnIndex,
       turnStep: 'place',
-      drawnTile: terrain,
+      drawnTile: draw,
       rng,
     },
     events,
@@ -114,12 +106,16 @@ function endTurn(state: GameState): { state: GameState; events: GameEvent[] } {
 }
 
 /**
- * The single authoritative state transition. Pure: same state plus same
+ * The single authoritative state transition. Pure: the same state plus the same
  * command always yields the same result, with all randomness drawn from the
  * serializable RNG carried in the state.
  */
 export function applyMove(state: GameState, command: Command): ApplyResult {
   const events: GameEvent[] = [];
+  const commit = (next: GameState): ApplyResult => ({
+    state: { ...next, log: [...state.log, ...events] },
+    events,
+  });
 
   switch (command.type) {
     case 'castVote': {
@@ -133,46 +129,73 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       const votes = { ...vote.votes, [command.player]: command.option };
       events.push({ type: 'voteCast', id: vote.id, player: command.player });
 
-      const everyoneVoted = state.order.every((id) => id in votes);
-      if (!everyoneVoted) {
-        const next = { ...state, pendingVote: { ...vote, votes } };
-        return { state: { ...next, log: [...state.log, ...events] }, events };
+      if (!state.order.every((id) => id in votes)) {
+        return commit({ ...state, pendingVote: { ...vote, votes } });
       }
 
       const resolved = resolveVote(state, { ...vote, votes });
       events.push(...resolved.events);
-      return {
-        state: { ...resolved.state, log: [...state.log, ...events] },
-        events,
-      };
+      return commit(resolved.state);
     }
 
     case 'placeTile': {
       if (state.pendingVote) throw new Error('a vote is open');
       if (command.player !== currentPlayer(state)) throw new Error('not your turn');
       if (state.turnStep !== 'place') throw new Error('tile already placed this turn');
-      if (!isLegalPlacement(state, command.at)) throw new Error('illegal placement');
 
-      const terrain = state.drawnTile;
-      if (!terrain) throw new Error('no tile drawn');
+      const draw = state.drawnTile;
+      if (!draw) throw new Error('no tile drawn');
+      if (!isLegalPlacement(state.board, command.at, draw, command.rotation)) {
+        throw new Error('illegal placement');
+      }
+
+      const board: Board = {
+        ...state.board,
+        [coordKey(command.at)]: { ...draw, rotation: command.rotation },
+      };
 
       events.push({
         type: 'tilePlaced',
         player: command.player,
         at: command.at,
-        terrain,
+        terrain: draw.terrain,
+        river: draw.river,
+        rotation: command.rotation,
       });
 
-      const next: GameState = {
-        ...state,
-        board: {
-          ...state.board,
-          [coordKey(command.at)]: { terrain, riverEdges: [] },
-        },
-        drawnTile: null,
-        turnStep: 'action',
-      };
-      return { state: { ...next, log: [...state.log, ...events] }, events };
+      /* GDD §6 payout, suppressed inside an occupied feature by GDD §10. */
+      const payout = placementPayout(board, state.occupiedTiles, command.at, draw);
+      const leader = state.leaders[command.player] as GameState['leaders'][string];
+      let leaders = state.leaders;
+
+      if (payout) {
+        events.push({
+          type: 'resourcesGained',
+          player: command.player,
+          resource: payout.resource,
+          amount: payout.amount,
+          source: 'placement',
+        });
+        leaders = {
+          ...state.leaders,
+          [command.player]: {
+            ...leader,
+            resources: {
+              ...leader.resources,
+              [payout.resource]: leader.resources[payout.resource] + payout.amount,
+            },
+          },
+        };
+      } else if (basePaysSomething(draw.terrain)) {
+        events.push({
+          type: 'payoutSuppressed',
+          player: command.player,
+          at: command.at,
+          reason: 'featureOccupied',
+        });
+      }
+
+      return commit({ ...state, board, leaders, drawnTile: null, turnStep: 'action' });
     }
 
     case 'takeAction': {
@@ -181,19 +204,21 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       if (state.turnStep !== 'action') throw new Error('place your tile first');
 
       events.push({ type: 'actionTaken', player: command.player, action: command.action });
-      const ended = endTurn({ ...state, log: [...state.log, ...events] });
+      const ended = endTurn(state);
       events.push(...ended.events);
-      return {
-        state: { ...ended.state, log: [...state.log, ...ended.events] },
-        events,
-      };
+      return commit(ended.state);
     }
   }
 }
 
+/** Desert and Lake never pay, so a missing payout there is not suppression. */
+function basePaysSomething(terrain: string): boolean {
+  return terrain !== 'desert' && terrain !== 'lake';
+}
+
 /**
- * Per-player view. GDD §18: Scheme hands are hidden, so a networked client
- * must never receive another Leader's hand.
+ * Per-player view. GDD §18: Scheme hands are hidden, so a networked client must
+ * never receive another Leader's hand.
  */
 export function playerView(state: GameState, viewer: PlayerId): GameState {
   const leaders = Object.fromEntries(

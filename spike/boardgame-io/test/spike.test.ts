@@ -8,9 +8,22 @@
 import { describe, expect, it } from 'vitest';
 import { Client } from 'boardgame.io/client';
 import { Local } from 'boardgame.io/multiplayer';
-import { currentPlayer, type GameState } from '@babel-game/game-core';
+import {
+  currentPlayer,
+  getLegalTilePlacements,
+  type GameState,
+} from '@babel-game/game-core';
 import { BabelSpike } from '../src/game.js';
 import { movesOf } from '../src/typed-moves.js';
+
+/** Ask the core for a legal placement and play it through the framework. */
+function placeFirstLegal(client: { getState(): { G: GameState } | null; moves: Record<string, (...args: never[]) => void> }) {
+  const G = client.getState()!.G;
+  const option = getLegalTilePlacements(G.board, G.drawnTile!)[0];
+  if (!option) throw new Error('no legal placement');
+  movesOf(client).placeTile(option.at, option.rotations[0]!);
+  return option;
+}
 
 function bootLocalTable(numPlayers: number) {
   const transport = Local();
@@ -44,7 +57,7 @@ describe('boardgame.io spike', () => {
     const before = client.getState()!.G;
     const active = currentPlayer(before);
 
-    movesOf(client).placeTile({ x: 1, y: 0 });
+    const placed = placeFirstLegal(client);
     expect(client.getState()!.G.turnStep).toBe('action');
 
     movesOf(client).takeAction('pass');
@@ -52,7 +65,7 @@ describe('boardgame.io spike', () => {
 
     expect(currentPlayer(after)).not.toBe(active);
     expect(after.turnStep).toBe('place');
-    expect(after.board['1,0']).toBeDefined();
+    expect(after.board[`${placed.at.x},${placed.at.y}`]).toBeDefined();
     client.stop();
   });
 
@@ -61,7 +74,7 @@ describe('boardgame.io spike', () => {
     client.start();
     const before = client.getState()!.G;
 
-    movesOf(client).placeTile({ x: 9, y: 9 });
+    movesOf(client).placeTile({ x: 9, y: 9 }, 0);
 
     expect(client.getState()!.G).toEqual(before);
     client.stop();
@@ -71,18 +84,13 @@ describe('boardgame.io spike', () => {
     const client = Client<GameState>({ game: BabelSpike, numPlayers: 3 });
     client.start();
 
-    const spots = [
-      { x: 1, y: 0 },
-      { x: -1, y: 0 },
-      { x: 0, y: 1 },
-    ];
-    for (const at of spots) {
+    for (let turn = 0; turn < 3; turn++) {
       const state = client.getState()!;
       /* The framework's notion of the active seat and the core's must agree. */
       expect(String(state.G.order.indexOf(currentPlayer(state.G)))).toBe(
         state.ctx.currentPlayer,
       );
-      movesOf(client).placeTile(at);
+      placeFirstLegal(client);
       movesOf(client).takeAction('pass');
     }
 

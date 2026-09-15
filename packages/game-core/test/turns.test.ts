@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyMove,
   currentPlayer,
-  isLegalPlacement,
+  getLegalTilePlacements,
   playerView,
   setupGame,
   type Command,
@@ -12,22 +12,13 @@ import {
 const run = (state: GameState, commands: readonly Command[]): GameState =>
   commands.reduce((s, c) => applyMove(s, c).state, state);
 
-/** Place the drawn tile somewhere legal, then pass. */
-function playTurn(state: GameState): GameState {
+/** Place the drawn tile at the first legal square, then pass. */
+export function playTurn(state: GameState): GameState {
   const me = currentPlayer(state);
-  const spot = [
-    { x: 0, y: -2 },
-    { x: 1, y: -1 },
-    { x: -1, y: -1 },
-    { x: 1, y: 0 },
-    { x: -1, y: 0 },
-    { x: 0, y: 1 },
-    { x: 2, y: 0 },
-    { x: 0, y: 2 },
-  ].find((c) => isLegalPlacement(state, c));
-  if (!spot) throw new Error('no legal placement in fixture');
+  const option = getLegalTilePlacements(state.board, state.drawnTile!)[0];
+  if (!option) throw new Error('no legal placement available');
   return run(state, [
-    { type: 'placeTile', player: me, at: spot },
+    { type: 'placeTile', player: me, at: option.at, rotation: option.rotations[0]! },
     { type: 'takeAction', player: me, action: 'pass' },
   ]);
 }
@@ -47,40 +38,19 @@ describe('setup', () => {
     }
   });
 
-  it('places the fixed river Farmland north of Babel', () => {
+  it('places the fixed north-south river Farmland north of Babel', () => {
     const state = setupGame(['Ada', 'Peter'], 'seed');
-    expect(state.board['0,-1']).toEqual({ terrain: 'farmland', riverEdges: ['n', 's'] });
+    expect(state.board['0,-1']).toEqual({
+      terrain: 'farmland',
+      river: 'straight',
+      rotation: 0,
+    });
   });
 
   it('is fully reproducible from its seed', () => {
-    const a = setupGame(['Ada', 'Peter', 'Rook'], 'same');
-    const b = setupGame(['Ada', 'Peter', 'Rook'], 'same');
-    expect(a).toEqual(b);
-  });
-});
-
-describe('placement legality', () => {
-  const state = setupGame(['Ada', 'Peter'], 'seed');
-
-  it('allows a tile orthogonally adjacent to Babel', () => {
-    expect(isLegalPlacement(state, { x: 1, y: 0 })).toBe(true);
-  });
-
-  it('allows a tile orthogonally adjacent to an existing tile', () => {
-    expect(isLegalPlacement(state, { x: 0, y: -2 })).toBe(true);
-  });
-
-  it('rejects a floating tile', () => {
-    expect(isLegalPlacement(state, { x: 5, y: 5 })).toBe(false);
-  });
-
-  it('rejects a diagonal-only placement', () => {
-    expect(isLegalPlacement(state, { x: 1, y: -2 })).toBe(false);
-  });
-
-  it('rejects an occupied square and the Babel square itself', () => {
-    expect(isLegalPlacement(state, { x: 0, y: -1 })).toBe(false);
-    expect(isLegalPlacement(state, { x: 0, y: 0 })).toBe(false);
+    expect(setupGame(['Ada', 'Peter', 'Rook'], 'same')).toEqual(
+      setupGame(['Ada', 'Peter', 'Rook'], 'same'),
+    );
   });
 });
 
@@ -88,15 +58,28 @@ describe('turn structure', () => {
   it('enforces draw, place, then exactly one action', () => {
     const state = setupGame(['Ada', 'Peter'], 'seed');
     const me = currentPlayer(state);
-    expect(state.turnStep).toBe('place');
-    expect(() => applyMove(state, { type: 'takeAction', player: me, action: 'pass' })).toThrow(
-      /place your tile first/,
-    );
+    const option = getLegalTilePlacements(state.board, state.drawnTile!)[0]!;
 
-    const placed = applyMove(state, { type: 'placeTile', player: me, at: { x: 1, y: 0 } }).state;
+    expect(state.turnStep).toBe('place');
+    expect(() =>
+      applyMove(state, { type: 'takeAction', player: me, action: 'pass' }),
+    ).toThrow(/place your tile first/);
+
+    const placed = applyMove(state, {
+      type: 'placeTile',
+      player: me,
+      at: option.at,
+      rotation: option.rotations[0]!,
+    }).state;
+
     expect(placed.turnStep).toBe('action');
     expect(() =>
-      applyMove(placed, { type: 'placeTile', player: me, at: { x: -1, y: 0 } }),
+      applyMove(placed, {
+        type: 'placeTile',
+        player: me,
+        at: { x: 5, y: 5 },
+        rotation: 0,
+      }),
     ).toThrow(/already placed/);
   });
 
@@ -104,25 +87,25 @@ describe('turn structure', () => {
     const state = setupGame(['Ada', 'Peter'], 'seed');
     const other = state.order.find((id) => id !== currentPlayer(state)) as string;
     expect(() =>
-      applyMove(state, { type: 'placeTile', player: other, at: { x: 1, y: 0 } }),
+      applyMove(state, { type: 'placeTile', player: other, at: { x: 1, y: 0 }, rotation: 0 }),
     ).toThrow(/not your turn/);
   });
 
-  it('draws a fresh tile for each player at the start of their turn', () => {
-    let state = setupGame(['Ada', 'Peter'], 'seed');
-    expect(state.drawnTile).not.toBeNull();
-    state = playTurn(state);
-    expect(state.drawnTile).not.toBeNull();
-    expect(state.turnStep).toBe('place');
+  it('rejects an illegal placement', () => {
+    const state = setupGame(['Ada', 'Peter'], 'seed');
+    const me = currentPlayer(state);
+    expect(() =>
+      applyMove(state, { type: 'placeTile', player: me, at: { x: 9, y: 9 }, rotation: 0 }),
+    ).toThrow(/illegal placement/);
   });
 
   it('runs the Heaven Phase and rotates first player at the round boundary', () => {
     let state = setupGame(['Ada', 'Peter', 'Rook'], 'seed');
-    const firstPlayerAtStart = state.firstPlayerIndex;
+    const firstAtStart = state.firstPlayerIndex;
     for (let i = 0; i < 3; i++) state = playTurn(state);
 
     expect(state.round).toBe(2);
-    expect(state.firstPlayerIndex).toBe((firstPlayerAtStart + 1) % 3);
+    expect(state.firstPlayerIndex).toBe((firstAtStart + 1) % 3);
     expect(state.currentPlayerIndex).toBe(state.firstPlayerIndex);
     expect(state.log.some((e) => e.type === 'heavenPhase')).toBe(true);
   });
@@ -137,13 +120,21 @@ describe('turn structure', () => {
     expect(new Set(seen).size).toBe(4);
     expect(state.round).toBe(2);
   });
+
+  it('always offers the next Leader a placeable tile', () => {
+    let state = setupGame(['Ada', 'Peter'], 'long-game');
+    for (let i = 0; i < 30; i++) {
+      expect(getLegalTilePlacements(state.board, state.drawnTile!).length).toBeGreaterThan(0);
+      state = playTurn(state);
+    }
+  });
 });
 
 describe('determinism', () => {
   it('replays identically from the same seed and command sequence', () => {
     const play = () => {
       let state = setupGame(['Ada', 'Peter'], 'replay-seed');
-      for (let i = 0; i < 6; i++) state = playTurn(state);
+      for (let i = 0; i < 8; i++) state = playTurn(state);
       return state;
     };
     expect(play()).toEqual(play());
@@ -151,7 +142,7 @@ describe('determinism', () => {
 
   it('keeps state JSON-serializable for a future server', () => {
     let state = setupGame(['Ada', 'Peter'], 'seed');
-    for (let i = 0; i < 4; i++) state = playTurn(state);
+    for (let i = 0; i < 6; i++) state = playTurn(state);
     expect(JSON.parse(JSON.stringify(state))).toEqual(state);
   });
 });

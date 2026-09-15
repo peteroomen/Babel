@@ -1,0 +1,42 @@
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f7f2ea;
+  font-family: system-ui, sans-serif;
+}
+
+button {
+  font: inherit;
+  padding: 4px 10px;
+  border: 1px solid #00000033;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Board beside the panels on a desktop; stacked on a phone, where a squeezed
+   two-column grid would crush the board to a few pixels wide. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
