@@ -21,6 +21,7 @@ import {
   SERAPH_CORE,
   TERRAIN_FILL,
   TERRAIN_IMAGE,
+  WALL_STROKE,
 } from './theme.js';
 
 const CELL = 64;
@@ -71,6 +72,10 @@ type Props = {
   /** Squares offered while the Leader is choosing where to build. */
   buildSites?: readonly Coord[];
   onBuildSite?: ((at: Coord) => void) | undefined;
+  /** Edges offered while the Leader is choosing where to build Walls. */
+  wallEdges?: readonly { a: Coord; b: Coord }[];
+  onWallEdge?: ((edge: { a: Coord; b: Coord }) => void) | undefined;
+  chosenWalls?: readonly string[];
   /** Squares offered while the table is siting a Beacon. */
   beaconSites?: readonly Coord[];
   onBeaconSite?: ((at: Coord) => void) | undefined;
@@ -124,6 +129,9 @@ export function Board({
   onSelect,
   buildSites = [],
   onBuildSite,
+  wallEdges = [],
+  onWallEdge,
+  chosenWalls = [],
   beaconSites = [],
   onBeaconSite,
   onHost,
@@ -200,11 +208,11 @@ export function Board({
         return (
           <g key={`b-${key}`} transform={`translate(${left} ${top})`}>
             <rect
-              x={CELL * 0.28}
-              y={CELL * 0.28}
-              width={CELL * 0.44}
-              height={CELL * 0.44}
-              rx={5}
+              x={building.type === 'tower' ? CELL * 0.33 : CELL * 0.28}
+              y={building.type === 'tower' ? CELL * 0.2 : CELL * 0.28}
+              width={building.type === 'tower' ? CELL * 0.34 : CELL * 0.44}
+              height={building.type === 'tower' ? CELL * 0.6 : CELL * 0.44}
+              rx={building.type === 'tower' ? 3 : 5}
               fill={LEADER_COLOUR[seat % LEADER_COLOUR.length]}
               stroke="#fffdf8"
               strokeWidth={2}
@@ -243,6 +251,54 @@ export function Board({
               strokeWidth={3}
               strokeDasharray="6 3"
             />
+          </g>
+        );
+      })}
+
+      {/* Walls sit on the edge between two tiles */}
+      {[
+        ...state.walls.map((w) => ({ wall: w, built: true })),
+        ...wallEdges.map((w) => ({ wall: w, built: false })),
+      ].map(({ wall, built }) => {
+        const key = `${coordKey(wall.a)}|${coordKey(wall.b)}`;
+        const from = px(wall.a);
+        const to = px(wall.b);
+        /* Midpoint of the shared edge, drawn perpendicular to the join. */
+        const mx = (from.x + to.x) / 2 + CELL / 2;
+        const my = (from.y + to.y) / 2 + CELL / 2;
+        const vertical = wall.a.x !== wall.b.x;
+        const long = CELL * 0.84;
+        const chosen = chosenWalls.includes(key);
+        if (!built && !onWallEdge) return null;
+
+        const width = vertical ? 16 : long;
+        const height = vertical ? long : 16;
+        return (
+          <g key={`wall-${key}-${built ? 'b' : 'o'}`}>
+            <line
+              x1={vertical ? mx : mx - long / 2}
+              y1={vertical ? my - long / 2 : my}
+              x2={vertical ? mx : mx + long / 2}
+              y2={vertical ? my + long / 2 : my}
+              stroke={built || chosen ? WALL_STROKE : '#00000038'}
+              strokeWidth={built || chosen ? 7 : 5}
+              strokeLinecap="round"
+              strokeDasharray={built || chosen ? '9 3' : '3 4'}
+              pointerEvents="none"
+            />
+            {/* A rectangle, not the line itself, so the tap target is real —
+                a 5px stroke is far too small to hit on a phone. */}
+            {!built && (
+              <rect
+                x={mx - width / 2}
+                y={my - height / 2}
+                width={width}
+                height={height}
+                fill="transparent"
+                onClick={() => onWallEdge?.(wall)}
+                style={{ cursor: 'pointer' }}
+              />
+            )}
           </g>
         );
       })}

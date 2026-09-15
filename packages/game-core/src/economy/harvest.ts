@@ -1,4 +1,4 @@
-import { BUILDINGS, type ResourceType } from '@babel-game/game-data';
+import { BUILDINGS, isHarvester, type ResourceType } from '@babel-game/game-data';
 import { buildingsInFeature, type Buildings } from '../buildings/index.js';
 import { isFeatureOccupied } from '../features/index.js';
 import type { Coord } from '../map/edges.js';
@@ -51,6 +51,8 @@ export function resolveHarvest(
   const owners = new Set<PlayerId>();
   for (const { building } of buildingsInFeature(boardAfterPlacement, buildings, at)) {
     if (building.owner === placer) continue;
+    /* GDD §16: a Tower is defensive, so it never pays out. */
+    if (!isHarvester(building.type)) continue;
     if (BUILDINGS[building.type].resource !== base.resource) continue;
     owners.add(building.owner);
   }

@@ -1,12 +1,13 @@
 import type {
-  BuildingType,
   HostKind,
+  StructureType,
   ResourceType,
   RiverShape,
   Stage,
   TerrainType,
 } from '@babel-game/game-data';
 import type { Coord, Rotation } from '../map/edges.js';
+import type { WallEdge } from '../walls/index.js';
 import type { RngState } from '../rng/index.js';
 
 export type PlayerId = string;
@@ -28,7 +29,7 @@ export type PlacedTile = TileDraw & { readonly rotation: Rotation };
 
 /** GDD §3: land is communal, buildings are player-owned, one per land tile. */
 export type Building = {
-  readonly type: BuildingType;
+  readonly type: StructureType;
   readonly owner: PlayerId;
 };
 
@@ -97,6 +98,8 @@ export type GameState = {
   readonly buildings: Readonly<Record<string, Building>>;
   readonly babel: BabelState;
   /** GDD §13: where Heaven descends into the world. */
+  /** GDD §17: temporary barricades on edges between land tiles. */
+  readonly walls: readonly WallEdge[];
   readonly beacons: readonly Coord[];
   readonly hosts: readonly Host[];
   readonly pendingBeacon: { readonly sites: readonly Coord[] } | null;
@@ -165,7 +168,7 @@ export type GameEvent =
       readonly type: 'buildingConstructed';
       readonly player: PlayerId;
       readonly at: Coord;
-      readonly building: BuildingType;
+      readonly building: StructureType;
     }
   | {
       readonly type: 'babelPieceBuilt';
@@ -231,6 +234,27 @@ export type GameEvent =
     }
   | { readonly type: 'hostKilled'; readonly player: PlayerId; readonly id: string }
   | { readonly type: 'mustered'; readonly player: PlayerId; readonly army: number }
+  | {
+      readonly type: 'wallsBuilt';
+      readonly player: PlayerId;
+      readonly edges: readonly WallEdge[];
+    }
+  /** GDD §17: crossing costs the Host its movement and destroys the Wall. */
+  | {
+      readonly type: 'wallBroken';
+      readonly hostId: string;
+      readonly edge: WallEdge;
+    }
+  /** GDD §16: a Tower in an occupied feature adds one targeted support die. */
+  | {
+      readonly type: 'towerSupport';
+      readonly owner: PlayerId;
+      readonly at: Coord;
+      readonly roll: number;
+      readonly defence: number;
+      readonly hit: boolean;
+      readonly targetId: string | null;
+    }
   | { readonly type: 'voteOpened'; readonly id: string; readonly question: string }
   | { readonly type: 'voteCast'; readonly id: string; readonly player: PlayerId }
   | {
@@ -252,7 +276,13 @@ export type Command =
       readonly type: 'buildHarvester';
       readonly player: PlayerId;
       readonly at: Coord;
-      readonly building: BuildingType;
+      readonly building: StructureType;
+    }
+  | { readonly type: 'buildTower'; readonly player: PlayerId; readonly at: Coord }
+  | {
+      readonly type: 'buildWalls';
+      readonly player: PlayerId;
+      readonly edges: readonly WallEdge[];
     }
   | { readonly type: 'buildBabel'; readonly player: PlayerId }
   | {

@@ -25,13 +25,15 @@ import { BabelPanel, LeaderPanel, LogPanel } from './Panels.js';
 import { BUILDING_LABEL, HOST_LABEL, RESOURCE_LABEL, TERRAIN_LABEL, INK } from './theme.js';
 
 /** Actions that arrive in later milestones, shown so the gap stays visible. */
-const DEFERRED_ACTIONS = [
-  ['Walls', 'Milestone 4'],
-  ['Scheme', 'Milestone 5'],
-] as const;
+const DEFERRED_ACTIONS = [['Scheme', 'Milestone 5']] as const;
 
 const NAMES = ['Ada', 'Peter', 'Rook', 'Vex'];
-type Mode = { kind: 'idle' } | { kind: 'build' } | { kind: 'barter' };
+type Mode =
+  | { kind: 'idle' }
+  | { kind: 'build' }
+  | { kind: 'tower' }
+  | { kind: 'walls' }
+  | { kind: 'barter' };
 
 const panel: React.CSSProperties = {
   marginTop: 12,
@@ -50,6 +52,7 @@ export function App() {
   const [mode, setMode] = useState<Mode>({ kind: 'idle' });
   const [spend, setSpend] = useState<ResourceType[]>([]);
   const [hits, setHits] = useState<Record<string, number>>({});
+  const [wallPicks, setWallPicks] = useState<{ a: Coord; b: Coord }[]>([]);
 
   const options = useMemo(
     () => (state.drawnTile ? getLegalTilePlacements(state.board, state.drawnTile) : []),
@@ -70,6 +73,8 @@ export function App() {
 
   const buildAction = legal.find((a) => a.type === 'buildHarvester');
   const babelAction = legal.find((a) => a.type === 'buildBabel');
+  const towerAction = legal.find((a) => a.type === 'buildTower');
+  const wallsAction = legal.find((a) => a.type === 'buildWalls');
   const attackAction = legal.find((a) => a.type === 'attack');
   const musterAction = legal.find((a) => a.type === 'muster');
   const canBarter = legal.some((a) => a.type === 'barter');
@@ -80,6 +85,7 @@ export function App() {
     setMode({ kind: 'idle' });
     setSpend([]);
     setHits({});
+    setWallPicks([]);
   };
 
   const dispatch = (command: Command) => {
@@ -155,9 +161,17 @@ export function App() {
               setRotationIndex(0);
             }}
             buildSites={
-              mode.kind === 'build' && buildAction ? buildAction.sites.map((s) => s.at) : []
+              mode.kind === 'build' && buildAction
+                ? buildAction.sites.map((s) => s.at)
+                : mode.kind === 'tower' && towerAction
+                  ? towerAction.sites
+                  : []
             }
             onBuildSite={(at) => {
+              if (mode.kind === 'tower') {
+                dispatch({ type: 'buildTower', player: active, at });
+                return;
+              }
               const site = buildAction?.sites.find((s) => coordKey(s.at) === coordKey(at));
               if (site) {
                 dispatch({
@@ -168,6 +182,26 @@ export function App() {
                 });
               }
             }}
+            wallEdges={mode.kind === 'walls' && wallsAction ? wallsAction.edges : []}
+            onWallEdge={
+              mode.kind === 'walls'
+                ? (edge) =>
+                    setWallPicks((picks) => {
+                      const key = `${edge.a.x},${edge.a.y}|${edge.b.x},${edge.b.y}`;
+                      const already = picks.some(
+                        (p) => `${p.a.x},${p.a.y}|${p.b.x},${p.b.y}` === key,
+                      );
+                      if (already) {
+                        return picks.filter(
+                          (p) => `${p.a.x},${p.a.y}|${p.b.x},${p.b.y}` !== key,
+                        );
+                      }
+                      const cap = wallsAction?.segments ?? 2;
+                      return picks.length >= cap ? picks : [...picks, edge];
+                    })
+                : undefined
+            }
+            chosenWalls={wallPicks.map((p) => `${p.a.x},${p.a.y}|${p.b.x},${p.b.y}`)}
             beaconSites={state.pendingBeacon?.sites ?? []}
             onBeaconSite={(at) => dispatch({ type: 'placeBeacon', player: active, at })}
             onHost={state.pendingAttack ? tapHost : undefined}
@@ -328,6 +362,28 @@ export function App() {
                     Babel
                   </button>
                   <button
+                    disabled={!towerAction}
+                    title={
+                      towerAction
+                        ? '2 Wood + 1 Metal. One Tower per connected feature.'
+                        : 'Cannot afford, or every feature is already defended'
+                    }
+                    onClick={() => setMode({ kind: 'tower' })}
+                  >
+                    Tower
+                  </button>
+                  <button
+                    disabled={!wallsAction}
+                    title={
+                      wallsAction
+                        ? `1 Wood for ${wallsAction.segments} Wall segment(s)`
+                        : 'Cannot afford, or nowhere to build'
+                    }
+                    onClick={() => setMode({ kind: 'walls' })}
+                  >
+                    Walls
+                  </button>
+                  <button
                     disabled={!attackAction}
                     title={
                       attackAction
@@ -372,6 +428,33 @@ export function App() {
                     .map((t) => BUILDING_LABEL[t as BuildingType])
                     .join(', ')}
                   . <button onClick={() => setMode({ kind: 'idle' })}>Cancel</button>
+                </div>
+              )}
+
+              {mode.kind === 'tower' && towerAction && (
+                <div style={{ fontSize: 13 }}>
+                  Choose one of {towerAction.sites.length} highlighted tiles. A Tower adds one
+                  support die whenever any Leader Attacks into its feature — but only while
+                  that feature is occupied.{' '}
+                  <button onClick={() => setMode({ kind: 'idle' })}>Cancel</button>
+                </div>
+              )}
+
+              {mode.kind === 'walls' && wallsAction && (
+                <div style={{ fontSize: 13 }}>
+                  Click edges between tiles to place {wallsAction.segments} Wall segment
+                  {wallsAction.segments === 1 ? '' : 's'} ({wallPicks.length}/
+                  {wallsAction.segments} chosen). A Host crossing one destroys it and spends
+                  its whole movement doing so.{' '}
+                  <button
+                    disabled={wallPicks.length === 0}
+                    onClick={() =>
+                      dispatch({ type: 'buildWalls', player: active, edges: wallPicks })
+                    }
+                  >
+                    Build walls
+                  </button>{' '}
+                  <button onClick={() => reset()}>Cancel</button>
                 </div>
               )}
 

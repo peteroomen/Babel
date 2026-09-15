@@ -3,10 +3,19 @@ import {
   MAX_ARMY,
   MUSTER_COST,
   RESOURCE_TYPES,
+  TOWER_COST,
+  WALL_COST,
+  WALL_SEGMENTS,
   type ResourceType,
 } from '@babel-game/game-data';
 import { canBuildBabel, pieceCost } from '../babel/index.js';
-import { canAfford, getLegalBuildSites, type BuildingType } from '../buildings/index.js';
+import {
+  canAfford,
+  getLegalBuildSites,
+  getLegalTowerSites,
+  type BuildingType,
+} from '../buildings/index.js';
+import { getLegalWallEdges, type WallEdge } from '../walls/index.js';
 import { hostDefence } from '../heaven/beacons.js';
 import { isFoundationOccupied } from '../heaven/hosts.js';
 import type { Coord } from '../map/edges.js';
@@ -20,6 +29,13 @@ export type LegalAction =
       readonly sites: readonly { at: Coord; type: BuildingType }[];
     }
   | { readonly type: 'barter' }
+  | { readonly type: 'buildTower'; readonly sites: readonly Coord[] }
+  | {
+      readonly type: 'buildWalls';
+      readonly edges: readonly WallEdge[];
+      /** How many segments this action places. GDD §17, capped by the board. */
+      readonly segments: number;
+    }
   | { readonly type: 'muster'; readonly army: number }
   | { readonly type: 'attack'; readonly dice: number; readonly defence: number };
 
@@ -44,6 +60,24 @@ export function getLegalActions(state: GameState, playerId: PlayerId): LegalActi
 
   const sites = getLegalBuildSites(state.board, state.buildings, leader);
   if (sites.length > 0) actions.push({ type: 'buildHarvester', sites });
+
+  /* GDD §16: one Tower per connected feature, on any land tile. */
+  if (canAfford(leader, TOWER_COST)) {
+    const towerSites = getLegalTowerSites(state.board, state.buildings, leader);
+    if (towerSites.length > 0) actions.push({ type: 'buildTower', sites: towerSites });
+  }
+
+  /* GDD §17: 1 Wood places two Wall segments on edges between land tiles. */
+  if (canAfford(leader, WALL_COST)) {
+    const edges = getLegalWallEdges(state.board, state.walls);
+    if (edges.length > 0) {
+      actions.push({
+        type: 'buildWalls',
+        edges,
+        segments: Math.min(WALL_SEGMENTS, edges.length),
+      });
+    }
+  }
 
   if (!isFoundationOccupied(state.hosts) && canBuildBabel(leader, state.stage)) {
     actions.push({ type: 'buildBabel', cost: pieceCost(state.stage) });

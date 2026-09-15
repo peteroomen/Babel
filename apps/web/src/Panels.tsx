@@ -140,6 +140,16 @@ function describe(event: GameEvent, state: GameState): string {
       return `${who(event.player)} destroys Host ${event.id}`;
     case 'mustered':
       return `${who(event.player)} musters — Army now ${event.army}`;
+    case 'wallsBuilt':
+      return `${who(event.player)} throws up ${event.edges.length} Wall segment${
+        event.edges.length === 1 ? '' : 's'
+      }`;
+    case 'wallBroken':
+      return `A Wall is smashed down — the Host spent its movement on it`;
+    case 'towerSupport':
+      return event.hit
+        ? `Tower at (${event.at.x}, ${event.at.y}) fires — ${event.roll} + 2 vs ${event.defence}, hit`
+        : `Tower at (${event.at.x}, ${event.at.y}) fires — ${event.roll} + 2 vs ${event.defence}, misses`;
     case 'humanityWins':
       return `Babel is complete. Humanity survives. Top Prestige: ${event.topPrestige
         .map(who)

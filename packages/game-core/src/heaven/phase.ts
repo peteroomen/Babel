@@ -1,8 +1,12 @@
+import { HOSTS } from '@babel-game/game-data';
 import { coordKey, type Coord } from '../map/edges.js';
+import { hasWallBetween, removeWallBetween, canonicalWall } from '../walls/index.js';
+import { nextInt } from '../rng/index.js';
+import { stepOptions } from './path.js';
 import { BABEL_COORD } from '../state/babel.js';
 import type { GameEvent, GameState, Host } from '../state/types.js';
 import { getLegalBeaconSites, requiredBeacons } from './beacons.js';
-import { defaultRoute, hostAtBabel, isLegalRoute, newHost, rollHostKind } from './hosts.js';
+import { hostAtBabel, newHost, rollHostKind } from './hosts.js';
 
 export type HeavenPlan = Readonly<Record<string, readonly Coord[]>>;
 
@@ -25,27 +29,56 @@ export function resolveHeavenPhase(
   const events: GameEvent[] = [{ type: 'heavenPhase', round: state.round }];
   let rng = state.rng;
 
-  /* 1. Movement. */
+  /* 1. Movement, one point at a time so Walls can interrupt it. */
   const moved: Host[] = [];
   const arrivals: Host[] = [];
+  let walls = [...state.walls];
+
   for (const host of state.hosts) {
-    const fallback = defaultRoute(state.board, host, rng);
-    rng = fallback.rng;
-
-    const override = plan[host.id];
-    const route =
-      override && isLegalRoute(state.board, host, override) ? override : fallback.route;
-
     let current = host;
-    for (const step of route) {
+    const preferred = [...(plan[host.id] ?? [])];
+
+    for (let point = 0; point < HOSTS[host.kind].movement; point++) {
+      const options = stepOptions(state.board, current.at);
+      if (options.length === 0) break;
+
+      /* Take the next square the players asked for, if it is a legal step. */
+      const wanted = preferred.shift();
+      const chosen =
+        wanted && options.some((option) => coordKey(option) === coordKey(wanted))
+          ? wanted
+          : (() => {
+              const [pick, next] = nextInt(rng, options.length);
+              rng = next;
+              return options[pick] as Coord;
+            })();
+
+      /**
+       * GDD §17: a Host crossing a Wall destroys it, spends that movement, and
+       * stays where it is. A Movement-1 Host therefore loses the whole phase at
+       * a Wall; a Movement-2 Seraph breaks it and crosses with its second.
+       */
+      if (hasWallBetween(walls, current.at, chosen)) {
+        events.push({
+          type: 'wallBroken',
+          hostId: host.id,
+          edge: canonicalWall(current.at, chosen),
+        });
+        walls = removeWallBetween(walls, current.at, chosen);
+        continue;
+      }
+
       events.push({
         type: 'hostMoved',
         id: host.id,
         from: current.at,
-        to: step,
-        hadChoice: fallback.hadChoice,
+        to: chosen,
+        hadChoice: options.length > 1,
       });
-      current = { ...current, at: step };
+      current = { ...current, at: chosen };
+
+      /* Reaching Babel ends this Host's movement for the phase. */
+      if (coordKey(current.at) === coordKey(BABEL_COORD)) break;
     }
 
     if (coordKey(current.at) === coordKey(BABEL_COORD)) arrivals.push(current);
@@ -84,6 +117,7 @@ export function resolveHeavenPhase(
       state: {
         ...state,
         rng,
+        walls,
         babel: { stack },
         hosts: [...survivors, host],
         phase: 'gameOver',
@@ -111,6 +145,7 @@ export function resolveHeavenPhase(
     state: {
       ...state,
       rng,
+      walls,
       hostSeq,
       babel: { stack },
       hosts: [...survivors, ...spawned],

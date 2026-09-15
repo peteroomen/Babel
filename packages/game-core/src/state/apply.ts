@@ -1,11 +1,19 @@
 import {
   BARTER_COST,
-  BUILDINGS,
   BUILDING_PRESTIGE,
+  COMBAT_DIE_BONUS,
   COMBAT_PRESTIGE,
   MAX_ARMY,
   MUSTER_COST,
   RESOURCE_TYPES,
+  TOWER,
+  TOWER_COST,
+  TOWER_PRESTIGE,
+  WALL_COST,
+  WALL_PRESTIGE,
+  WALL_SEGMENTS,
+  isHarvester,
+  structureCost,
   type ResourceType,
 } from '@babel-game/game-data';
 import { applyHit, rollAttack, validateAssignments } from '../combat/index.js';
@@ -19,7 +27,20 @@ import {
   pieceCost,
   stageAfterPiece,
 } from '../babel/index.js';
-import { canAfford, canBuildHarvester, paySpecific } from '../buildings/index.js';
+import {
+  canAfford,
+  canBuildHarvester,
+  canBuildTower,
+  paySpecific,
+} from '../buildings/index.js';
+import { getConnectedFeature } from '../features/index.js';
+import { rollD6 } from '../rng/index.js';
+import {
+  canonicalWall,
+  getLegalWallEdges,
+  wallEdgeKey,
+  type WallEdge,
+} from '../walls/index.js';
 import { resolveHarvest } from '../economy/harvest.js';
 import { placementPayout } from '../economy/payout.js';
 import { coordKey } from '../map/edges.js';
@@ -320,6 +341,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
     case 'buildHarvester': {
       requireActionPhase(state, command.player);
       const leader = leaderOf(state, command.player);
+      if (!isHarvester(command.building)) throw new Error('use buildTower for a Tower');
       const rejection = canBuildHarvester(
         state.board,
         state.buildings,
@@ -354,7 +376,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
             ...state.leaders,
             [command.player]: {
               ...leader,
-              resources: paySpecific(leader, BUILDINGS[command.building].cost),
+              resources: paySpecific(leader, structureCost(command.building)),
               prestige: leader.prestige + BUILDING_PRESTIGE,
             },
           },
@@ -463,6 +485,97 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       );
     }
 
+    case 'buildTower': {
+      requireActionPhase(state, command.player);
+      const leader = leaderOf(state, command.player);
+      const rejection = canBuildTower(state.board, state.buildings, leader, command.at);
+      if (rejection) throw new Error(`cannot build a Tower: ${rejection}`);
+
+      events.push({
+        type: 'buildingConstructed',
+        player: command.player,
+        at: command.at,
+        building: TOWER,
+      });
+      /* GDD §20: +1 Prestige for building a Tower. */
+      events.push({
+        type: 'prestigeGained',
+        player: command.player,
+        amount: TOWER_PRESTIGE,
+        source: 'tower',
+      });
+
+      return finishAction(
+        {
+          ...state,
+          buildings: {
+            ...state.buildings,
+            [coordKey(command.at)]: { type: TOWER, owner: command.player },
+          },
+          leaders: {
+            ...state.leaders,
+            [command.player]: {
+              ...leader,
+              resources: paySpecific(leader, TOWER_COST),
+              prestige: leader.prestige + TOWER_PRESTIGE,
+            },
+          },
+        },
+        'tower',
+      );
+    }
+
+    case 'buildWalls': {
+      requireActionPhase(state, command.player);
+      const leader = leaderOf(state, command.player);
+      if (!canAfford(leader, WALL_COST)) throw new Error('cannot afford Walls');
+
+      /* GDD §17: one Build action places two segments. RD-010 allows fewer only
+         when the board offers fewer legal edges. */
+      const available = getLegalWallEdges(state.board, state.walls);
+      const cap = Math.min(WALL_SEGMENTS, available.length);
+      if (command.edges.length < 1 || command.edges.length > cap) {
+        throw new Error(`a Build Walls action places ${cap} segment(s)`);
+      }
+
+      const legal = new Set(available.map(wallEdgeKey));
+      const chosen: WallEdge[] = [];
+      const seen = new Set<string>();
+      for (const edge of command.edges) {
+        const wall = canonicalWall(edge.a, edge.b);
+        const key = wallEdgeKey(wall);
+        if (!legal.has(key)) throw new Error('illegal Wall edge');
+        if (seen.has(key)) throw new Error('duplicate Wall edge');
+        seen.add(key);
+        chosen.push(wall);
+      }
+
+      events.push({ type: 'wallsBuilt', player: command.player, edges: chosen });
+      /* GDD §17: a Build Walls action gives +1 Prestige. */
+      events.push({
+        type: 'prestigeGained',
+        player: command.player,
+        amount: WALL_PRESTIGE,
+        source: 'walls',
+      });
+
+      return finishAction(
+        {
+          ...state,
+          walls: [...state.walls, ...chosen],
+          leaders: {
+            ...state.leaders,
+            [command.player]: {
+              ...leader,
+              resources: paySpecific(leader, WALL_COST),
+              prestige: leader.prestige + WALL_PRESTIGE,
+            },
+          },
+        },
+        'walls',
+      );
+    }
+
     case 'muster': {
       requireActionPhase(state, command.player);
       const leader = leaderOf(state, command.player);
@@ -491,9 +604,82 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       requireActionPhase(state, command.player);
       if (state.hosts.length === 0) throw new Error('there are no Hosts to attack');
 
-      const leader = leaderOf(state, command.player);
       const defence = hostDefence(state.order.length, state.stage);
-      const { result, rng } = rollAttack(state.rng, leader.army, defence);
+      let rng = state.rng;
+      let hosts = [...state.hosts];
+      let leaders = state.leaders;
+      let combatPrestige = 0;
+
+      /**
+       * GDD §16: Towers do not fire during Heaven's turn. When any player
+       * Attacks, every *occupied* feature holding a Tower contributes one
+       * support die, committed to a Host in that same feature, and these
+       * resolve before Army dice.
+       *
+       * RD-011: canon does not say who picks the Host a support die is
+       * committed to. It targets the lowest-id Host in that feature, so the
+       * result is deterministic and the attacker is not handed an extra
+       * micro-decision every Attack.
+       */
+      for (const [key, building] of Object.entries(state.buildings)) {
+        if (building.type !== TOWER) continue;
+        const [tx, ty] = key.split(',').map(Number) as [number, number];
+        const feature = new Set(getConnectedFeature(state.board, { x: tx, y: ty }));
+        const inFeature = hosts
+          .filter((host) => feature.has(coordKey(host.at)))
+          .sort((l, r) => l.id.localeCompare(r.id));
+        if (inFeature.length === 0) continue;
+
+        const [roll, nextRng] = rollD6(rng);
+        rng = nextRng;
+        const hit = roll + COMBAT_DIE_BONUS >= defence;
+        const target = inFeature[0] as GameState['hosts'][number];
+
+        events.push({
+          type: 'towerSupport',
+          owner: building.owner,
+          at: { x: tx, y: ty },
+          roll,
+          defence,
+          hit,
+          targetId: target.id,
+        });
+        if (!hit) continue;
+
+        const outcome = applyHit(target);
+        const index = hosts.findIndex((host) => host.id === target.id);
+        if (outcome.killed) {
+          events.push({ type: 'hostKilled', player: command.player, id: target.id });
+          hosts.splice(index, 1);
+          /* The attacker still earns the normal kill Prestige. GDD §16. */
+          combatPrestige += COMBAT_PRESTIGE;
+        } else {
+          events.push({
+            type: 'hostHit',
+            player: command.player,
+            id: target.id,
+            shieldBroken: outcome.shieldBroken,
+          });
+          hosts[index] = outcome.host as GameState['hosts'][number];
+        }
+
+        /* GDD §16: the Tower's owner earns Prestige for a successful hit. */
+        const owner = leaders[building.owner] as GameState['leaders'][string];
+        events.push({
+          type: 'prestigeGained',
+          player: building.owner,
+          amount: TOWER_PRESTIGE,
+          source: 'tower',
+        });
+        leaders = {
+          ...leaders,
+          [building.owner]: { ...owner, prestige: owner.prestige + TOWER_PRESTIGE },
+        };
+      }
+
+      const leader = leaders[command.player] as GameState['leaders'][string];
+      const { result, rng: afterArmy } = rollAttack(rng, leader.army, defence);
+      rng = afterArmy;
 
       events.push({
         type: 'attackRolled',
@@ -503,13 +689,33 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         successes: result.successes,
       });
 
-      /* Nothing to assign, so the action is over. */
-      if (result.successes === 0) return finishAction({ ...state, rng }, 'attack');
+      if (combatPrestige > 0) {
+        events.push({
+          type: 'prestigeGained',
+          player: command.player,
+          amount: combatPrestige,
+          source: 'combat',
+        });
+      }
+
+      const withCombat: GameState = {
+        ...state,
+        rng,
+        hosts,
+        leaders: {
+          ...leaders,
+          [command.player]: { ...leader, prestige: leader.prestige + combatPrestige },
+        },
+      };
+
+      /* Nothing left to assign, so the action is over. */
+      if (result.successes === 0 || hosts.length === 0) {
+        return finishAction(withCombat, 'attack');
+      }
 
       /* GDD §15: successful dice are assigned among Hosts after rolling. */
       return commit({
-        ...state,
-        rng,
+        ...withCombat,
         pendingAttack: {
           player: command.player,
           rolls: result.rolls,

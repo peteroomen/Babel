@@ -78,14 +78,17 @@ npm run dev       # hot-seat app
   that rivers permanently reshape; Babel strikes and the two-step Foundation
   breach; Army dice, Muster, and Attack with hit assignment. **The game can now
   be won or lost.**
-- **Milestone 4 — defensive geography.** Next: Towers and their support dice,
-  and Walls as temporary barricades that consume Host movement.
+- **Milestone 4 — defensive geography.** Complete. Towers contributing one
+  targeted support die per occupied feature during any Leader's Attack, and
+  Walls as temporary barricades that a Host destroys by spending its movement.
+- **Milestone 5 — the compact card layer.** Next: the three Scheme effects and
+  the six escalating Confusion effects.
 
 Interpretations of under-specified canon are recorded in
 `docs/RULES_DECISIONS.md`.
 
 ## What is not implemented yet
 
-Build (harvesters), Babel, Attack, Muster, Barter and Pass are live. Walls and
-Towers arrive in Milestone 4, Schemes and Confusion in Milestone 5, and both
-appear disabled in the UI.
+Every action except Scheme is live: Build, Tower, Walls, Babel, Attack, Muster,
+Barter and Pass. Schemes and the Confusion deck arrive in Milestone 5, and
+Scheme appears disabled in the UI until then.

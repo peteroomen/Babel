@@ -60,6 +60,7 @@ export const BUILDING_GLYPH = {
   farmstead: 'F',
   brickworks: 'B',
   mine: 'M',
+  tower: 'T',
 } as const;
 
 export const BUILDING_LABEL = {
@@ -67,7 +68,11 @@ export const BUILDING_LABEL = {
   farmstead: 'Farmstead',
   brickworks: 'Brickworks',
   mine: 'Mine',
+  tower: 'Tower',
 } as const;
+
+/** ART_DIRECTION.md: Walls look temporary — a palisade, not castle masonry. */
+export const WALL_STROKE = '#6b4a2f';
 
 /** ART_DIRECTION.md: bright gold and ivory divine ornament. */
 export const HEAVEN_GOLD = '#d9a441';

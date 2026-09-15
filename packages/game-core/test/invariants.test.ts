@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   BABEL_PIECE_COST,
-  BUILDINGS,
   MUSTER_COST,
+  WALL_COST,
+  structureCost,
   type ResourceType,
 } from '@babel-game/game-data';
 import {
@@ -11,6 +12,7 @@ import {
   applyMove,
   coordKey,
   currentPlayer,
+  getConnectedFeature,
   getLegalActions,
   getLegalTilePlacements,
   hasRiverOn,
@@ -83,6 +85,21 @@ function playGame(seed: string, turns: number): GameState {
       case 'buildBabel':
         command = { type: 'buildBabel', player: me };
         break;
+      case 'buildTower': {
+        const at = choice.sites[roll(choice.sites.length)]!;
+        command = { type: 'buildTower', player: me, at };
+        break;
+      }
+      case 'buildWalls': {
+        /* GDD §17: one action places up to two segments. */
+        const start = roll(choice.edges.length);
+        const edges = [choice.edges[start]!];
+        if (choice.segments > 1 && choice.edges.length > 1) {
+          edges.push(choice.edges[(start + 1) % choice.edges.length]!);
+        }
+        command = { type: 'buildWalls', player: me, edges };
+        break;
+      }
       case 'muster':
         command = { type: 'muster', player: me };
         break;
@@ -167,6 +184,8 @@ describe('board invariants hold across whole games', () => {
     expect(actions).toContain('pass');
     expect(actions).toContain('build');
     expect(actions).toContain('barter');
+    expect(actions).toContain('walls');
+    expect(actions).toContain('tower');
   });
 
   it('keeps Prestige equal to the Prestige actually awarded', () => {
@@ -199,6 +218,31 @@ describe('board invariants hold across whole games', () => {
     }
   });
 
+  it('only ever holds Walls on edges between two placed land tiles', () => {
+    const state = playGame('beta', 60);
+    for (const wall of state.walls) {
+      expect(state.board[coordKey(wall.a)]).toBeDefined();
+      expect(state.board[coordKey(wall.b)]).toBeDefined();
+      /* Orthogonally adjacent, never diagonal. */
+      const dx = Math.abs(wall.a.x - wall.b.x);
+      const dy = Math.abs(wall.a.y - wall.b.y);
+      expect(dx + dy).toBe(1);
+    }
+    /* No edge is ever walled twice. */
+    const keys = state.walls.map((w) => `${coordKey(w.a)}|${coordKey(w.b)}`);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it('never defends one connected feature with two Towers', () => {
+    const state = playGame('delta', 60);
+    const towers = Object.entries(state.buildings).filter(([, b]) => b.type === 'tower');
+    const features = towers.map(([key]) => {
+      const [x, y] = key.split(',').map(Number) as [number, number];
+      return getConnectedFeature(state.board, { x, y }).join('/');
+    });
+    expect(new Set(features).size).toBe(features.length);
+  });
+
   it('has a log that fully explains every resource a Leader holds', () => {
     /* Double-entry: starting stock, plus every credit the log records, minus
        every cost it records, must reproduce the final hand exactly. */
@@ -222,13 +266,16 @@ describe('board invariants hold across whole games', () => {
           break;
         }
         case 'buildingConstructed':
-          spend(event.player, BUILDINGS[event.building].cost);
+          spend(event.player, structureCost(event.building));
           break;
         case 'babelPieceBuilt':
           spend(event.player, BABEL_PIECE_COST[event.stage]);
           break;
         case 'mustered':
           spend(event.player, MUSTER_COST);
+          break;
+        case 'wallsBuilt':
+          spend(event.player, WALL_COST);
           break;
         case 'bartered': {
           const hand = ledger[event.player] as Record<ResourceType, number>;

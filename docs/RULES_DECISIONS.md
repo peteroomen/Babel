@@ -175,3 +175,43 @@ behaviour §13 says Beacons are meant to encourage.
 that the rule is wrong. Milestone 6 telemetry should count it.
 
 **Status:** adopted 2026-09-15. Implemented in Milestone 3.
+
+---
+
+## RD-010 — A Build Walls action places fewer than two only when it must
+
+**Canon:** GDD §17. "Build action: spend 1 Wood to place 2 Wall segments on
+edges between adjacent land tiles."
+
+**Problem:** early on, or on a nearly-empty board, fewer than two legal edges
+may exist. Canon assumes two are always available.
+
+**Decision:** the action places two segments, or every legal edge if fewer than
+two exist. It still costs 1 Wood and still pays its +1 Prestige, because the
+action's scarcity is the cost, not the number of planks. The action is not
+offered at all when no legal edge exists.
+
+**Status:** adopted 2026-09-15. Implemented in Milestone 4.
+
+---
+
+## RD-011 — A Tower support die targets the lowest-id Host in its feature
+
+**Canon:** GDD §16. "For each occupied terrain feature containing a Tower, roll
+one extra Tower support die; that die is committed to a Host occupying that
+same feature."
+
+**Problem:** canon says the die is committed to *a* Host in the feature, but
+never says who chooses which. With several Hosts stacked in one feature that is
+ambiguous.
+
+**Decision:** it targets the lowest-id Host in that feature — that is, the one
+that has been on the board longest. Deterministic, replayable, and it avoids
+handing the attacker an extra micro-decision on every single Attack, on top of
+the Army dice assignment they already make.
+
+**Watch:** if play shows that choosing the Tower's target matters (holding a
+shielded Seraph rather than finishing an Ophanim, say), this should become a
+real choice in the assignment step rather than a default.
+
+**Status:** adopted 2026-09-15. Implemented in Milestone 4.

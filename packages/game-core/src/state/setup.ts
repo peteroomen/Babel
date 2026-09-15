@@ -83,6 +83,7 @@ export function setupGame(names: readonly string[], seed: string): GameState {
     leaders,
     board,
     buildings: {},
+    walls: [],
     babel: { stack: [] },
     beacons: [],
     hosts: [],

@@ -3,6 +3,7 @@ export * from './map/edges.js';
 export * from './map/placement.js';
 export * from './features/index.js';
 export * from './buildings/index.js';
+export * from './walls/index.js';
 export * from './economy/payout.js';
 export * from './economy/harvest.js';
 export * from './babel/index.js';

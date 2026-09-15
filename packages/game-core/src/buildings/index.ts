@@ -1,6 +1,8 @@
 import {
   BUILDINGS,
   BUILDING_FOR_TERRAIN,
+  TOWER,
+  TOWER_COST,
   type BuildingType,
   type ResourceType,
 } from '@babel-game/game-data';
@@ -101,5 +103,42 @@ export function getLegalBuildSites(
   });
 }
 
-export { BUILDINGS, BUILDING_FOR_TERRAIN };
+/**
+ * Whether a Leader may raise a Tower here. GDD §16: at most one Tower may
+ * defend a connected terrain feature, and GDD §3 allows one structure per tile.
+ * Unlike harvesters, a Tower does not care what the terrain is.
+ */
+export function canBuildTower(
+  board: Board,
+  buildings: Buildings,
+  leader: LeaderState,
+  at: Coord,
+): BuildRejection | 'featureAlreadyDefended' | null {
+  if (!tileAt(board, at)) return 'noTile';
+  if (buildingAt(buildings, at)) return 'tileOccupiedByBuilding';
+
+  const defended = buildingsInFeature(board, buildings, at).some(
+    ({ building }) => building.type === TOWER,
+  );
+  if (defended) return 'featureAlreadyDefended';
+
+  if (!canAfford(leader, TOWER_COST)) return 'cannotAfford';
+  return null;
+}
+
+/** Every square where this Leader could raise a Tower right now. */
+export function getLegalTowerSites(
+  board: Board,
+  buildings: Buildings,
+  leader: LeaderState,
+): Coord[] {
+  return Object.keys(board)
+    .map((key) => {
+      const [x, y] = key.split(',').map(Number) as [number, number];
+      return { x, y };
+    })
+    .filter((at) => canBuildTower(board, buildings, leader, at) === null);
+}
+
+export { BUILDINGS, BUILDING_FOR_TERRAIN, TOWER };
 export type { BuildingType };
