@@ -1,134 +1,243 @@
 # Image generation prompts
 
-Prompts for generating placeholder and production art. Grounded in
-`ART_DIRECTION.md`; the palette hex values match `apps/web/src/theme.ts` so
-generated tiles drop into the prototype without a redesign.
+One self-contained prompt per tile, ready to paste. Grounded in
+`ART_DIRECTION.md`; hex values match `apps/web/src/theme.ts` so generated art
+drops into the prototype without a redesign.
 
-Generate **one tile per request** where possible. Image models are far more
-reliable producing a single square than a labelled grid, and a sheet that comes
-back mislabelled has to be re-cut by hand anyway.
+Generate one image per request. Image models mislabel grids, and a sheet that
+comes back wrong has to be re-cut by hand anyway.
 
----
-
-## The critical constraint: rivers must align
-
-BABEL's rivers run through tile centres and connect across tile **edges**. Any
-river tile can sit beside any other, in any of four rotations, so every river
-must meet the tile edge at **the exact midpoint, at the same width**. If one
-tile's river is 12% of the tile width and another's is 18%, or one meets the
-edge slightly off-centre, the board visibly breaks.
-
-State this in every river-tile prompt. It is the single most common failure.
+**The one thing that will break the board:** rivers connect across tile edges in
+any rotation, so every river must meet the edge at its exact midpoint at the
+same width. The river blocks below say so explicitly. Do not trim that sentence.
 
 ---
 
-## Master style preamble
+## Terrain
 
-Reuse this verbatim at the top of every tile prompt.
+### Farmland
+```
+Single square game tile, top-down orthographic (straight down, no perspective), cheerful handmade cartoon style, flat vector shapes, two-tone shading only. Even directionless light, no drop shadow or vignette. Art fills the whole square edge to edge — no border, frame, margin, label, text or watermark. Clean silhouettes, readable at 64px. Warm, slightly sun-bleached board-game palette.
 
-> A single square game tile for a tabletop-style strategy board game, drawn in a
-> cheerful, handmade, cartoon style — flat vector shapes with visible charm, no
-> photorealism, no gradients beyond simple two-tone shading. Top-down
-> orthographic view, straight down, absolutely no perspective or isometric
-> angle. Even, directionless lighting; no drop shadows, no vignette, no outer
-> glow. The artwork fills the entire square edge to edge with no border, frame,
-> margin, caption, label, watermark, or text of any kind. Flat colour, clean
-> silhouettes, readable at 64×64 pixels. Warm, slightly sun-bleached palette
-> like a well-loved board game printed on matte card.
+Subject: cultivated farmland. Warm golden-wheat fields (#e3bc5f) in gently irregular strip-field shapes, a few darker furrow lines, one or two tiny hay bales. Busy, tended, productive.
+```
+
+### Forest
+```
+Single square game tile, top-down orthographic (straight down, no perspective), cheerful handmade cartoon style, flat vector shapes, two-tone shading only. Even directionless light, no drop shadow or vignette. Art fills the whole square edge to edge — no border, frame, margin, label, text or watermark. Clean silhouettes, readable at 64px. Warm, slightly sun-bleached board-game palette.
+
+Subject: dense forest. Chunky clustered tree canopies in mid-green (#5f8f4e), rounded blobby crowns in two or three green tones, packed so the canopy reads as one mass rather than separate trees.
+```
+
+### Hills
+```
+Single square game tile, top-down orthographic (straight down, no perspective), cheerful handmade cartoon style, flat vector shapes, two-tone shading only. Even directionless light, no drop shadow or vignette. Art fills the whole square edge to edge — no border, frame, margin, label, text or watermark. Clean silhouettes, readable at 64px. Warm, slightly sun-bleached board-game palette.
+
+Subject: rolling clay hills. Warm terracotta-brown earth (#c07850) in soft rounded mounds, exposed clay banks, a few scattered stones. Brick-making country — clearly softer and lower than mountains.
+```
+
+### Mountain
+```
+Single square game tile, top-down orthographic (straight down, no perspective), cheerful handmade cartoon style, flat vector shapes, two-tone shading only. Even directionless light, no drop shadow or vignette. Art fills the whole square edge to edge — no border, frame, margin, label, text or watermark. Clean silhouettes, readable at 64px. Warm, slightly sun-bleached board-game palette.
+
+Subject: hard grey mountain rock (#8d939c). Angular faceted peaks with sharp mineral silhouettes, cool grey with a hint of blue in the shadows, a few dark crevices. Unmistakably harder and higher than the hills.
+```
+
+### Desert
+```
+Single square game tile, top-down orthographic (straight down, no perspective), cheerful handmade cartoon style, flat vector shapes, two-tone shading only. Even directionless light, no drop shadow or vignette. Art fills the whole square edge to edge — no border, frame, margin, label, text or watermark. Clean silhouettes, readable at 64px. Warm, slightly sun-bleached board-game palette.
+
+Subject: pale barren desert (#ecdcb4). Bone-coloured sand with faint wind ripples, one or two cracked stones, conspicuously empty. It should look like nothing grows here.
+```
+
+### Lake
+```
+Single square game tile, top-down orthographic (straight down, no perspective), cheerful handmade cartoon style, flat vector shapes, two-tone shading only. Even directionless light, no drop shadow or vignette. Art fills the whole square edge to edge — no border, frame, margin, label, text or watermark. Clean silhouettes, readable at 64px. Warm, slightly sun-bleached board-game palette.
+
+Subject: still blue water (#6aa9d6) filling the whole tile. Gentle concentric ripples, a few lighter highlights, a soft reed fringe at one edge.
+```
 
 ---
 
-## Terrain tiles
+## River tiles
 
-Append to the preamble. Hex values are the prototype's fills.
+### Farmland, straight river
+```
+Single square game tile, top-down orthographic (straight down, no perspective), cheerful handmade cartoon style, flat vector shapes, two-tone shading only. Even directionless light, no drop shadow or vignette. Art fills the whole square edge to edge — no border, frame, margin, label, text or watermark. Clean silhouettes, readable at 64px. Warm, slightly sun-bleached board-game palette.
 
-| Tile | Prompt body |
-|---|---|
-| **Farmland** | Cultivated farmland: warm golden-wheat fields (#e3bc5f) in gently irregular strip-field shapes, a few darker furrow lines, one or two tiny hay bales. Busy, tended, productive. |
-| **Forest** | Dense forest: chunky clustered tree canopies in mid-green (#5f8f4e), rounded blobby crowns of two or three green tones, packed so the canopy reads as one mass rather than separate trees. |
-| **Hills** | Rolling clay hills: warm terracotta-brown earth (#c07850) in soft rounded mounds with exposed clay banks and a few scattered stones. Reads as brick-making country, not mountains. |
-| **Mountain** | Hard grey mountain rock (#8d939c): angular faceted peaks with sharp mineral silhouettes, cool grey with a hint of blue in the shadows, a few darker crevices. Unmistakably harder than the hills. |
-| **Desert** | Pale barren desert (#ecdcb4): bone-coloured sand with faint wind ripples, one or two cracked stones, conspicuously empty. It should look like nothing grows here. |
-| **Lake** | Still blue water (#6aa9d6) filling the whole tile: gentle concentric ripples, a few lighter highlights, a soft reed fringe at one edge. |
+Subject: cultivated farmland — warm golden-wheat fields (#e3bc5f) in irregular strip-field shapes with darker furrow lines.
 
----
+A flat blue river (#2f7fb0) crosses the tile. It is exactly 14% of the tile width, uniform along its entire length, passes through the exact centre of the tile, and meets each edge it touches at that edge's precise midpoint, perpendicular to it. The river runs straight from the middle of the top edge to the middle of the bottom edge. The left and right edges have no water.
+```
 
-## River overlay tiles
+### Farmland, river bend
+```
+Single square game tile, top-down orthographic (straight down, no perspective), cheerful handmade cartoon style, flat vector shapes, two-tone shading only. Even directionless light, no drop shadow or vignette. Art fills the whole square edge to edge — no border, frame, margin, label, text or watermark. Clean silhouettes, readable at 64px. Warm, slightly sun-bleached board-game palette.
 
-Same terrain art as above, with a river crossing it. **Include the alignment
-sentence every time:**
+Subject: cultivated farmland — warm golden-wheat fields (#e3bc5f) in irregular strip-field shapes with darker furrow lines.
 
-> A river of flat blue water (#2f7fb0) crosses the tile. The river is exactly
-> 14% of the tile width, uniform along its whole length, and meets each tile
-> edge it touches at the precise midpoint of that edge, perpendicular to it.
-> The river passes through the exact centre of the tile.
+A flat blue river (#2f7fb0) crosses the tile. It is exactly 14% of the tile width, uniform along its entire length, passes through the exact centre of the tile, and meets each edge it touches at that edge's precise midpoint, perpendicular to it. The river enters at the middle of the top edge, curves smoothly through the tile centre, and exits at the middle of the right edge. The left and bottom edges have no water.
+```
 
-Then one of:
+### Farmland, river T-junction
+```
+Single square game tile, top-down orthographic (straight down, no perspective), cheerful handmade cartoon style, flat vector shapes, two-tone shading only. Even directionless light, no drop shadow or vignette. Art fills the whole square edge to edge — no border, frame, margin, label, text or watermark. Clean silhouettes, readable at 64px. Warm, slightly sun-bleached board-game palette.
 
-- **Straight** — "The river runs straight from the middle of the top edge to the middle of the bottom edge."
-- **Bend** — "The river enters at the middle of the top edge, curves smoothly through the tile centre, and exits at the middle of the right edge."
-- **T-junction** — "The river enters at the middles of the top, left and right edges and meets at the tile centre, forming a T."
-- **Mountain source** — "A spring wells up at the tile centre from between grey rocks and flows out through the middle of the top edge only. The other three edges have no water."
+Subject: cultivated farmland — warm golden-wheat fields (#e3bc5f) in irregular strip-field shapes with darker furrow lines.
 
-Generate these on Farmland and Forest (GDD §22 puts river variants mostly
-there), plus the source on Mountain.
+A flat blue river (#2f7fb0) crosses the tile. It is exactly 14% of the tile width, uniform along its entire length, and meets each edge it touches at that edge's precise midpoint, perpendicular to it. Three branches enter at the middles of the top, left and right edges and join at the exact centre of the tile, forming a T. The bottom edge has no water.
+```
+
+### Forest, straight river
+```
+Single square game tile, top-down orthographic (straight down, no perspective), cheerful handmade cartoon style, flat vector shapes, two-tone shading only. Even directionless light, no drop shadow or vignette. Art fills the whole square edge to edge — no border, frame, margin, label, text or watermark. Clean silhouettes, readable at 64px. Warm, slightly sun-bleached board-game palette.
+
+Subject: dense forest — chunky clustered tree canopies in mid-green (#5f8f4e), rounded blobby crowns in two or three green tones.
+
+A flat blue river (#2f7fb0) crosses the tile, cutting a clear channel through the canopy. It is exactly 14% of the tile width, uniform along its entire length, passes through the exact centre of the tile, and meets each edge it touches at that edge's precise midpoint, perpendicular to it. The river runs straight from the middle of the top edge to the middle of the bottom edge. The left and right edges have no water.
+```
+
+### Forest, river bend
+```
+Single square game tile, top-down orthographic (straight down, no perspective), cheerful handmade cartoon style, flat vector shapes, two-tone shading only. Even directionless light, no drop shadow or vignette. Art fills the whole square edge to edge — no border, frame, margin, label, text or watermark. Clean silhouettes, readable at 64px. Warm, slightly sun-bleached board-game palette.
+
+Subject: dense forest — chunky clustered tree canopies in mid-green (#5f8f4e), rounded blobby crowns in two or three green tones.
+
+A flat blue river (#2f7fb0) crosses the tile, cutting a clear channel through the canopy. It is exactly 14% of the tile width, uniform along its entire length, passes through the exact centre of the tile, and meets each edge it touches at that edge's precise midpoint, perpendicular to it. The river enters at the middle of the top edge, curves smoothly through the tile centre, and exits at the middle of the right edge. The left and bottom edges have no water.
+```
+
+### Forest, river T-junction
+```
+Single square game tile, top-down orthographic (straight down, no perspective), cheerful handmade cartoon style, flat vector shapes, two-tone shading only. Even directionless light, no drop shadow or vignette. Art fills the whole square edge to edge — no border, frame, margin, label, text or watermark. Clean silhouettes, readable at 64px. Warm, slightly sun-bleached board-game palette.
+
+Subject: dense forest — chunky clustered tree canopies in mid-green (#5f8f4e), rounded blobby crowns in two or three green tones.
+
+A flat blue river (#2f7fb0) crosses the tile, cutting clear channels through the canopy. It is exactly 14% of the tile width, uniform along its entire length, and meets each edge it touches at that edge's precise midpoint, perpendicular to it. Three branches enter at the middles of the top, left and right edges and join at the exact centre of the tile, forming a T. The bottom edge has no water.
+```
+
+### Mountain river source
+```
+Single square game tile, top-down orthographic (straight down, no perspective), cheerful handmade cartoon style, flat vector shapes, two-tone shading only. Even directionless light, no drop shadow or vignette. Art fills the whole square edge to edge — no border, frame, margin, label, text or watermark. Clean silhouettes, readable at 64px. Warm, slightly sun-bleached board-game palette.
+
+Subject: hard grey mountain rock (#8d939c) with angular faceted peaks and dark crevices.
+
+A spring wells up at the exact centre of the tile from between the grey rocks and flows out through the middle of the top edge only. The water is flat blue (#2f7fb0), exactly 14% of the tile width, uniform along its length, and meets the top edge at that edge's precise midpoint, perpendicular to it. The left, right and bottom edges have no water at all.
+```
 
 ---
 
 ## Buildings
 
-Buildings sit **on top of** terrain and must never read as terrain themselves.
-Render each on a transparent background as an overlay sprite, roughly 45% of
-the tile width, centred.
+Overlay sprites, transparent background, about 45% of tile width.
 
-> A small charming cartoon building sprite for a board game, top-down
-> orthographic, flat vector style, transparent background, no terrain beneath
-> it, no shadow. Chunky and readable at 32×32 pixels. Practical and slightly
-> ramshackle rather than grand — a civic works project built in a hurry.
+### Sawmill
+```
+Small cartoon building sprite for a board game, top-down orthographic (straight down, no perspective), flat vector style, transparent background, no terrain or ground beneath it, no shadow. Chunky and readable at 32px. Practical and slightly ramshackle — a civic works project built in a hurry, not a grand monument.
 
-- **Sawmill** — a timber mill with a circular saw blade and stacked logs.
-- **Farmstead** — a little barn with a silo and a fenced yard.
-- **Brickworks** — a kiln with a short chimney and pallets of red bricks.
-- **Mine** — a timber-framed mine entrance cut into rock, with a minecart.
-- **Tower** — a squat stone defensive tower with a crenellated top and an arrow slit. Obviously military.
-- **Wall segment** — a rough wooden palisade of lashed stakes, clearly temporary and hasty, NOT grand castle masonry.
+Subject: a timber sawmill with a large circular saw blade and neat stacks of cut logs beside it.
+```
+
+### Farmstead
+```
+Small cartoon building sprite for a board game, top-down orthographic (straight down, no perspective), flat vector style, transparent background, no terrain or ground beneath it, no shadow. Chunky and readable at 32px. Practical and slightly ramshackle — a civic works project built in a hurry, not a grand monument.
+
+Subject: a little barn with a silo beside it and a small fenced yard.
+```
+
+### Brickworks
+```
+Small cartoon building sprite for a board game, top-down orthographic (straight down, no perspective), flat vector style, transparent background, no terrain or ground beneath it, no shadow. Chunky and readable at 32px. Practical and slightly ramshackle — a civic works project built in a hurry, not a grand monument.
+
+Subject: a brick kiln with a short smoking chimney and pallets of stacked red bricks.
+```
+
+### Mine
+```
+Small cartoon building sprite for a board game, top-down orthographic (straight down, no perspective), flat vector style, transparent background, no terrain or ground beneath it, no shadow. Chunky and readable at 32px. Practical and slightly ramshackle — a civic works project built in a hurry, not a grand monument.
+
+Subject: a timber-framed mine entrance cut into grey rock, with a small minecart on rails outside it.
+```
+
+### Tower
+```
+Small cartoon building sprite for a board game, top-down orthographic (straight down, no perspective), flat vector style, transparent background, no terrain or ground beneath it, no shadow. Chunky and readable at 32px.
+
+Subject: a squat stone defensive tower with a crenellated top and a narrow arrow slit. Obviously military, and obviously sturdier than the surrounding civilian buildings.
+```
+
+### Wall segment
+```
+Small cartoon sprite for a board game, top-down orthographic (straight down, no perspective), flat vector style, transparent background, no terrain or ground beneath it, no shadow. Chunky and readable at 32px. Drawn as a long thin horizontal segment that sits along the edge between two tiles.
+
+Subject: a rough wooden palisade of lashed pointed stakes, leaning slightly, clearly hasty and temporary. NOT grand castle masonry — this is something thrown up overnight and expected to be destroyed.
+```
 
 ---
 
-## Babel, by Stage
+## Babel
 
-One image per Stage. Babel is the visual hero and should grow more audacious,
-not merely taller.
+### Stage I — Foundation of Defiance
+```
+Top-down orthographic view (straight down, no perspective) of a monumental tower under construction, cheerful handmade cartoon style, flat vector shapes, transparent background, no shadow. Seen from directly above so it reads as concentric structure rather than a skyline. Readable at 64px.
 
-> A top-down orthographic view of a monumental tower under construction at the
-> centre of a city, flat cartoon vector style, transparent background. Seen
-> from directly above, so it reads as concentric structure rather than a
-> skyline.
+Subject: rough, honest civic masonry. A broad stone foundation ring with timber scaffolding, earth ramps, handcarts and scattered tools around its rim. Ambitious, but unmistakably a building site.
+```
 
-- **Stage I — Foundation of Defiance** — rough honest civic masonry: a broad stone ring, timber scaffolding, ramps, carts, scattered tools. Ambitious but unmistakably a building site.
-- **Stage II — The Great Ascent** — monumental engineering: precise tiered stonework, cranes and counterweights, banners, an obvious spiral ascent. Confident and expensive.
-- **Stage III — The Siege of Heaven** — absurd celestial breach architecture: impossible cantilevers, brass rings and orreries, chains hauling the structure upward into a hole it has torn in the sky. Gloriously overreaching.
+### Stage II — The Great Ascent
+```
+Top-down orthographic view (straight down, no perspective) of a monumental tower under construction, cheerful handmade cartoon style, flat vector shapes, transparent background, no shadow. Seen from directly above so it reads as concentric structure rather than a skyline. Readable at 64px.
+
+Subject: monumental engineering. Precise tiered stonework in concentric rings, timber cranes with counterweights, hanging banners, and an obvious spiral ramp ascending inward. Confident, organised and expensive.
+```
+
+### Stage III — The Siege of Heaven
+```
+Top-down orthographic view (straight down, no perspective) of an impossible tower, cheerful handmade cartoon style, flat vector shapes, transparent background, no shadow. Seen from directly above so it reads as concentric structure rather than a skyline. Readable at 64px.
+
+Subject: absurd celestial breach architecture. Impossible cantilevers jutting outward, brass rings and orrery mechanisms, heavy chains hauling the whole structure upward into a ragged hole it has torn in the sky. Gloriously, comically overreaching.
+```
 
 ---
 
 ## Heaven
 
-> A cartoon enemy token for a board game, top-down orthographic, flat vector
-> style, transparent background, bright divine gold and ivory, readable at
-> 40×40 pixels. Horrifying-but-cute: strange and unsettling in silhouette, yet
-> cartoonish enough to stay funny. Not grimdark, not reverent.
+### Ophanim Host
+```
+Cartoon enemy token for a board game, top-down orthographic (straight down, no perspective), flat vector style, transparent background, no shadow. Bright divine gold (#d9a441) and ivory (#fff6e0). Readable at 40px. Horrifying-but-cute: strange and unsettling in silhouette, yet cartoonish enough to stay funny. Not grimdark, not reverent.
 
-- **Ophanim Host** — concentric spinning wheel and halo rings, many eyes staring outward around the rims, several small and faintly inadequate wings, ornate gold filigree. Visibly indignant, like a bureaucrat who has been kept waiting.
-- **Seraph** — taller and more vertical: six wings wrapped protectively around a blazing white-hot core, eyes peeking out between the feathers, a translucent shimmering shield bubble around it. More imposing and less comic than the Ophanim. Also generate a **shield-broken** variant: identical, with the bubble shattered into fading shards.
-- **Beacon** — a slender gold pillar of light striking down onto the ground, splayed at the base, with a faint ring of scorched earth. Ominous and clearly a landing site.
+Subject: concentric spinning wheel and halo rings nested inside each other, many eyes staring outward around the rims, several small and faintly inadequate wings, ornate gold filigree. Visibly indignant — like a bureaucrat who has been kept waiting.
+```
+
+### Seraph (shield intact)
+```
+Cartoon enemy token for a board game, top-down orthographic (straight down, no perspective), flat vector style, transparent background, no shadow. Bright divine gold (#d9a441) and ivory (#fff6e0) with a hot pale core (#ffd9a0). Readable at 40px. Horrifying-but-cute, but more imposing and less comic than a lesser angel. Not grimdark.
+
+Subject: six wings wrapped protectively around a blazing white-hot core, eyes peeking out between the feathers, taller and more vertical than it is wide. A translucent shimmering shield bubble surrounds the whole figure, clearly intact.
+```
+
+### Seraph (shield broken)
+```
+Cartoon enemy token for a board game, top-down orthographic (straight down, no perspective), flat vector style, transparent background, no shadow. Bright divine gold (#d9a441) and ivory (#fff6e0) with a hot pale core (#ffd9a0). Readable at 40px. Horrifying-but-cute, but more imposing and less comic than a lesser angel. Not grimdark.
+
+Subject: identical to a six-winged seraph with wings wrapped around a blazing core and eyes peeking between the feathers — but its surrounding shield bubble is shattered into fading translucent shards drifting outward. The figure looks exposed and considerably less pleased about it.
+```
+
+### Beacon
+```
+Cartoon board-game marker, top-down orthographic (straight down, no perspective), flat vector style, transparent background, no shadow. Bright divine gold (#f0c860). Readable at 40px. Ominous but stylised, not photorealistic.
+
+Subject: a slender pillar of golden light striking down onto the ground, splayed and brighter where it lands, surrounded by a faint ring of scorched earth. Clearly a landing site — somewhere you would rather not be standing.
+```
 
 ---
 
 ## After generating
 
-- Check that every river tile's water meets each edge at the midpoint at the
-  same width. Place two beside each other and look at the seam.
-- Check each tile at 64×64. If the terrain type is not instantly identifiable
-  at that size, the illustration has too much detail — ART_DIRECTION.md is
-  explicit that terrain identity beats illustration detail.
-- Keep building sprites clearly separable from terrain at a glance.
+- Put two river tiles side by side and look at the seam. If the water jumps
+  width or sits off-centre, regenerate — that sentence is the whole ballgame.
+- View each tile at 64px. If the terrain is not instantly identifiable,
+  there is too much detail: ART_DIRECTION.md is explicit that terrain identity
+  beats illustration detail.
+- Building sprites must stay clearly separable from terrain at a glance.
+- If your tool supports a style reference, feed it the first accepted tile when
+  generating the rest — it keeps the set coherent far better than prose does.
