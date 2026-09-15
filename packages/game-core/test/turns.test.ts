@@ -9,19 +9,10 @@ import {
   type GameState,
 } from '../src/index.js';
 
+import { playTurn, settleTable } from './helpers.js';
+
 const run = (state: GameState, commands: readonly Command[]): GameState =>
   commands.reduce((s, c) => applyMove(s, c).state, state);
-
-/** Place the drawn tile at the first legal square, then pass. */
-export function playTurn(state: GameState): GameState {
-  const me = currentPlayer(state);
-  const option = getLegalTilePlacements(state.board, state.drawnTile!)[0];
-  if (!option) throw new Error('no legal placement available');
-  return run(state, [
-    { type: 'placeTile', player: me, at: option.at, rotation: option.rotations[0]! },
-    { type: 'pass', player: me },
-  ]);
-}
 
 describe('setup', () => {
   it('rejects player counts outside 2-4', () => {
@@ -103,6 +94,7 @@ describe('turn structure', () => {
     let state = setupGame(['Ada', 'Peter', 'Rook'], 'seed');
     const firstAtStart = state.firstPlayerIndex;
     for (let i = 0; i < 3; i++) state = playTurn(state);
+    state = settleTable(state);
 
     expect(state.round).toBe(2);
     expect(state.firstPlayerIndex).toBe((firstAtStart + 1) % 3);
@@ -124,9 +116,21 @@ describe('turn structure', () => {
   it('always offers the next Leader a placeable tile', () => {
     let state = setupGame(['Ada', 'Peter'], 'long-game');
     for (let i = 0; i < 30; i++) {
+      if (state.phase === 'gameOver') break;
       expect(getLegalTilePlacements(state.board, state.drawnTile!).length).toBeGreaterThan(0);
       state = playTurn(state);
     }
+  });
+
+  it('humanity loses if nobody ever fights back', () => {
+    /* Pass-only play lets Heaven walk in: the first Host takes the empty
+       Foundation and the second breaches it. GDD §2. */
+    let state = setupGame(['Ada', 'Peter'], 'doomed');
+    for (let i = 0; i < 40 && state.phase !== 'gameOver'; i++) state = playTurn(state);
+
+    expect(state.phase).toBe('gameOver');
+    expect(state.lossReason).toBe('foundationBreached');
+    expect(state.log.some((e) => e.type === 'humanityLoses')).toBe(true);
   });
 });
 

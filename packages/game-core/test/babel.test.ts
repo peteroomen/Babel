@@ -111,13 +111,13 @@ describe('stage escalation (GDD §12)', () => {
 
   it('never reverses, even if Babel is knocked back below the threshold', () => {
     /* Stage II reached, then Heaven removes pieces (Milestone 3). */
-    const knockedBack = { stack: ['p0'], foundationOccupied: false };
+    const knockedBack = { stack: ['p0'] };
     expect(stageAfterPiece(knockedBack, 2, 2)).toBe(2);
     expect(stageAfterPiece(knockedBack, 3, 2)).toBe(3);
   });
 
   it('counts down to the next escalation', () => {
-    const babel = { stack: [], foundationOccupied: false };
+    const babel = { stack: [] };
     expect(piecesToNextEscalation(babel, 1, 2)).toBe(3);
     expect(piecesToNextEscalation({ ...babel, stack: ['p0', 'p1'] }, 1, 2)).toBe(1);
     /* Stage III has no further escalation. */
@@ -128,7 +128,8 @@ describe('stage escalation (GDD §12)', () => {
     const state = ready(['Ada', 'Peter']);
     const besieged: GameState = {
       ...state,
-      babel: { stack: [], foundationOccupied: true },
+      babel: { stack: [] },
+      hosts: [{ id: 'h1', kind: 'ophanim', at: { x: 0, y: 0 }, shieldUp: false }],
     };
     expect(() => build(besieged)).toThrow(/Foundation is occupied/);
   });
@@ -137,7 +138,7 @@ describe('stage escalation (GDD §12)', () => {
 describe('shared victory (GDD §2)', () => {
   it('ends the game when the final piece is placed', () => {
     let state = ready(['Ada', 'Peter'], 3);
-    state = { ...state, babel: { stack: Array(8).fill('p1'), foundationOccupied: false } };
+    state = { ...state, babel: { stack: Array(8).fill('p1') } };
 
     const { state: after, events } = build(state);
 
@@ -150,7 +151,7 @@ describe('shared victory (GDD §2)', () => {
     let state = ready(['Ada', 'Peter'], 3);
     state = {
       ...state,
-      babel: { stack: Array(8).fill('p1'), foundationOccupied: false },
+      babel: { stack: Array(8).fill('p1') },
       leaders: {
         ...state.leaders,
         p0: { ...state.leaders['p0']!, prestige: 10 },
@@ -165,7 +166,7 @@ describe('shared victory (GDD §2)', () => {
     let state = ready(['Ada', 'Peter'], 3);
     state = {
       ...state,
-      babel: { stack: Array(8).fill('p1'), foundationOccupied: false },
+      babel: { stack: Array(8).fill('p1') },
       leaders: {
         ...state.leaders,
         p0: { ...state.leaders['p0']!, prestige: 0 },
@@ -181,7 +182,7 @@ describe('shared victory (GDD §2)', () => {
 
   it('refuses any further move once the game is over', () => {
     let state = ready(['Ada', 'Peter'], 3);
-    state = { ...state, babel: { stack: Array(8).fill('p1'), foundationOccupied: false } };
+    state = { ...state, babel: { stack: Array(8).fill('p1') } };
     const after = build(state).state;
     expect(() => applyMove(after, { type: 'pass', player: 'p0' })).toThrow(/game is over/);
   });

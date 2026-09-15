@@ -131,3 +131,47 @@ Titles and tie-breakers are deferred content (GDD §20, §23), so inventing a
 tie-break now would pre-empt a design decision.
 
 **Status:** adopted 2026-09-15. Implemented in Milestone 2.
+
+---
+
+## RD-008 — Host route ties use an overridable default, not a vote
+
+**Canon:** GDD §14. "If several equally short routes exist, the players choose
+which valid route the Host takes."
+
+**Problem:** on a square grid, shortest routes to Babel tie constantly — most
+Hosts, most phases. Putting RD-005's formal vote on every tie would mean
+several votes per Heaven Phase, every round, which is unplayable.
+
+**Decision:** the core computes a deterministic default route for every Host
+from the seeded RNG, and exposes the alternatives through `stepOptions` so the
+table can override any of them before confirming the phase. One click resolves
+a phase nobody wants to change; the choice is still there when it matters.
+An override that is not a legal shortest route is ignored rather than
+rejected, so a malformed plan cannot corrupt the phase.
+
+RD-005's majority-with-coin-flip still stands for decisions with a small,
+discrete option set, and remains implemented and tested for networked play.
+
+**Status:** adopted 2026-09-15. Implemented in Milestone 3.
+
+---
+
+## RD-009 — A Beacon with nowhere legal to go is deferred
+
+**Canon:** GDD §13 requires a Beacon site to be a frontier land tile, not
+river or Lake, with at least one legal land route to Babel. §4 fixes when
+Beacons are owed.
+
+**Problem:** early on, or on a waterlogged map, no tile satisfies all three.
+Canon does not say what happens, and the game cannot simply stall.
+
+**Decision:** the Beacon is deferred, logged as `beaconDeferred`, and offered
+again at the next opportunity. Heaven arrives when the geography allows it.
+This also quietly rewards players who keep the frontier hostile — which is the
+behaviour §13 says Beacons are meant to encourage.
+
+**Watch:** if deferral happens often it means the river bag is too wet, not
+that the rule is wrong. Milestone 6 telemetry should count it.
+
+**Status:** adopted 2026-09-15. Implemented in Milestone 3.

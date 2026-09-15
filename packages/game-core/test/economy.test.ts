@@ -78,7 +78,10 @@ describe('placement pays the placing Leader', () => {
 
     /* A Host standing on the start tile occupies its whole Farmland feature. */
     const state = withDrawn(
-      { ...base, occupiedTiles: ['0,-1'] },
+      {
+        ...base,
+        hosts: [{ id: 'h1', kind: 'ophanim', at: { x: 0, y: -1 }, shieldUp: false }],
+      },
       { terrain: 'farmland', river: 'none' },
     );
     const { state: after, events } = applyMove(state, {

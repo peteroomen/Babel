@@ -83,9 +83,13 @@ export function setupGame(names: readonly string[], seed: string): GameState {
     leaders,
     board,
     buildings: {},
-    babel: { stack: [], foundationOccupied: false },
+    babel: { stack: [] },
+    beacons: [],
+    hosts: [],
+    hostSeq: 0,
+    pendingBeacon: null,
+    pendingAttack: null,
     drawnTile: draw,
-    occupiedTiles: [],
     pendingVote: null,
     rng,
     log: [
@@ -103,5 +107,6 @@ export function setupGame(names: readonly string[], seed: string): GameState {
       { type: 'tileDrawn', player: opener, terrain: draw.terrain, river: draw.river },
     ],
     winner: null,
+    lossReason: null,
   };
 }

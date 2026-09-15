@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { basePayout, placementPayout, type Board, type TileDraw } from '../src/index.js';
+import {
+  basePayout,
+  placementPayout,
+  previewPlacement,
+  type Board,
+  type TileDraw,
+} from '../src/index.js';
 
 const plain = (terrain: Board[string]['terrain']) =>
   ({ terrain, river: 'none', rotation: 0 }) as const;
@@ -130,5 +136,37 @@ describe('occupation suppresses payout (GDD §10)', () => {
       resource: 'wood',
       amount: 3,
     });
+  });
+});
+
+describe('river tiles are ordinary resource terrain (GDD §6, §3)', () => {
+  const plainFarm = { terrain: 'farmland', river: 'none', rotation: 0 } as const;
+  const riverFarm = { terrain: 'farmland', river: 'straight', rotation: 0 } as const;
+  const farmDraw: TileDraw = { terrain: 'farmland', river: 'straight' };
+
+  it('pays for a river tile just like a plain one', () => {
+    const board: Board = { '5,5': riverFarm };
+    expect(basePayout(board, { x: 5, y: 5 }, farmDraw)).toEqual({
+      resource: 'food',
+      amount: 1,
+    });
+  });
+
+  it('counts adjacent river tiles towards the payout', () => {
+    /* A river is an overlay on terrain, not a terrain of its own, so a
+       Farmland carrying a river is still Farmland for adjacency. */
+    const board: Board = { '4,5': riverFarm, '5,5': plainFarm, '6,5': riverFarm };
+    expect(basePayout(board, { x: 5, y: 5 }, { terrain: 'farmland', river: 'none' })).toEqual({
+      resource: 'food',
+      amount: 3,
+    });
+  });
+
+  it('keeps the projected payout identical to what is actually paid', () => {
+    const board: Board = { '4,5': riverFarm, '6,5': plainFarm };
+    const projected = previewPlacement({ board, hosts: [] }, { x: 5, y: 5 }, farmDraw, 0);
+    const after: Board = { ...board, '5,5': riverFarm };
+    expect(projected).toEqual(placementPayout(after, [], { x: 5, y: 5 }, farmDraw));
+    expect(projected).toEqual({ resource: 'food', amount: 3 });
   });
 });

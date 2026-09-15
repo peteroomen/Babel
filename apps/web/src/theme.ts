@@ -54,3 +54,14 @@ export const BUILDING_LABEL = {
   brickworks: 'Brickworks',
   mine: 'Mine',
 } as const;
+
+/** ART_DIRECTION.md: bright gold and ivory divine ornament. */
+export const HEAVEN_GOLD = '#d9a441';
+export const HEAVEN_IVORY = '#fff6e0';
+export const SERAPH_CORE = '#ffd9a0';
+export const BEACON_LIGHT = '#f0c860';
+
+export const HOST_LABEL = {
+  ophanim: 'Ophanim Host',
+  seraph: 'Seraph',
+} as const;

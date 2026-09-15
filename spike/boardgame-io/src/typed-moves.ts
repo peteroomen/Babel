@@ -14,6 +14,7 @@ import type { Coord, Rotation } from '@babel-game/game-core';
 export type BabelMoves = {
   placeTile(at: Coord, rotation: Rotation): void;
   pass(): void;
+  resolveHeaven(): void;
   castVote(option: number): void;
   openVote(): void;
 };

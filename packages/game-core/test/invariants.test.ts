@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   BABEL_PIECE_COST,
   BUILDINGS,
+  MUSTER_COST,
   type ResourceType,
 } from '@babel-game/game-data';
 import {
@@ -19,6 +20,7 @@ import {
   type Command,
   type GameState,
 } from '../src/index.js';
+import { settleTable } from './helpers.js';
 
 /**
  * Property test: whatever sequence of legal moves is played, the board must
@@ -58,6 +60,7 @@ function playGame(seed: string, turns: number): GameState {
   };
 
   for (let i = 0; i < turns; i++) {
+    state = settleTable(state);
     if (state.phase === 'gameOver') break;
 
     const options = getLegalTilePlacements(state.board, state.drawnTile!);
@@ -80,6 +83,12 @@ function playGame(seed: string, turns: number): GameState {
       case 'buildBabel':
         command = { type: 'buildBabel', player: me };
         break;
+      case 'muster':
+        command = { type: 'muster', player: me };
+        break;
+      case 'attack':
+        command = { type: 'attack', player: me };
+        break;
       case 'barter': {
         /* Spend from whatever the Leader actually holds. */
         const hand = state.leaders[me]!.resources;
@@ -96,7 +105,22 @@ function playGame(seed: string, turns: number): GameState {
         command = { type: 'pass', player: me };
     }
     state = applyMove(state, command).state;
+
+    /* GDD §15: an Attack that rolled successes must assign them before the
+       turn can end. Spread them over the Hosts that are actually on the board. */
+    if (state.pendingAttack) {
+      const assignments: Record<string, number> = {};
+      let left = state.pendingAttack.successes;
+      for (const host of state.hosts) {
+        if (left <= 0) break;
+        const take = Math.min(left, host.kind === 'seraph' && host.shieldUp ? 2 : 1);
+        assignments[host.id] = take;
+        left -= take;
+      }
+      state = applyMove(state, { type: 'assignHits', player: me, assignments }).state;
+    }
   }
+  state = settleTable(state);
   return state;
 }
 
@@ -129,8 +153,10 @@ describe('board invariants hold across whole games', () => {
   it('never places a tile on Babel and never double-places a square', () => {
     const state = playGame('beta', 40);
     expect(state.board['0,0']).toBeUndefined();
-    /* One tile per turn, plus GDD §5's fixed start tile. */
-    expect(Object.keys(state.board)).toHaveLength(41);
+    /* Every placement the log records landed on its own square, plus GDD §5's
+       fixed start tile. Games can now end early, so count what was played. */
+    const placed = state.log.filter((e) => e.type === 'tilePlaced').length;
+    expect(Object.keys(state.board)).toHaveLength(placed + 1);
   });
 
   it('exercises every action type the core currently offers', () => {
@@ -200,6 +226,9 @@ describe('board invariants hold across whole games', () => {
           break;
         case 'babelPieceBuilt':
           spend(event.player, BABEL_PIECE_COST[event.stage]);
+          break;
+        case 'mustered':
+          spend(event.player, MUSTER_COST);
           break;
         case 'bartered': {
           const hand = ledger[event.player] as Record<ResourceType, number>;

@@ -9,6 +9,7 @@ import {
 } from '@babel-game/game-core';
 import {
   BUILDING_LABEL,
+  HOST_LABEL,
   LEADER_COLOUR,
   RESOURCE_LABEL,
   TERRAIN_LABEL,
@@ -111,6 +112,34 @@ function describe(event: GameEvent, state: GameState): string {
       return `${who(event.player)} bartered 3 cards for 1 ${RESOURCE_LABEL[event.gained]}`;
     case 'prestigeGained':
       return `${who(event.player)} +${event.amount} Prestige (${event.source})`;
+    case 'beaconPlaced':
+      return `A Beacon is planted at (${event.at.x}, ${event.at.y}) — ${event.total} in play`;
+    case 'beaconDeferred':
+      return `No legal Beacon site yet; ${event.owed} deferred`;
+    case 'hostSpawned':
+      return `${HOST_LABEL[event.kind]} descends at (${event.at.x}, ${event.at.y})`;
+    case 'hostMoved':
+      return `Host ${event.id} advances to (${event.to.x}, ${event.to.y})${
+        event.hadChoice ? ' (route chosen)' : ''
+      }`;
+    case 'babelPieceLost':
+      return `Heaven smashes Babel's newest piece — ${event.remaining} left`;
+    case 'foundationOccupied':
+      return `A Host stands on the bare Foundation. Babel cannot be built.`;
+    case 'humanityLoses':
+      return `The Foundation is breached a second time. Humanity falls.`;
+    case 'attackRolled':
+      return `${who(event.player)} rolls ${event.rolls.join(', ')} against Defence ${
+        event.defence
+      } — ${event.successes} hit${event.successes === 1 ? '' : 's'}`;
+    case 'hostHit':
+      return event.shieldBroken
+        ? `${who(event.player)} shatters a Seraph's shield`
+        : `${who(event.player)} hits Host ${event.id}`;
+    case 'hostKilled':
+      return `${who(event.player)} destroys Host ${event.id}`;
+    case 'mustered':
+      return `${who(event.player)} musters — Army now ${event.army}`;
     case 'humanityWins':
       return `Babel is complete. Humanity survives. Top Prestige: ${event.topPrestige
         .map(who)

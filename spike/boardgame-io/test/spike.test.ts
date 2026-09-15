@@ -94,6 +94,9 @@ describe('boardgame.io spike', () => {
       movesOf(client).pass();
     }
 
+    /* GDD §11: the round ends with the Heaven Phase, resolved by the table. */
+    expect(client.getState()!.G.phase).toBe('heaven');
+    movesOf(client).resolveHeaven();
     expect(client.getState()!.G.round).toBe(2);
     client.stop();
   });

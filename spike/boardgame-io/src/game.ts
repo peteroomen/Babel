@@ -42,6 +42,15 @@ export const BabelSpike: Game<GameState> = {
       }
     },
 
+    /* The round now ends with a Heaven Phase the table resolves explicitly. */
+    resolveHeaven: ({ G, playerID }) => {
+      try {
+        return applyMove(G, { type: 'resolveHeaven', player: toCore(playerID) }).state;
+      } catch {
+        return INVALID_MOVE;
+      }
+    },
+
     pass: ({ G, playerID }) => {
       try {
         return applyMove(G, { type: 'pass', player: toCore(playerID) }).state;

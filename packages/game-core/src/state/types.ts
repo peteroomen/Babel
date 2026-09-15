@@ -1,5 +1,6 @@
 import type {
   BuildingType,
+  HostKind,
   ResourceType,
   RiverShape,
   Stage,
@@ -33,12 +34,31 @@ export type Building = {
 
 /**
  * GDD §12. `stack` holds the Leader who built each piece, oldest first, so
- * Heaven can remove the most recently built piece in Milestone 3.
+ * Heaven removes the most recently built piece by popping the end.
  */
 export type BabelState = {
   readonly stack: readonly PlayerId[];
-  /** GDD §2: set once the Foundation itself is occupied at zero pieces. */
-  readonly foundationOccupied: boolean;
+};
+
+/**
+ * A Heavenly unit on the board. GDD §14: Heavenly units are physical, unlike
+ * the players' abstract Armies.
+ */
+export type Host = {
+  readonly id: string;
+  readonly kind: HostKind;
+  readonly at: Coord;
+  /** GDD §14: a Seraph's Shield, once broken, stays broken between turns. */
+  readonly shieldUp: boolean;
+};
+
+/** An Attack that has rolled but not yet assigned its successful dice. */
+export type PendingAttack = {
+  readonly player: PlayerId;
+  readonly rolls: readonly number[];
+  readonly defence: number;
+  /** How many dice beat the Host Defence and are waiting to be assigned. */
+  readonly successes: number;
 };
 
 export type LeaderState = {
@@ -76,17 +96,21 @@ export type GameState = {
   readonly board: Readonly<Record<string, PlacedTile>>;
   readonly buildings: Readonly<Record<string, Building>>;
   readonly babel: BabelState;
+  /** GDD §13: where Heaven descends into the world. */
+  readonly beacons: readonly Coord[];
+  readonly hosts: readonly Host[];
+  readonly pendingBeacon: { readonly sites: readonly Coord[] } | null;
+  readonly pendingAttack: PendingAttack | null;
+  /** Monotonic counter giving each spawned Host a unique id. */
+  readonly hostSeq: number;
   /** The tile drawn at the start of the current turn, awaiting placement. */
   readonly drawnTile: TileDraw | null;
-  /**
-   * Coordinate keys currently holding a Host. GDD §10 shuts down the whole
-   * connected feature. Populated by the Heaven Phase in Milestone 3.
-   */
-  readonly occupiedTiles: readonly string[];
   readonly pendingVote: PendingVote | null;
   readonly rng: RngState;
   readonly log: readonly GameEvent[];
   readonly winner: PlayerId | null;
+  /** Set when humanity loses. GDD §2: the two-step Foundation breach. */
+  readonly lossReason: 'foundationBreached' | null;
 };
 
 export type GameEvent =
@@ -167,6 +191,46 @@ export type GameEvent =
   | { readonly type: 'humanityWins'; readonly topPrestige: readonly PlayerId[] }
   | { readonly type: 'turnEnded'; readonly player: PlayerId }
   | { readonly type: 'heavenPhase'; readonly round: number }
+  | { readonly type: 'beaconPlaced'; readonly at: Coord; readonly total: number }
+  /** RD-009: a Beacon was owed but the map offered nowhere legal to put it. */
+  | { readonly type: 'beaconDeferred'; readonly owed: number }
+  | {
+      readonly type: 'hostSpawned';
+      readonly id: string;
+      readonly kind: HostKind;
+      readonly at: Coord;
+    }
+  | {
+      readonly type: 'hostMoved';
+      readonly id: string;
+      readonly from: Coord;
+      readonly to: Coord;
+      /** True when several equally short routes existed and one was chosen. */
+      readonly hadChoice: boolean;
+    }
+  /** GDD §2: a Host reached Babel and knocked off its newest piece. */
+  | {
+      readonly type: 'babelPieceLost';
+      readonly builtBy: PlayerId;
+      readonly remaining: number;
+    }
+  | { readonly type: 'foundationOccupied'; readonly hostId: string }
+  | { readonly type: 'humanityLoses'; readonly reason: 'foundationBreached' }
+  | {
+      readonly type: 'attackRolled';
+      readonly player: PlayerId;
+      readonly rolls: readonly number[];
+      readonly defence: number;
+      readonly successes: number;
+    }
+  | {
+      readonly type: 'hostHit';
+      readonly player: PlayerId;
+      readonly id: string;
+      readonly shieldBroken: boolean;
+    }
+  | { readonly type: 'hostKilled'; readonly player: PlayerId; readonly id: string }
+  | { readonly type: 'mustered'; readonly player: PlayerId; readonly army: number }
   | { readonly type: 'voteOpened'; readonly id: string; readonly question: string }
   | { readonly type: 'voteCast'; readonly id: string; readonly player: PlayerId }
   | {
@@ -197,7 +261,23 @@ export type Command =
       readonly spend: readonly ResourceType[];
       readonly gain: ResourceType;
     }
+  | { readonly type: 'muster'; readonly player: PlayerId }
+  | { readonly type: 'attack'; readonly player: PlayerId }
+  /** Assign successful dice among Hosts after rolling. GDD §15. */
+  | {
+      readonly type: 'assignHits';
+      readonly player: PlayerId;
+      readonly assignments: Readonly<Record<string, number>>;
+    }
   | { readonly type: 'pass'; readonly player: PlayerId }
+  /** Collective decisions, issuable by any Leader. See RD-008. */
+  | { readonly type: 'placeBeacon'; readonly player: PlayerId; readonly at: Coord }
+  | {
+      readonly type: 'resolveHeaven';
+      readonly player: PlayerId;
+      /** Optional override of the default route for each Host. */
+      readonly plan?: Readonly<Record<string, readonly Coord[]>>;
+    }
   | { readonly type: 'castVote'; readonly player: PlayerId; readonly option: number };
 
 export type ApplyResult = {

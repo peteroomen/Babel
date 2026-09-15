@@ -2,7 +2,8 @@ import { TERRAIN_RESOURCE, type ResourceType } from '@babel-game/game-data';
 import { coordKey, neighbours, type Coord, type Rotation } from '../map/edges.js';
 import { tileAt, type Board } from '../map/placement.js';
 import { isFeatureOccupied } from '../features/index.js';
-import type { TileDraw } from '../state/types.js';
+import { occupiedKeys } from '../heaven/hosts.js';
+import type { Host, TileDraw } from '../state/types.js';
 
 export type Payout = { readonly resource: ResourceType; readonly amount: number } | null;
 
@@ -54,10 +55,7 @@ export function placementPayout(
  * hypothetical board.
  */
 export function previewPlacement(
-  state: {
-    readonly board: Board;
-    readonly occupiedTiles: readonly string[];
-  },
+  state: { readonly board: Board; readonly hosts: readonly Host[] },
   at: Coord,
   draw: TileDraw,
   rotation: Rotation,
@@ -66,5 +64,5 @@ export function previewPlacement(
     ...state.board,
     [coordKey(at)]: { ...draw, rotation },
   };
-  return placementPayout(board, state.occupiedTiles, at, draw);
+  return placementPayout(board, occupiedKeys(state.hosts), at, draw);
 }

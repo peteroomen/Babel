@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import {
   BABEL_COORD,
   coordKey,
+  getConnectedFeature,
   getLegalTilePlacements,
   riverEdgesOf,
   type Coord,
@@ -9,7 +10,17 @@ import {
   type Rotation,
   type TileDraw,
 } from '@babel-game/game-core';
-import { BUILDING_GLYPH, INK, LEADER_COLOUR, RIVER_STROKE, TERRAIN_FILL } from './theme.js';
+import {
+  BEACON_LIGHT,
+  BUILDING_GLYPH,
+  HEAVEN_GOLD,
+  HEAVEN_IVORY,
+  INK,
+  LEADER_COLOUR,
+  RIVER_STROKE,
+  SERAPH_CORE,
+  TERRAIN_FILL,
+} from './theme.js';
 
 const CELL = 64;
 
@@ -20,7 +31,13 @@ type Props = {
   onSelect: (at: Coord) => void;
   /** Squares offered while the Leader is choosing where to build. */
   buildSites?: readonly Coord[];
-  onBuildSite?: (at: Coord) => void;
+  onBuildSite?: ((at: Coord) => void) | undefined;
+  /** Squares offered while the table is siting a Beacon. */
+  beaconSites?: readonly Coord[];
+  onBeaconSite?: ((at: Coord) => void) | undefined;
+  /** Hosts singled out while assigning Attack hits. */
+  onHost?: ((id: string) => void) | undefined;
+  selectedHosts?: Readonly<Record<string, number>>;
 };
 
 /** Half-edge segments, drawn from the tile centre out to each river edge. */
@@ -68,10 +85,20 @@ export function Board({
   onSelect,
   buildSites = [],
   onBuildSite,
+  beaconSites = [],
+  onBeaconSite,
+  onHost,
+  selectedHosts = {},
 }: Props) {
   const options = state.drawnTile
     ? getLegalTilePlacements(state.board, state.drawnTile)
     : [];
+
+  /* GDD §10: a Host anywhere in a feature shuts the whole feature down, so the
+     shading has to cover the feature rather than the single occupied tile. */
+  const occupiedFeature = new Set(
+    state.hosts.flatMap((host) => getConnectedFeature(state.board, host.at)),
+  );
   const legalKeys = new Set(options.map((o) => coordKey(o.at)));
 
   const coords = [
@@ -103,7 +130,7 @@ export function Board({
       {Object.entries(state.board).map(([key, tile]) => {
         const [x, y] = key.split(',').map(Number) as [number, number];
         const { x: left, y: top } = px({ x, y });
-        const occupied = state.occupiedTiles.includes(key);
+        const occupied = occupiedFeature.has(key);
         return (
           <g key={key} transform={`translate(${left} ${top})`}>
             <rect
@@ -169,6 +196,118 @@ export function Board({
               stroke={INK}
               strokeWidth={3}
               strokeDasharray="6 3"
+            />
+          </g>
+        );
+      })}
+
+      {/* Beacons: where Heaven descends */}
+      {state.beacons.map((at) => {
+        const { x, y } = px(at);
+        return (
+          <g key={`beacon-${coordKey(at)}`} transform={`translate(${x} ${y})`}>
+            <circle cx={CELL / 2} cy={CELL / 2} r={CELL * 0.42} fill={BEACON_LIGHT} opacity={0.28} />
+            <path
+              d={`M ${CELL / 2 - 7} ${CELL - 8} L ${CELL / 2 - 3} 6 L ${CELL / 2 + 3} 6 L ${
+                CELL / 2 + 7
+              } ${CELL - 8} Z`}
+              fill={BEACON_LIGHT}
+              opacity={0.9}
+            />
+          </g>
+        );
+      })}
+
+      {/* Heavenly Hosts */}
+      {state.hosts.map((host, index) => {
+        const { x, y } = px(host.at);
+        /* Stacked Hosts fan out slightly so they stay countable. */
+        const offset = index % 3 === 0 ? 0 : index % 3 === 1 ? -9 : 9;
+        const chosen = selectedHosts[host.id] ?? 0;
+        return (
+          <g
+            key={`host-${host.id}`}
+            transform={`translate(${x + offset} ${y})`}
+            onClick={() => onHost?.(host.id)}
+            style={{ cursor: onHost ? 'pointer' : 'default' }}
+          >
+            {host.kind === 'seraph' ? (
+              <>
+                {host.shieldUp && (
+                  <circle
+                    cx={CELL / 2}
+                    cy={CELL / 2}
+                    r={CELL * 0.33}
+                    fill="none"
+                    stroke={HEAVEN_IVORY}
+                    strokeWidth={3}
+                    opacity={0.95}
+                  />
+                )}
+                <ellipse
+                  cx={CELL / 2}
+                  cy={CELL / 2}
+                  rx={CELL * 0.17}
+                  ry={CELL * 0.26}
+                  fill={SERAPH_CORE}
+                  stroke={HEAVEN_GOLD}
+                  strokeWidth={2}
+                />
+              </>
+            ) : (
+              <>
+                <circle
+                  cx={CELL / 2}
+                  cy={CELL / 2}
+                  r={CELL * 0.26}
+                  fill={HEAVEN_IVORY}
+                  stroke={HEAVEN_GOLD}
+                  strokeWidth={3}
+                />
+                <circle
+                  cx={CELL / 2}
+                  cy={CELL / 2}
+                  r={CELL * 0.13}
+                  fill="none"
+                  stroke={HEAVEN_GOLD}
+                  strokeWidth={2}
+                />
+              </>
+            )}
+            {chosen > 0 && (
+              <text
+                x={CELL / 2}
+                y={CELL / 2 + 4}
+                textAnchor="middle"
+                fontSize={12}
+                fontWeight={700}
+                fill="#a33"
+                fontFamily="system-ui"
+              >
+                {chosen}
+              </text>
+            )}
+          </g>
+        );
+      })}
+
+      {/* Squares offered while siting a Beacon */}
+      {beaconSites.map((at) => {
+        const { x, y } = px(at);
+        return (
+          <g
+            key={`bs-${coordKey(at)}`}
+            transform={`translate(${x} ${y})`}
+            onClick={() => onBeaconSite?.(at)}
+            style={{ cursor: 'pointer' }}
+          >
+            <rect
+              width={CELL}
+              height={CELL}
+              fill={BEACON_LIGHT}
+              opacity={0.3}
+              stroke={HEAVEN_GOLD}
+              strokeWidth={3}
             />
           </g>
         );

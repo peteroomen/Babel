@@ -25,7 +25,10 @@ function table(
     ...base,
     board: { ...BOARD },
     buildings,
-    occupiedTiles: occupied,
+    hosts: occupied.map((key, i) => {
+      const [x, y] = key.split(',').map(Number) as [number, number];
+      return { id: `h${i}`, kind: 'ophanim' as const, at: { x, y }, shieldUp: false };
+    }),
     /* Put the Forest tile in the active Leader's hand and let them act. */
     drawnTile: { terrain: 'forest', river: 'none' },
     currentPlayerIndex: 0,
