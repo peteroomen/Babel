@@ -42,6 +42,28 @@ Use **TypeScript + React + Vite + Vitest**, with a pure deterministic `game-core
 
 The art/tone target is a **cheerful, handmade civic project to murder God, besieged by horrifying-but-cute celestial geometry**. See `ART_DIRECTION.md`.
 
+## Repository layout
+
+```text
+packages/game-core   pure deterministic rules; no framework imports
+packages/game-data   TUNEABLE values: terrain weights, player-count scaling
+apps/web             hot-seat UI, drives game-core directly
+spike/boardgame-io   maintained multiplayer spike (see ADR-001)
+```
+
+```bash
+npm install
+npm test          # vitest, all packages and the spike
+npm run typecheck
+npm run dev       # hot-seat app
+```
+
 ## Next implementation step
 
-Start with the Milestone 0 framework spike and Milestone 1 spatial-economy vertical slice in `IMPLEMENTATION_PLAN.md`. Keep the first PR small enough to review: grid, terrain/rivers, feature detection, payouts, hot-seat turn rotation, deterministic RNG/logging, and tests.
+Milestone 0 is complete: see `docs/ADR-001-framework.md` for the orchestration
+decision and `docs/RULES_DECISIONS.md` for interpretations of under-specified
+canon.
+
+Milestone 1 is next — the spatial-economy vertical slice in
+`IMPLEMENTATION_PLAN.md`: river-aware tile placement, connected-feature
+detection, resource payouts, and the board UI.
