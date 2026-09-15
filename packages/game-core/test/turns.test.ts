@@ -19,7 +19,7 @@ export function playTurn(state: GameState): GameState {
   if (!option) throw new Error('no legal placement available');
   return run(state, [
     { type: 'placeTile', player: me, at: option.at, rotation: option.rotations[0]! },
-    { type: 'takeAction', player: me, action: 'pass' },
+    { type: 'pass', player: me },
   ]);
 }
 
@@ -62,7 +62,7 @@ describe('turn structure', () => {
 
     expect(state.turnStep).toBe('place');
     expect(() =>
-      applyMove(state, { type: 'takeAction', player: me, action: 'pass' }),
+      applyMove(state, { type: 'pass', player: me }),
     ).toThrow(/place your tile first/);
 
     const placed = applyMove(state, {

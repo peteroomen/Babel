@@ -1,15 +1,16 @@
 /**
- * Milestone 1 — spatial economy vertical slice.
+ * Milestones 1-2 — spatial economy, industry, Babel and Prestige.
  *
- * All legality and payout questions go to `game-core`; nothing here reimplements
- * a rule. The UI's only job is to render what the core says is possible and to
- * send back commands.
+ * All legality questions go to `game-core`; nothing here reimplements a rule.
+ * The UI renders what the core says is possible and sends back commands.
  */
 import { useMemo, useState } from 'react';
+import { RESOURCE_TYPES, type BuildingType, type ResourceType } from '@babel-game/game-data';
 import {
   applyMove,
   coordKey,
   currentPlayer,
+  getLegalActions,
   getLegalTilePlacements,
   previewPlacement,
   setupGame,
@@ -19,60 +20,80 @@ import {
   type Rotation,
 } from '@babel-game/game-core';
 import { Board } from './Board.js';
-import { LeaderPanel, LogPanel } from './Panels.js';
-import { RESOURCE_LABEL, TERRAIN_LABEL, INK } from './theme.js';
+import { BabelPanel, LeaderPanel, LogPanel } from './Panels.js';
+import { BUILDING_LABEL, RESOURCE_LABEL, TERRAIN_LABEL, INK } from './theme.js';
 
-/** Actions beyond Pass arrive in Milestone 2 and 3; shown so the gap is visible. */
+/** Actions that arrive in later milestones, shown so the gap stays visible. */
 const DEFERRED_ACTIONS = [
-  ['Build', 'Milestone 2'],
-  ['Babel', 'Milestone 2'],
   ['Attack', 'Milestone 3'],
   ['Muster', 'Milestone 3'],
+  ['Walls', 'Milestone 4'],
   ['Scheme', 'Milestone 5'],
-  ['Barter', 'Milestone 2'],
 ] as const;
 
 const NAMES = ['Ada', 'Peter', 'Rook', 'Vex'];
+type Mode = { kind: 'idle' } | { kind: 'build' } | { kind: 'barter' };
+
+const panel: React.CSSProperties = {
+  marginTop: 12,
+  padding: 12,
+  border: '1px solid #00000022',
+  borderRadius: 10,
+  background: '#fffdf8',
+};
 
 export function App() {
   const [leaderCount, setLeaderCount] = useState(2);
   const [seed, setSeed] = useState('babel-1');
-  const [state, setState] = useState<GameState>(() =>
-    setupGame(NAMES.slice(0, 2), 'babel-1'),
-  );
+  const [state, setState] = useState<GameState>(() => setupGame(NAMES.slice(0, 2), 'babel-1'));
   const [selected, setSelected] = useState<Coord | null>(null);
   const [rotationIndex, setRotationIndex] = useState(0);
+  const [mode, setMode] = useState<Mode>({ kind: 'idle' });
+  const [spend, setSpend] = useState<ResourceType[]>([]);
 
   const options = useMemo(
     () => (state.drawnTile ? getLegalTilePlacements(state.board, state.drawnTile) : []),
     [state.board, state.drawnTile],
   );
+  const active = currentPlayer(state);
+  const legal = useMemo(() => getLegalActions(state, active), [state, active]);
 
   const selectedOption = selected
     ? options.find((o) => coordKey(o.at) === coordKey(selected))
     : undefined;
   const rotation: Rotation =
     selectedOption?.rotations[rotationIndex % selectedOption.rotations.length] ?? 0;
-
   const preview =
     selectedOption && state.drawnTile
       ? previewPlacement(state, selectedOption.at, state.drawnTile, rotation)
       : null;
 
-  const active = currentPlayer(state);
-  const dispatch = (command: Command) => {
-    setState(applyMove(state, command).state);
+  const buildAction = legal.find((a) => a.type === 'buildHarvester');
+  const babelAction = legal.find((a) => a.type === 'buildBabel');
+  const canBarter = legal.some((a) => a.type === 'barter');
+
+  const reset = () => {
     setSelected(null);
     setRotationIndex(0);
+    setMode({ kind: 'idle' });
+    setSpend([]);
+  };
+
+  const dispatch = (command: Command) => {
+    setState(applyMove(state, command).state);
+    reset();
   };
 
   const restart = (count: number, nextSeed: string) => {
     setLeaderCount(count);
     setSeed(nextSeed);
     setState(setupGame(NAMES.slice(0, count), nextSeed));
-    setSelected(null);
-    setRotationIndex(0);
+    reset();
   };
+
+  const leader = state.leaders[active];
+  const buildingsOf = (id: string) =>
+    Object.values(state.buildings).filter((b) => b.owner === id).length;
 
   return (
     <main
@@ -92,10 +113,7 @@ export function App() {
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, fontSize: 13 }}>
           <label>
             Leaders{' '}
-            <select
-              value={leaderCount}
-              onChange={(e) => restart(Number(e.target.value), seed)}
-            >
+            <select value={leaderCount} onChange={(e) => restart(Number(e.target.value), seed)}>
               {[2, 3, 4].map((n) => (
                 <option key={n} value={n}>
                   {n}
@@ -103,9 +121,7 @@ export function App() {
               ))}
             </select>
           </label>
-          <button onClick={() => restart(leaderCount, `babel-${Date.now()}`)}>
-            New game
-          </button>
+          <button onClick={() => restart(leaderCount, `babel-${Date.now()}`)}>New game</button>
         </div>
       </header>
 
@@ -119,95 +135,190 @@ export function App() {
               setSelected(at);
               setRotationIndex(0);
             }}
+            buildSites={mode.kind === 'build' && buildAction ? buildAction.sites.map((s) => s.at) : []}
+            onBuildSite={(at) => {
+              const site = buildAction?.sites.find((s) => coordKey(s.at) === coordKey(at));
+              if (site) {
+                dispatch({
+                  type: 'buildHarvester',
+                  player: active,
+                  at: site.at,
+                  building: site.type as BuildingType,
+                });
+              }
+            }}
           />
 
-          <div
-            style={{
-              marginTop: 12,
-              padding: 12,
-              border: '1px solid #00000022',
-              borderRadius: 10,
-              background: '#fffdf8',
-            }}
-          >
-            {state.turnStep === 'place' && state.drawnTile ? (
-              <>
-                <div style={{ fontSize: 14 }}>
-                  <strong>{state.leaders[active]?.name}</strong> drew{' '}
-                  <strong>{TERRAIN_LABEL[state.drawnTile.terrain]}</strong>
-                  {state.drawnTile.river !== 'none' && ` with a ${state.drawnTile.river} river`}.{' '}
-                  {selectedOption
-                    ? 'Confirm or rotate.'
-                    : `Choose one of ${options.length} legal squares.`}
-                </div>
-
-                {selectedOption && (
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: 10,
-                      alignItems: 'center',
-                      flexWrap: 'wrap',
-                      marginTop: 10,
-                    }}
-                  >
-                    <span style={{ fontSize: 13 }}>
-                      Projected payout:{' '}
-                      <strong>
-                        {preview
-                          ? `${preview.amount} ${RESOURCE_LABEL[preview.resource]}`
-                          : state.drawnTile.terrain === 'desert'
-                            ? 'none (Desert)'
-                            : 'none (feature occupied)'}
-                      </strong>
-                    </span>
-                    {selectedOption.rotations.length > 1 && (
-                      <button onClick={() => setRotationIndex((r) => r + 1)}>
-                        Rotate ({rotationIndex % selectedOption.rotations.length + 1}/
-                        {selectedOption.rotations.length})
-                      </button>
-                    )}
-                    <button
-                      onClick={() =>
-                        dispatch({
-                          type: 'placeTile',
-                          player: active,
-                          at: selectedOption.at,
-                          rotation,
-                        })
-                      }
-                    >
-                      Place here
-                    </button>
-                    <button onClick={() => setSelected(null)}>Cancel</button>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 14 }}>
-                  <strong>{state.leaders[active]?.name}</strong> takes one action:
-                </span>
-                <button
-                  onClick={() =>
-                    dispatch({ type: 'takeAction', player: active, action: 'pass' })
-                  }
-                >
-                  Pass
-                </button>
-                {DEFERRED_ACTIONS.map(([label, milestone]) => (
-                  <button key={label} disabled title={`Arrives in ${milestone}`}>
-                    {label}
-                  </button>
-                ))}
+          {state.phase === 'gameOver' ? (
+            <div style={panel}>
+              <strong>Babel is complete. Humanity survives.</strong>
+              <div style={{ fontSize: 13, marginTop: 6 }}>
+                {state.winner
+                  ? `${state.leaders[state.winner]?.name} is remembered as its greatest hero.`
+                  : 'Prestige is tied — nobody is remembered above the rest.'}
               </div>
-            )}
-          </div>
+            </div>
+          ) : state.turnStep === 'place' && state.drawnTile ? (
+            <div style={panel}>
+              <div style={{ fontSize: 14 }}>
+                <strong>{leader?.name}</strong> drew{' '}
+                <strong>{TERRAIN_LABEL[state.drawnTile.terrain]}</strong>
+                {state.drawnTile.river !== 'none' && ` with a ${state.drawnTile.river} river`}.{' '}
+                {selectedOption
+                  ? 'Confirm or rotate.'
+                  : `Choose one of ${options.length} legal squares.`}
+              </div>
+
+              {selectedOption && (
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 10,
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    marginTop: 10,
+                  }}
+                >
+                  <span style={{ fontSize: 13 }}>
+                    Projected payout:{' '}
+                    <strong>
+                      {preview
+                        ? `${preview.amount} ${RESOURCE_LABEL[preview.resource]}`
+                        : state.drawnTile.terrain === 'desert'
+                          ? 'none (Desert)'
+                          : 'none (feature occupied)'}
+                    </strong>
+                  </span>
+                  {selectedOption.rotations.length > 1 && (
+                    <button onClick={() => setRotationIndex((r) => r + 1)}>
+                      Rotate ({(rotationIndex % selectedOption.rotations.length) + 1}/
+                      {selectedOption.rotations.length})
+                    </button>
+                  )}
+                  <button
+                    onClick={() =>
+                      dispatch({
+                        type: 'placeTile',
+                        player: active,
+                        at: selectedOption.at,
+                        rotation,
+                      })
+                    }
+                  >
+                    Place here
+                  </button>
+                  <button onClick={() => setSelected(null)}>Cancel</button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={panel}>
+              <div style={{ fontSize: 14, marginBottom: 10 }}>
+                <strong>{leader?.name}</strong> takes exactly one action.
+              </div>
+
+              {mode.kind === 'idle' && (
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button
+                    disabled={!buildAction}
+                    title={buildAction ? 'Choose a site on the board' : 'No legal building site'}
+                    onClick={() => setMode({ kind: 'build' })}
+                  >
+                    Build
+                  </button>
+                  <button
+                    disabled={!babelAction}
+                    title={
+                      babelAction
+                        ? `Costs ${Object.entries(babelAction.cost)
+                            .map(([r, n]) => `${n} ${RESOURCE_LABEL[r as ResourceType]}`)
+                            .join(' + ')}`
+                        : 'Cannot afford a piece'
+                    }
+                    onClick={() => dispatch({ type: 'buildBabel', player: active })}
+                  >
+                    Babel
+                  </button>
+                  <button
+                    disabled={!canBarter}
+                    title={canBarter ? 'Discard 3 cards for 1' : 'Need 3 resource cards'}
+                    onClick={() => setMode({ kind: 'barter' })}
+                  >
+                    Barter
+                  </button>
+                  <button onClick={() => dispatch({ type: 'pass', player: active })}>Pass</button>
+                  {DEFERRED_ACTIONS.map(([label, milestone]) => (
+                    <button key={label} disabled title={`Arrives in ${milestone}`}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {mode.kind === 'build' && buildAction && (
+                <div style={{ fontSize: 13 }}>
+                  Choose one of {buildAction.sites.length} highlighted sites.{' '}
+                  {[...new Set(buildAction.sites.map((s) => s.type))]
+                    .map((t) => BUILDING_LABEL[t as BuildingType])
+                    .join(', ')}
+                  .{' '}
+                  <button onClick={() => setMode({ kind: 'idle' })}>Cancel</button>
+                </div>
+              )}
+
+              {mode.kind === 'barter' && leader && (
+                <div style={{ fontSize: 13 }}>
+                  <div>Discard any 3 cards ({spend.length}/3 chosen):</div>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '8px 0' }}>
+                    {RESOURCE_TYPES.map((resource) => {
+                      const held =
+                        leader.resources[resource] -
+                        spend.filter((s) => s === resource).length;
+                      return (
+                        <button
+                          key={resource}
+                          disabled={held <= 0 || spend.length >= 3}
+                          onClick={() => setSpend((s) => [...s, resource])}
+                        >
+                          {RESOURCE_LABEL[resource]} ({held})
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {spend.length === 3 && (
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      <span>Gain:</span>
+                      {RESOURCE_TYPES.map((resource) => (
+                        <button
+                          key={resource}
+                          onClick={() =>
+                            dispatch({ type: 'barter', player: active, spend, gain: resource })
+                          }
+                        >
+                          {RESOURCE_LABEL[resource]}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <button onClick={() => reset()} style={{ marginTop: 8 }}>
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </section>
 
         <aside style={{ display: 'grid', gap: 12, minWidth: 0 }}>
-          {state.order.map((id) => (
-            <LeaderPanel key={id} leader={state.leaders[id]!} isActive={id === active} />
+          <BabelPanel state={state} />
+          {state.order.map((id, seat) => (
+            <LeaderPanel
+              key={id}
+              leader={state.leaders[id]!}
+              isActive={id === active}
+              seat={seat}
+              buildings={buildingsOf(id)}
+            />
           ))}
           <LogPanel state={state} />
         </aside>

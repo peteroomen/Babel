@@ -5,8 +5,6 @@ import { createRng, nextInt, weightedPick, type RngState } from '../rng/index.js
 import { BABEL_COORD, START_TILE_COORD } from './babel.js';
 import type { GameState, LeaderState, PlayerId, TileDraw } from './types.js';
 
-export { BABEL_COORD, START_TILE_COORD };
-
 /** How many unplaceable tiles to discard before giving up. See RD-002. */
 const MAX_REDRAWS = 50;
 
@@ -84,6 +82,8 @@ export function setupGame(names: readonly string[], seed: string): GameState {
     firstPlayerIndex: first,
     leaders,
     board,
+    buildings: {},
+    babel: { stack: [], foundationOccupied: false },
     drawnTile: draw,
     occupiedTiles: [],
     pendingVote: null,

@@ -28,7 +28,7 @@ function Board({ G, moves }: BoardProps<GameState>) {
       >
         Place first legal tile
       </button>
-      <button onClick={() => m.takeAction('pass')}>Pass</button>
+      <button onClick={() => m.pass()}>Pass</button>
       <ol>
         {G.log.slice(-10).map((e, i) => (
           <li key={i}>{e.type}</li>

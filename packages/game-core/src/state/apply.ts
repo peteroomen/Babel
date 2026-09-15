@@ -1,3 +1,19 @@
+import {
+  BARTER_COST,
+  BUILDINGS,
+  BUILDING_PRESTIGE,
+  RESOURCE_TYPES,
+  type ResourceType,
+} from '@babel-game/game-data';
+import {
+  canBuildBabel,
+  isBabelComplete,
+  piecePrestige,
+  pieceCost,
+  stageAfterPiece,
+} from '../babel/index.js';
+import { canBuildHarvester, paySpecific } from '../buildings/index.js';
+import { resolveHarvest } from '../economy/harvest.js';
 import { placementPayout } from '../economy/payout.js';
 import { coordKey } from '../map/edges.js';
 import { isLegalPlacement, type Board } from '../map/placement.js';
@@ -8,12 +24,33 @@ import type {
   Command,
   GameEvent,
   GameState,
+  LeaderState,
   PendingVote,
   PlayerId,
 } from './types.js';
 
 export function currentPlayer(state: GameState): PlayerId {
   return state.order[state.currentPlayerIndex] as PlayerId;
+}
+
+const leaderOf = (state: GameState, id: PlayerId): LeaderState =>
+  state.leaders[id] as LeaderState;
+
+/** Add resources to one Leader without touching the others. */
+function credit(
+  state: GameState,
+  id: PlayerId,
+  resource: ResourceType,
+  amount: number,
+): GameState['leaders'] {
+  const leader = leaderOf(state, id);
+  return {
+    ...state.leaders,
+    [id]: {
+      ...leader,
+      resources: { ...leader.resources, [resource]: leader.resources[resource] + amount },
+    },
+  };
 }
 
 /**
@@ -105,6 +142,14 @@ function endTurn(state: GameState): { state: GameState; events: GameEvent[] } {
   };
 }
 
+/** Shared preconditions for the one action a Leader takes each turn. */
+function requireActionPhase(state: GameState, player: PlayerId): void {
+  if (state.phase === 'gameOver') throw new Error('the game is over');
+  if (state.pendingVote) throw new Error('a vote is open');
+  if (player !== currentPlayer(state)) throw new Error('not your turn');
+  if (state.turnStep !== 'action') throw new Error('place your tile first');
+}
+
 /**
  * The single authoritative state transition. Pure: the same state plus the same
  * command always yields the same result, with all randomness drawn from the
@@ -116,6 +161,14 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
     state: { ...next, log: [...state.log, ...events] },
     events,
   });
+
+  /** Log the action, then hand the turn on. */
+  const finishAction = (next: GameState, action: string): ApplyResult => {
+    events.push({ type: 'actionTaken', player: command.player, action });
+    const ended = endTurn(next);
+    events.push(...ended.events);
+    return commit(ended.state);
+  };
 
   switch (command.type) {
     case 'castVote': {
@@ -139,6 +192,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
     }
 
     case 'placeTile': {
+      if (state.phase === 'gameOver') throw new Error('the game is over');
       if (state.pendingVote) throw new Error('a vote is open');
       if (command.player !== currentPlayer(state)) throw new Error('not your turn');
       if (state.turnStep !== 'place') throw new Error('tile already placed this turn');
@@ -163,30 +217,32 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         rotation: command.rotation,
       });
 
+      let next: GameState = { ...state, board };
+
+      /* GDD §9: foreign harvesting buildings first, so the placer's +1 is known. */
+      const harvest = resolveHarvest(
+        board,
+        state.buildings,
+        state.occupiedTiles,
+        command.at,
+        draw,
+        command.player,
+      );
+
       /* GDD §6 payout, suppressed inside an occupied feature by GDD §10. */
       const payout = placementPayout(board, state.occupiedTiles, command.at, draw);
-      const leader = state.leaders[command.player] as GameState['leaders'][string];
-      let leaders = state.leaders;
 
       if (payout) {
+        const total = payout.amount + (harvest ? harvest.placerBonus : 0);
         events.push({
           type: 'resourcesGained',
           player: command.player,
           resource: payout.resource,
-          amount: payout.amount,
+          amount: total,
           source: 'placement',
         });
-        leaders = {
-          ...state.leaders,
-          [command.player]: {
-            ...leader,
-            resources: {
-              ...leader.resources,
-              [payout.resource]: leader.resources[payout.resource] + payout.amount,
-            },
-          },
-        };
-      } else if (basePaysSomething(draw.terrain)) {
+        next = { ...next, leaders: credit(next, command.player, payout.resource, total) };
+      } else if (draw.terrain !== 'desert' && draw.terrain !== 'lake') {
         events.push({
           type: 'payoutSuppressed',
           player: command.player,
@@ -195,25 +251,173 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         });
       }
 
-      return commit({ ...state, board, leaders, drawnTile: null, turnStep: 'action' });
+      if (harvest) {
+        events.push({
+          type: 'harvestTriggered',
+          placer: command.player,
+          owners: harvest.owners,
+          resource: harvest.resource,
+          amount: harvest.amount,
+          placerBonus: harvest.placerBonus,
+        });
+        for (const owner of harvest.owners) {
+          events.push({
+            type: 'resourcesGained',
+            player: owner,
+            resource: harvest.resource,
+            amount: harvest.amount,
+            source: 'harvest',
+          });
+          next = { ...next, leaders: credit(next, owner, harvest.resource, harvest.amount) };
+        }
+      }
+
+      return commit({ ...next, drawnTile: null, turnStep: 'action' });
     }
 
-    case 'takeAction': {
-      if (state.pendingVote) throw new Error('a vote is open');
-      if (command.player !== currentPlayer(state)) throw new Error('not your turn');
-      if (state.turnStep !== 'action') throw new Error('place your tile first');
+    case 'buildHarvester': {
+      requireActionPhase(state, command.player);
+      const leader = leaderOf(state, command.player);
+      const rejection = canBuildHarvester(
+        state.board,
+        state.buildings,
+        leader,
+        command.at,
+        command.building,
+      );
+      if (rejection) throw new Error(`cannot build: ${rejection}`);
 
-      events.push({ type: 'actionTaken', player: command.player, action: command.action });
-      const ended = endTurn(state);
-      events.push(...ended.events);
-      return commit(ended.state);
+      events.push({
+        type: 'buildingConstructed',
+        player: command.player,
+        at: command.at,
+        building: command.building,
+      });
+      /* GDD §9: constructing a harvesting building gives +1 Prestige. */
+      events.push({
+        type: 'prestigeGained',
+        player: command.player,
+        amount: BUILDING_PRESTIGE,
+        source: 'building',
+      });
+
+      return finishAction(
+        {
+          ...state,
+          buildings: {
+            ...state.buildings,
+            [coordKey(command.at)]: { type: command.building, owner: command.player },
+          },
+          leaders: {
+            ...state.leaders,
+            [command.player]: {
+              ...leader,
+              resources: paySpecific(leader, BUILDINGS[command.building].cost),
+              prestige: leader.prestige + BUILDING_PRESTIGE,
+            },
+          },
+        },
+        `build ${command.building}`,
+      );
+    }
+
+    case 'buildBabel': {
+      requireActionPhase(state, command.player);
+      /* GDD §2: Babel cannot be built while a Host occupies the Foundation. */
+      if (state.babel.foundationOccupied) {
+        throw new Error('the Foundation is occupied');
+      }
+      const leader = leaderOf(state, command.player);
+      if (!canBuildBabel(leader, state.stage)) throw new Error('cannot afford a Babel piece');
+
+      const prestige = piecePrestige(state.stage);
+      const babel = { ...state.babel, stack: [...state.babel.stack, command.player] };
+
+      events.push({
+        type: 'babelPieceBuilt',
+        player: command.player,
+        stage: state.stage,
+        pieces: babel.stack.length,
+      });
+      events.push({
+        type: 'prestigeGained',
+        player: command.player,
+        amount: prestige,
+        source: 'babel',
+      });
+
+      let next: GameState = {
+        ...state,
+        babel,
+        leaders: {
+          ...state.leaders,
+          [command.player]: {
+            ...leader,
+            resources: paySpecific(leader, pieceCost(state.stage)),
+            prestige: leader.prestige + prestige,
+          },
+        },
+      };
+
+      /* GDD §12: permanent escalation at the end of Stage I and Stage II. */
+      const stage = stageAfterPiece(babel, state.stage, state.order.length);
+      if (stage !== state.stage) {
+        events.push({ type: 'stageEscalated', from: state.stage, to: stage });
+        next = { ...next, stage };
+      }
+
+      /* GDD §2: completing the final piece wins the game for humanity. */
+      if (isBabelComplete(babel, state.order.length)) {
+        const best = Math.max(...Object.values(next.leaders).map((l) => l.prestige));
+        const topPrestige = next.order.filter((id) => next.leaders[id]!.prestige === best);
+        events.push({ type: 'humanityWins', topPrestige });
+        return commit({
+          ...next,
+          phase: 'gameOver',
+          turnStep: 'action',
+          drawnTile: null,
+          winner: topPrestige.length === 1 ? (topPrestige[0] as PlayerId) : null,
+        });
+      }
+
+      return finishAction(next, 'babel');
+    }
+
+    case 'barter': {
+      requireActionPhase(state, command.player);
+      /* GDD §8: discard any 3 resource cards to gain 1 of your choice. */
+      if (command.spend.length !== BARTER_COST) {
+        throw new Error(`Barter discards exactly ${BARTER_COST} resources`);
+      }
+      if (!RESOURCE_TYPES.includes(command.gain)) throw new Error('unknown resource');
+
+      const leader = leaderOf(state, command.player);
+      const resources = { ...leader.resources };
+      for (const resource of command.spend) {
+        if (!RESOURCE_TYPES.includes(resource)) throw new Error('unknown resource');
+        if (resources[resource] <= 0) throw new Error('not enough resources to Barter');
+        resources[resource] -= 1;
+      }
+      resources[command.gain] += 1;
+
+      events.push({
+        type: 'bartered',
+        player: command.player,
+        spent: command.spend,
+        gained: command.gain,
+      });
+
+      return finishAction(
+        { ...state, leaders: { ...state.leaders, [command.player]: { ...leader, resources } } },
+        'barter',
+      );
+    }
+
+    case 'pass': {
+      requireActionPhase(state, command.player);
+      return finishAction(state, 'pass');
     }
   }
-}
-
-/** Desert and Lake never pay, so a missing payout there is not suppression. */
-function basePaysSomething(terrain: string): boolean {
-  return terrain !== 'desert' && terrain !== 'lake';
 }
 
 /**

@@ -42,9 +42,9 @@ export const BabelSpike: Game<GameState> = {
       }
     },
 
-    takeAction: ({ G, playerID }, action: string) => {
+    pass: ({ G, playerID }) => {
       try {
-        return applyMove(G, { type: 'takeAction', player: toCore(playerID), action }).state;
+        return applyMove(G, { type: 'pass', player: toCore(playerID) }).state;
       } catch {
         return INVALID_MOVE;
       }

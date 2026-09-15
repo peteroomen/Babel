@@ -13,7 +13,7 @@ import type { Coord, Rotation } from '@babel-game/game-core';
 
 export type BabelMoves = {
   placeTile(at: Coord, rotation: Rotation): void;
-  takeAction(action: string): void;
+  pass(): void;
   castVote(option: number): void;
   openVote(): void;
 };

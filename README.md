@@ -54,7 +54,8 @@ spike/boardgame-io   maintained multiplayer spike (see ADR-001)
 ```bash
 npm install
 npm test          # vitest, all packages and the spike
-npm run typecheck
+npm run typecheck # packages, web app and spike
+npm run verify    # typecheck + tests
 npm run dev       # hot-seat app
 ```
 
@@ -67,13 +68,21 @@ npm run dev       # hot-seat app
   detection, adjacency payouts with occupation suppression, 2–4 hot-seat
   Leaders, and a board UI that highlights legal squares and projects the payout
   before you commit.
-- **Milestone 2 — industry, Babel and Prestige.** Next.
+- **Milestone 2 — industry, Babel and Prestige.** Complete. Sawmill, Farmstead,
+  Brickworks and Mine with per-feature ownership; the foreign expansion trigger
+  paying every foreign owner plus a single +1 to the placer; Babel's growing
+  stack with permanent Stage escalation and shared victory; Barter; Prestige
+  for buildings and Babel pieces.
+- **Milestone 3 — Heaven.** Next: Beacons, Ophanim Hosts, shortest-path
+  movement, Babel strikes, Army dice and Seraphs. Until it lands there is no
+  way to lose.
 
 Interpretations of under-specified canon are recorded in
 `docs/RULES_DECISIONS.md`.
 
-## What Milestone 1 does not do yet
+## What is not implemented yet
 
-Only Pass is implemented as an action; Build, Babel, Attack, Muster, Scheme and
-Barter arrive in Milestones 2–5 and appear disabled in the UI. There are no
-Hosts, so `occupiedTiles` is populated only by tests until Milestone 3.
+Build (harvesters), Babel, Barter and Pass are live. Attack, Muster, Walls and
+Scheme arrive in Milestones 3–5 and appear disabled in the UI. There are no
+Hosts yet, so `occupiedTiles` is populated only by tests until Milestone 3 —
+which also means humanity cannot currently lose.

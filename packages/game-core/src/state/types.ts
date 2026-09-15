@@ -1,4 +1,10 @@
-import type { ResourceType, RiverShape, TerrainType } from '@babel-game/game-data';
+import type {
+  BuildingType,
+  ResourceType,
+  RiverShape,
+  Stage,
+  TerrainType,
+} from '@babel-game/game-data';
 import type { Coord, Rotation } from '../map/edges.js';
 import type { RngState } from '../rng/index.js';
 
@@ -18,6 +24,22 @@ export type TileDraw = {
 
 /** A tile on the board. River edges are derived from shape + rotation. */
 export type PlacedTile = TileDraw & { readonly rotation: Rotation };
+
+/** GDD §3: land is communal, buildings are player-owned, one per land tile. */
+export type Building = {
+  readonly type: BuildingType;
+  readonly owner: PlayerId;
+};
+
+/**
+ * GDD §12. `stack` holds the Leader who built each piece, oldest first, so
+ * Heaven can remove the most recently built piece in Milestone 3.
+ */
+export type BabelState = {
+  readonly stack: readonly PlayerId[];
+  /** GDD §2: set once the Foundation itself is occupied at zero pieces. */
+  readonly foundationOccupied: boolean;
+};
 
 export type LeaderState = {
   readonly id: PlayerId;
@@ -43,7 +65,8 @@ export type PendingVote = {
 
 export type GameState = {
   readonly round: number;
-  readonly stage: 1 | 2 | 3;
+  /** Permanent difficulty Stage. GDD §12: escalation never reverses. */
+  readonly stage: Stage;
   readonly phase: Phase;
   readonly turnStep: TurnStep;
   readonly order: readonly PlayerId[];
@@ -51,6 +74,8 @@ export type GameState = {
   readonly firstPlayerIndex: number;
   readonly leaders: Readonly<Record<PlayerId, LeaderState>>;
   readonly board: Readonly<Record<string, PlacedTile>>;
+  readonly buildings: Readonly<Record<string, Building>>;
+  readonly babel: BabelState;
   /** The tile drawn at the start of the current turn, awaiting placement. */
   readonly drawnTile: TileDraw | null;
   /**
@@ -93,7 +118,7 @@ export type GameEvent =
       readonly player: PlayerId;
       readonly resource: ResourceType;
       readonly amount: number;
-      readonly source: 'placement';
+      readonly source: 'placement' | 'harvest';
     }
   /** GDD §10: the placement fell inside an occupied feature. */
   | {
@@ -103,6 +128,43 @@ export type GameEvent =
       readonly reason: 'featureOccupied';
     }
   | { readonly type: 'actionTaken'; readonly player: PlayerId; readonly action: string }
+  /** GDD §9: foreign harvesting buildings paid out on someone else's placement. */
+  | {
+      readonly type: 'harvestTriggered';
+      readonly placer: PlayerId;
+      readonly owners: readonly PlayerId[];
+      readonly resource: ResourceType;
+      readonly amount: number;
+      readonly placerBonus: number;
+    }
+  | {
+      readonly type: 'buildingConstructed';
+      readonly player: PlayerId;
+      readonly at: Coord;
+      readonly building: BuildingType;
+    }
+  | {
+      readonly type: 'babelPieceBuilt';
+      readonly player: PlayerId;
+      readonly stage: Stage;
+      readonly pieces: number;
+    }
+  /** GDD §12: reaching the end of a Stage escalates Heaven permanently. */
+  | { readonly type: 'stageEscalated'; readonly from: Stage; readonly to: Stage }
+  | {
+      readonly type: 'bartered';
+      readonly player: PlayerId;
+      readonly spent: readonly ResourceType[];
+      readonly gained: ResourceType;
+    }
+  | {
+      readonly type: 'prestigeGained';
+      readonly player: PlayerId;
+      readonly amount: number;
+      readonly source: 'babel' | 'building' | 'combat' | 'tower' | 'walls';
+    }
+  /** GDD §2: humanity completes Babel; highest Prestige wins individually. */
+  | { readonly type: 'humanityWins'; readonly topPrestige: readonly PlayerId[] }
   | { readonly type: 'turnEnded'; readonly player: PlayerId }
   | { readonly type: 'heavenPhase'; readonly round: number }
   | { readonly type: 'voteOpened'; readonly id: string; readonly question: string }
@@ -121,7 +183,21 @@ export type Command =
       readonly at: Coord;
       readonly rotation: Rotation;
     }
-  | { readonly type: 'takeAction'; readonly player: PlayerId; readonly action: string }
+  /** GDD §11: exactly one of these per turn, after the tile is placed. */
+  | {
+      readonly type: 'buildHarvester';
+      readonly player: PlayerId;
+      readonly at: Coord;
+      readonly building: BuildingType;
+    }
+  | { readonly type: 'buildBabel'; readonly player: PlayerId }
+  | {
+      readonly type: 'barter';
+      readonly player: PlayerId;
+      readonly spend: readonly ResourceType[];
+      readonly gain: ResourceType;
+    }
+  | { readonly type: 'pass'; readonly player: PlayerId }
   | { readonly type: 'castVote'; readonly player: PlayerId; readonly option: number };
 
 export type ApplyResult = {

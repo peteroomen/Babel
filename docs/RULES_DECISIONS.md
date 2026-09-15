@@ -98,3 +98,36 @@ hot-seat, where players will still talk it out before voting. It exists so the
 rule is total.
 
 **Status:** approved 2026-09-15. Implemented in Milestone 0.
+
+---
+
+## RD-006 — A merged feature pays each owner once
+
+**Canon:** GDD §9. "A player may own at most **one** harvesting building of a
+given type in the same connected feature." Each foreign building owner is paid
+the placer's base payout.
+
+**Problem:** a placement can merge two features in which the same Leader holds
+one matching building each. The per-feature limit was never violated when they
+were built, and canon does not say what the merged feature pays them.
+
+**Decision:** pay that Leader once. The rule's intent is one trigger per player
+per feature, and paying twice would make deliberately engineered merges a
+stronger play than the harvesting economy itself.
+
+**Status:** adopted 2026-09-15. Implemented in Milestone 2 and covered by a
+test in `harvest.test.ts`.
+
+---
+
+## RD-007 — A Prestige tie leaves no individual winner
+
+**Canon:** GDD §2. "If humanity completes Babel, the player with the most
+Prestige wins individually." Ties are not mentioned.
+
+**Decision:** humanity still wins the shared game; the `humanityWins` event
+lists every Leader tied on top, and no single individual winner is recorded.
+Titles and tie-breakers are deferred content (GDD §20, §23), so inventing a
+tie-break now would pre-empt a design decision.
+
+**Status:** adopted 2026-09-15. Implemented in Milestone 2.

@@ -1,6 +1,18 @@
-import { RESOURCE_TYPES } from '@babel-game/game-data';
-import type { GameEvent, GameState, LeaderState } from '@babel-game/game-core';
-import { RESOURCE_LABEL, TERRAIN_LABEL } from './theme.js';
+import { RESOURCE_TYPES, STAGE_LABEL } from '@babel-game/game-data';
+import {
+  piecesPerStage,
+  piecesToNextEscalation,
+  totalPieces,
+  type GameEvent,
+  type GameState,
+  type LeaderState,
+} from '@babel-game/game-core';
+import {
+  BUILDING_LABEL,
+  LEADER_COLOUR,
+  RESOURCE_LABEL,
+  TERRAIN_LABEL,
+} from './theme.js';
 
 const card: React.CSSProperties = {
   border: '1px solid #00000022',
@@ -12,14 +24,30 @@ const card: React.CSSProperties = {
 export function LeaderPanel({
   leader,
   isActive,
+  seat,
+  buildings,
 }: {
   leader: LeaderState;
   isActive: boolean;
+  seat: number;
+  buildings: number;
 }) {
   return (
     <div style={{ ...card, outline: isActive ? '2px solid #2b2622' : 'none' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-        <strong>{leader.name}</strong>
+        <strong>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 10,
+              height: 10,
+              borderRadius: 3,
+              marginRight: 6,
+              background: LEADER_COLOUR[seat % LEADER_COLOUR.length],
+            }}
+          />
+          {leader.name}
+        </strong>
         {isActive && <span style={{ fontSize: 12 }}>active</span>}
       </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '8px 0' }}>
@@ -39,8 +67,9 @@ export function LeaderPanel({
         ))}
       </div>
       <div style={{ fontSize: 12, opacity: 0.8 }}>
-        Prestige {leader.prestige} · Army {leader.army}{' '}
-        {leader.army === 1 ? 'die' : 'dice'}
+        Prestige <strong>{leader.prestige}</strong> · Army {leader.army}{' '}
+        {leader.army === 1 ? 'die' : 'dice'} · {buildings}{' '}
+        {buildings === 1 ? 'building' : 'buildings'}
       </div>
     </div>
   );
@@ -66,6 +95,26 @@ function describe(event: GameEvent, state: GameState): string {
       return `No payout — that feature is occupied`;
     case 'actionTaken':
       return `${who(event.player)} took action: ${event.action}`;
+    case 'harvestTriggered':
+      return `Shared industry: ${event.owners.map(who).join(' and ')} paid ${event.amount} ${
+        RESOURCE_LABEL[event.resource]
+      }; ${who(event.placer)} +${event.placerBonus}`;
+    case 'buildingConstructed':
+      return `${who(event.player)} built a ${BUILDING_LABEL[event.building]} at (${
+        event.at.x
+      }, ${event.at.y})`;
+    case 'babelPieceBuilt':
+      return `${who(event.player)} added Babel piece ${event.pieces}`;
+    case 'stageEscalated':
+      return `Heaven escalates permanently — Stage ${event.to}: ${STAGE_LABEL[event.to]}`;
+    case 'bartered':
+      return `${who(event.player)} bartered 3 cards for 1 ${RESOURCE_LABEL[event.gained]}`;
+    case 'prestigeGained':
+      return `${who(event.player)} +${event.amount} Prestige (${event.source})`;
+    case 'humanityWins':
+      return `Babel is complete. Humanity survives. Top Prestige: ${event.topPrestige
+        .map(who)
+        .join(', ')}`;
     case 'turnEnded':
       return `${who(event.player)} ended their turn`;
     case 'heavenPhase':
@@ -98,6 +147,57 @@ export function LogPanel({ state }: { state: GameState }) {
           </li>
         ))}
       </ol>
+    </div>
+  );
+}
+
+/** GDD §12: how close Babel is to its next permanent escalation. */
+export function BabelPanel({ state }: { state: GameState }) {
+  const leaders = state.order.length;
+  const built = state.babel.stack.length;
+  const total = totalPieces(leaders);
+  const toNext = piecesToNextEscalation(state.babel, state.stage, leaders);
+
+  return (
+    <div style={card}>
+      <strong style={{ fontSize: 13 }}>Babel</strong>
+      <div style={{ fontSize: 12, marginTop: 6 }}>
+        Stage {state.stage} — {STAGE_LABEL[state.stage]}
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          gap: 3,
+          flexWrap: 'wrap',
+          margin: '8px 0',
+        }}
+      >
+        {Array.from({ length: total }, (_, i) => (
+          <span
+            key={i}
+            title={
+              i < built ? `Built by ${state.leaders[state.babel.stack[i]!]?.name}` : 'Not built'
+            }
+            style={{
+              width: 12,
+              height: 12,
+              borderRadius: 2,
+              background: i < built ? '#3a3330' : '#00000014',
+              /* Mark where each Stage boundary falls. */
+              outline:
+                (i + 1) % piecesPerStage(leaders) === 0 ? '1px solid #b5452f' : 'none',
+            }}
+          />
+        ))}
+      </div>
+      <div style={{ fontSize: 12, opacity: 0.8 }}>
+        {built} / {total} pieces
+        {toNext === null
+          ? ' · final Stage'
+          : toNext === 0
+            ? ' · escalation imminent'
+            : ` · ${toNext} to next escalation`}
+      </div>
     </div>
   );
 }

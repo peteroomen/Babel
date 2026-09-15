@@ -60,7 +60,7 @@ describe('boardgame.io spike', () => {
     const placed = placeFirstLegal(client);
     expect(client.getState()!.G.turnStep).toBe('action');
 
-    movesOf(client).takeAction('pass');
+    movesOf(client).pass();
     const after = client.getState()!.G;
 
     expect(currentPlayer(after)).not.toBe(active);
@@ -91,7 +91,7 @@ describe('boardgame.io spike', () => {
         state.ctx.currentPlayer,
       );
       placeFirstLegal(client);
-      movesOf(client).takeAction('pass');
+      movesOf(client).pass();
     }
 
     expect(client.getState()!.G.round).toBe(2);

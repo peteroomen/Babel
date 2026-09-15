@@ -1,15 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import {
+  BABEL_PIECE_COST,
+  BUILDINGS,
+  type ResourceType,
+} from '@babel-game/game-data';
+import {
   EDGES,
   OPPOSITE,
   applyMove,
   coordKey,
   currentPlayer,
+  getLegalActions,
   getLegalTilePlacements,
   hasRiverOn,
   neighbour,
   setupGame,
   type Board,
+  type Command,
   type GameState,
 } from '../src/index.js';
 
@@ -35,21 +42,60 @@ function findRiverMismatch(board: Board): string | null {
   return null;
 }
 
-/** Play a game, choosing placements pseudo-randomly from the legal set. */
+const RESOURCES: readonly ResourceType[] = ['food', 'wood', 'brick', 'metal'];
+
+/**
+ * Play a game, choosing placements and actions pseudo-randomly from the legal
+ * sets the core itself reports. Every action type the core offers gets
+ * exercised, so the invariants below cover real games rather than a pass loop.
+ */
 function playGame(seed: string, turns: number): GameState {
   let state = setupGame(['Ada', 'Peter', 'Rook'], seed);
   let cursor = 7;
+  const roll = (n: number) => {
+    cursor = (cursor * 31 + 17) % 1009;
+    return cursor % n;
+  };
+
   for (let i = 0; i < turns; i++) {
+    if (state.phase === 'gameOver') break;
+
     const options = getLegalTilePlacements(state.board, state.drawnTile!);
     expect(options.length).toBeGreaterThan(0);
-
-    cursor = (cursor * 31 + 17) % 1009;
-    const option = options[cursor % options.length]!;
-    const rotation = option.rotations[cursor % option.rotations.length]!;
+    const option = options[roll(options.length)]!;
+    const rotation = option.rotations[roll(option.rotations.length)]!;
     const me = currentPlayer(state);
 
     state = applyMove(state, { type: 'placeTile', player: me, at: option.at, rotation }).state;
-    state = applyMove(state, { type: 'takeAction', player: me, action: 'pass' }).state;
+
+    const legal = getLegalActions(state, me);
+    const choice = legal[roll(legal.length)]!;
+    let command: Command;
+    switch (choice.type) {
+      case 'buildHarvester': {
+        const site = choice.sites[roll(choice.sites.length)]!;
+        command = { type: 'buildHarvester', player: me, at: site.at, building: site.type };
+        break;
+      }
+      case 'buildBabel':
+        command = { type: 'buildBabel', player: me };
+        break;
+      case 'barter': {
+        /* Spend from whatever the Leader actually holds. */
+        const hand = state.leaders[me]!.resources;
+        const held = RESOURCES.flatMap((r) => Array<ResourceType>(hand[r]).fill(r));
+        command = {
+          type: 'barter',
+          player: me,
+          spend: held.slice(0, 3),
+          gain: RESOURCES[roll(RESOURCES.length)]!,
+        };
+        break;
+      }
+      default:
+        command = { type: 'pass', player: me };
+    }
+    state = applyMove(state, command).state;
   }
   return state;
 }
@@ -83,23 +129,94 @@ describe('board invariants hold across whole games', () => {
   it('never places a tile on Babel and never double-places a square', () => {
     const state = playGame('beta', 40);
     expect(state.board['0,0']).toBeUndefined();
-    /* 40 turns plus GDD §5's fixed start tile. */
+    /* One tile per turn, plus GDD §5's fixed start tile. */
     expect(Object.keys(state.board)).toHaveLength(41);
   });
 
-  it('only ever credits resources that a payout event accounts for', () => {
-    const state = playGame('gamma', 40);
-    const credited = { food: 0, wood: 0, brick: 0, metal: 0 };
+  it('exercises every action type the core currently offers', () => {
+    const state = playGame('gamma', 60);
+    const actions = new Set(
+      state.log.flatMap((e) => (e.type === 'actionTaken' ? [e.action.split(' ')[0]] : [])),
+    );
+    expect(actions).toContain('pass');
+    expect(actions).toContain('build');
+    expect(actions).toContain('barter');
+  });
+
+  it('keeps Prestige equal to the Prestige actually awarded', () => {
+    const state = playGame('delta', 60);
+    const awarded: Record<string, number> = {};
     for (const event of state.log) {
-      if (event.type === 'resourcesGained') credited[event.resource] += event.amount;
-    }
-    /* Starting stock per GDD §5 is 2 Wood + 1 Food each. */
-    const held = { food: -3, wood: -6, brick: 0, metal: 0 };
-    for (const leader of Object.values(state.leaders)) {
-      for (const resource of ['food', 'wood', 'brick', 'metal'] as const) {
-        held[resource] += leader.resources[resource];
+      if (event.type === 'prestigeGained') {
+        awarded[event.player] = (awarded[event.player] ?? 0) + event.amount;
       }
     }
-    expect(held).toEqual(credited);
+    for (const [id, leader] of Object.entries(state.leaders)) {
+      expect(leader.prestige).toBe(awarded[id] ?? 0);
+    }
+  });
+
+  it('never lets a Leader hold a negative resource', () => {
+    const state = playGame('epsilon', 60);
+    for (const leader of Object.values(state.leaders)) {
+      for (const resource of RESOURCES) {
+        expect(leader.resources[resource]).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
+  it('never exceeds one building per land tile, all on matching terrain', () => {
+    const state = playGame('alpha', 60);
+    for (const [key, building] of Object.entries(state.buildings)) {
+      expect(state.board[key]).toBeDefined();
+      expect(building.owner).toBeTruthy();
+    }
+  });
+
+  it('has a log that fully explains every resource a Leader holds', () => {
+    /* Double-entry: starting stock, plus every credit the log records, minus
+       every cost it records, must reproduce the final hand exactly. */
+    const state = playGame('gamma', 60);
+
+    const ledger: Record<string, Record<ResourceType, number>> = Object.fromEntries(
+      state.order.map((id) => [id, { food: 1, wood: 2, brick: 0, metal: 0 }]),
+    );
+    const spend = (id: string, cost: Partial<Record<ResourceType, number>>) => {
+      const hand = ledger[id] as Record<ResourceType, number>;
+      for (const [resource, amount] of Object.entries(cost)) {
+        hand[resource as ResourceType] -= amount ?? 0;
+      }
+    };
+
+    for (const event of state.log) {
+      switch (event.type) {
+        case 'resourcesGained': {
+          const hand = ledger[event.player] as Record<ResourceType, number>;
+          hand[event.resource] += event.amount;
+          break;
+        }
+        case 'buildingConstructed':
+          spend(event.player, BUILDINGS[event.building].cost);
+          break;
+        case 'babelPieceBuilt':
+          spend(event.player, BABEL_PIECE_COST[event.stage]);
+          break;
+        case 'bartered': {
+          const hand = ledger[event.player] as Record<ResourceType, number>;
+          for (const resource of event.spent) hand[resource] -= 1;
+          hand[event.gained] += 1;
+          break;
+        }
+        default:
+          break;
+      }
+    }
+
+    for (const [id, leader] of Object.entries(state.leaders)) {
+      expect({ id, ...leader.resources }).toEqual({
+        id,
+        ...(ledger[id] as Record<ResourceType, number>),
+      });
+    }
   });
 });

@@ -33,3 +33,24 @@ export const RESOURCE_LABEL = {
 /** ART_DIRECTION.md: rivers read as a strong continuous graphic line. */
 export const RIVER_STROKE = '#2f7fb0';
 export const INK = '#2b2622';
+
+/** One colour per seat, used for building ownership on the board. */
+export const LEADER_COLOUR = ['#b5452f', '#2f6fb5', '#6a8f2f', '#8a4fb5'] as const;
+
+/**
+ * ART_DIRECTION.md: buildings must sit clearly on top of terrain rather than
+ * becoming terrain, so each is a chunky owner-coloured badge with an initial.
+ */
+export const BUILDING_GLYPH = {
+  sawmill: 'S',
+  farmstead: 'F',
+  brickworks: 'B',
+  mine: 'M',
+} as const;
+
+export const BUILDING_LABEL = {
+  sawmill: 'Sawmill',
+  farmstead: 'Farmstead',
+  brickworks: 'Brickworks',
+  mine: 'Mine',
+} as const;
