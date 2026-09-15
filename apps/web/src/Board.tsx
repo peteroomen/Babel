@@ -20,9 +20,48 @@ import {
   RIVER_STROKE,
   SERAPH_CORE,
   TERRAIN_FILL,
+  TERRAIN_IMAGE,
 } from './theme.js';
 
 const CELL = 64;
+
+/**
+ * Turn the painted tile art by a quarter turn or three, chosen from the tile's
+ * own coordinates.
+ *
+ * There are only six terrain images, so an unrotated board tiles visibly. This
+ * is deterministic and purely cosmetic: river geometry keeps its own rotation
+ * and the rules never see this value.
+ */
+function artTurn(key: string): number {
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  return (hash % 4) * 90;
+}
+
+/** A painted terrain square, with the flat colour beneath as a fallback. */
+function TerrainTile({
+  terrain,
+  turn,
+  opacity = 1,
+}: {
+  terrain: keyof typeof TERRAIN_IMAGE;
+  turn: number;
+  opacity?: number;
+}) {
+  return (
+    <g opacity={opacity}>
+      <rect width={CELL} height={CELL} fill={TERRAIN_FILL[terrain]} />
+      <image
+        href={TERRAIN_IMAGE[terrain]}
+        width={CELL}
+        height={CELL}
+        preserveAspectRatio="xMidYMid slice"
+        transform={`rotate(${turn} ${CELL / 2} ${CELL / 2})`}
+      />
+    </g>
+  );
+}
 
 type Props = {
   state: GameState;
@@ -133,15 +172,21 @@ export function Board({
         const occupied = occupiedFeature.has(key);
         return (
           <g key={key} transform={`translate(${left} ${top})`}>
-            <rect
-              width={CELL}
-              height={CELL}
-              fill={TERRAIN_FILL[tile.terrain]}
-              stroke="#00000022"
-            />
+            <TerrainTile terrain={tile.terrain} turn={artTurn(key)} />
+            <rect width={CELL} height={CELL} fill="none" stroke="#00000022" />
             {riverPath(tile.river, tile.rotation)}
             {occupied && (
-              <rect width={CELL} height={CELL} fill="#00000055" />
+              <>
+                <rect width={CELL} height={CELL} fill="#1b1630" opacity={0.55} />
+                <rect
+                  width={CELL}
+                  height={CELL}
+                  fill="none"
+                  stroke={HEAVEN_GOLD}
+                  strokeWidth={2}
+                  opacity={0.5}
+                />
+              </>
             )}
           </g>
         );
@@ -189,10 +234,11 @@ export function Board({
             onClick={() => onBuildSite?.(at)}
             style={{ cursor: 'pointer' }}
           >
+            <rect width={CELL} height={CELL} fill="#fffdf8" opacity={0.45} />
             <rect
               width={CELL}
               height={CELL}
-              fill="#ffffff00"
+              fill="none"
               stroke={INK}
               strokeWidth={3}
               strokeDasharray="6 3"
@@ -259,6 +305,12 @@ export function Board({
                 <circle
                   cx={CELL / 2}
                   cy={CELL / 2}
+                  r={CELL * 0.29}
+                  fill="#00000055"
+                />
+                <circle
+                  cx={CELL / 2}
+                  cy={CELL / 2}
                   r={CELL * 0.26}
                   fill={HEAVEN_IVORY}
                   stroke={HEAVEN_GOLD}
@@ -301,11 +353,19 @@ export function Board({
             onClick={() => onBeaconSite?.(at)}
             style={{ cursor: 'pointer' }}
           >
+            <rect width={CELL} height={CELL} fill={BEACON_LIGHT} opacity={0.55} />
             <rect
               width={CELL}
               height={CELL}
-              fill={BEACON_LIGHT}
-              opacity={0.3}
+              fill="none"
+              stroke={INK}
+              strokeWidth={5}
+              opacity={0.55}
+            />
+            <rect
+              width={CELL}
+              height={CELL}
+              fill="none"
               stroke={HEAVEN_GOLD}
               strokeWidth={3}
             />
@@ -364,11 +424,10 @@ export function Board({
               strokeDasharray={isSelected ? undefined : '5 4'}
             />
             {isSelected && state.drawnTile && (
-              <g opacity={0.85}>
-                <rect
-                  width={CELL}
-                  height={CELL}
-                  fill={TERRAIN_FILL[state.drawnTile.terrain]}
+              <g opacity={0.9}>
+                <TerrainTile
+                  terrain={state.drawnTile.terrain}
+                  turn={artTurn(coordKey(option.at))}
                 />
                 {riverPath(state.drawnTile.river, rotation)}
               </g>

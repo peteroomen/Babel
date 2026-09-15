@@ -14,6 +14,20 @@ export const TERRAIN_FILL: Record<TerrainType, string> = {
   lake: '#6aa9d6',
 };
 
+/**
+ * Painted tile art, served from public/tiles. The flat TERRAIN_FILL colours
+ * above stay as the fallback painted underneath, so the board still reads
+ * correctly if an image has not loaded yet.
+ */
+export const TERRAIN_IMAGE: Record<TerrainType, string> = {
+  farmland: '/tiles/farmland.webp',
+  forest: '/tiles/forest.webp',
+  hills: '/tiles/hills.webp',
+  mountain: '/tiles/mountain.webp',
+  desert: '/tiles/desert.webp',
+  lake: '/tiles/lake.webp',
+};
+
 export const TERRAIN_LABEL: Record<TerrainType, string> = {
   farmland: 'Farmland',
   forest: 'Forest',
