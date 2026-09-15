@@ -30,6 +30,8 @@ function armed(hosts: Host[], army = 3, over: Partial<GameState> = {}): GameStat
   const base = setupGame(['Ada', 'Peter'], 'combat');
   return {
     ...base,
+    /* Neutralise Confusion so this suite tests one rule at a time. */
+    confusion: { card: null, cancelledBy: null },
     board: { '1,0': { terrain: 'desert', river: 'none', rotation: 0 } },
     hosts,
     turnStep: 'action',

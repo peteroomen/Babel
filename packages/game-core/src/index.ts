@@ -12,6 +12,7 @@ export * from './heaven/beacons.js';
 export * from './heaven/hosts.js';
 export * from './heaven/phase.js';
 export * from './combat/index.js';
+export * from './cards/index.js';
 export * from './actions/legal.js';
 export * from './state/babel.js';
 export * from './state/types.js';

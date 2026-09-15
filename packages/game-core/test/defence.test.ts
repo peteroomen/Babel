@@ -37,6 +37,8 @@ function game(board: Board, over: Partial<GameState> = {}): GameState {
   const base = setupGame(['Ada', 'Peter'], 'defence');
   return {
     ...base,
+    /* Neutralise Confusion so this suite tests one rule at a time. */
+    confusion: { card: null, cancelledBy: null },
     board,
     turnStep: 'action',
     currentPlayerIndex: 0,

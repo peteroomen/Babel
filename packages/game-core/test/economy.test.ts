@@ -9,7 +9,8 @@ import {
 
 /** Force a known tile into the active player's hand. */
 function withDrawn(state: GameState, draw: GameState['drawnTile']): GameState {
-  return { ...state, drawnTile: draw };
+  /* Neutralise Confusion so this suite tests the payout rule alone. */
+  return { ...state, drawnTile: draw, confusion: { card: null, cancelledBy: null } };
 }
 
 describe('placement pays the placing Leader', () => {

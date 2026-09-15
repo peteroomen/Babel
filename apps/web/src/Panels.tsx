@@ -1,5 +1,6 @@
-import { RESOURCE_TYPES, STAGE_LABEL } from '@babel-game/game-data';
+import { CONFUSION, RESOURCE_TYPES, SCHEMES, STAGE_LABEL } from '@babel-game/game-data';
 import {
+  activeConfusion,
   piecesPerStage,
   piecesToNextEscalation,
   totalPieces,
@@ -15,7 +16,7 @@ import {
   TERRAIN_LABEL,
 } from './theme.js';
 
-const card: React.CSSProperties = {
+const card_: React.CSSProperties = {
   border: '1px solid #00000022',
   borderRadius: 10,
   padding: 12,
@@ -34,7 +35,7 @@ export function LeaderPanel({
   buildings: number;
 }) {
   return (
-    <div style={{ ...card, outline: isActive ? '2px solid #2b2622' : 'none' }}>
+    <div style={{ ...card_, outline: isActive ? '2px solid #2b2622' : 'none' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
         <strong>
           <span
@@ -72,6 +73,25 @@ export function LeaderPanel({
         {leader.army === 1 ? 'die' : 'dice'} · {buildings}{' '}
         {buildings === 1 ? 'building' : 'buildings'}
       </div>
+      {leader.schemeHand.length > 0 && (
+        <div style={{ fontSize: 12, marginTop: 6 }}>
+          {/* GDD §18: hands are hidden, so in hot-seat only the Leader whose
+              turn it is sees their own cards. */}
+          {isActive ? (
+            <span>
+              Schemes:{' '}
+              {leader.schemeHand
+                .map((id) => SCHEMES[id as keyof typeof SCHEMES]?.label ?? id)
+                .join(', ')}
+            </span>
+          ) : (
+            <span style={{ opacity: 0.6 }}>
+              {leader.schemeHand.length} Scheme
+              {leader.schemeHand.length === 1 ? '' : 's'} held, face down
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -146,6 +166,22 @@ function describe(event: GameEvent, state: GameState): string {
       }`;
     case 'wallBroken':
       return `A Wall is smashed down — the Host spent its movement on it`;
+    case 'confusionRevealed':
+      return `Confusion: ${CONFUSION[event.card].label} — ${CONFUSION[event.card].text}`;
+    case 'confusionCancelled':
+      return `${who(event.player)} plays Common Tongue — ${
+        CONFUSION[event.card].label
+      } is cancelled`;
+    case 'confusionAdded':
+      return `Heaven grows stranger: ${event.cards
+        .map((c) => CONFUSION[c].label)
+        .join(', ')} shuffled into the Confusion deck`;
+    case 'schemeBought':
+      return `${who(event.player)} buys a Scheme`;
+    case 'schemePlayed':
+      return `${who(event.player)} plays ${SCHEMES[event.scheme].label}`;
+    case 'schemeDeckEmpty':
+      return `No Schemes remain`;
     case 'towerSupport':
       return event.hit
         ? `Tower at (${event.at.x}, ${event.at.y}) fires — ${event.roll} + 2 vs ${event.defence}, hit`
@@ -170,7 +206,7 @@ function describe(event: GameEvent, state: GameState): string {
 export function LogPanel({ state }: { state: GameState }) {
   const recent = [...state.log].slice(-40).reverse();
   return (
-    <div style={{ ...card, maxHeight: 340, overflowY: 'auto' }}>
+    <div style={{ ...card_, maxHeight: 340, overflowY: 'auto' }}>
       <strong style={{ fontSize: 13 }}>Game log</strong>
       <ol style={{ listStyle: 'none', padding: 0, margin: '8px 0 0', fontSize: 12 }}>
         {recent.map((event, i) => (
@@ -198,7 +234,7 @@ export function BabelPanel({ state }: { state: GameState }) {
   const toNext = piecesToNextEscalation(state.babel, state.stage, leaders);
 
   return (
-    <div style={card}>
+    <div style={card_}>
       <strong style={{ fontSize: 13 }}>Babel</strong>
       <div style={{ fontSize: 12, marginTop: 6 }}>
         Stage {state.stage} — {STAGE_LABEL[state.stage]}
@@ -236,6 +272,39 @@ export function BabelPanel({ state }: { state: GameState }) {
           : toNext === 0
             ? ' · escalation imminent'
             : ` · ${toNext} to next escalation`}
+      </div>
+    </div>
+  );
+}
+
+/** GDD §19: the card that changes this round, in one sentence. */
+export function ConfusionPanel({ state }: { state: GameState }) {
+  const card = state.confusion.card;
+  if (!card) return null;
+  const spec = CONFUSION[card];
+  const cancelled = activeConfusion(state) === null;
+
+  return (
+    <div
+      style={{
+        ...card_,
+        background: cancelled ? '#f1f1ee' : '#f6ecd8',
+        borderColor: cancelled ? '#00000018' : '#b5452f55',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+        <strong style={{ fontSize: 13 }}>Confusion — {spec.label}</strong>
+        {cancelled && <span style={{ fontSize: 12 }}>cancelled</span>}
+      </div>
+      <div
+        style={{
+          fontSize: 12,
+          marginTop: 6,
+          opacity: cancelled ? 0.5 : 0.9,
+          textDecoration: cancelled ? 'line-through' : 'none',
+        }}
+      >
+        {spec.text}
       </div>
     </div>
   );

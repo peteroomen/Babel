@@ -15,6 +15,8 @@ function ready(names: string[], stage: 1 | 2 | 3 = 1): GameState {
   const base = setupGame(names, 'babel');
   return {
     ...base,
+    /* Neutralise Confusion so this suite tests one rule at a time. */
+    confusion: { card: null, cancelledBy: null },
     stage,
     turnStep: 'action',
     currentPlayerIndex: 0,

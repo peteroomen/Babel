@@ -1,4 +1,6 @@
 import { HOSTS } from '@babel-game/game-data';
+import { confusionIs } from '../cards/index.js';
+import { isPassableAt } from './path.js';
 import { coordKey, type Coord } from '../map/edges.js';
 import { hasWallBetween, removeWallBetween, canonicalWall } from '../walls/index.js';
 import { nextInt } from '../rng/index.js';
@@ -34,11 +36,35 @@ export function resolveHeavenPhase(
   const arrivals: Host[] = [];
   let walls = [...state.walls];
 
+  /* GDD §19 March of Heaven: every Host already on the board gets +1 movement. */
+  const marching = confusionIs(state, 'march-of-heaven') ? 1 : 0;
+
   for (const host of state.hosts) {
     let current = host;
     const preferred = [...(plan[host.id] ?? [])];
 
-    for (let point = 0; point < HOSTS[host.kind].movement; point++) {
+    /**
+     * GDD §18 False Prophet: one Host is sent to any adjacent legal tile
+     * instead of following the shortest route, and that ends its movement.
+     */
+    if (state.falseProphet?.hostId === host.id) {
+      const to = state.falseProphet.to;
+      if (isPassableAt(state.board, to)) {
+        events.push({
+          type: 'hostMoved',
+          id: host.id,
+          from: current.at,
+          to,
+          hadChoice: true,
+        });
+        current = { ...current, at: to };
+      }
+      if (coordKey(current.at) === coordKey(BABEL_COORD)) arrivals.push(current);
+      else moved.push(current);
+      continue;
+    }
+
+    for (let point = 0; point < HOSTS[host.kind].movement + marching; point++) {
       const options = stepOptions(state.board, current.at);
       if (options.length === 0) break;
 

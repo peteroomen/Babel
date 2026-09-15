@@ -16,6 +16,8 @@ function ready(names: string[], board: Board = { '4,5': forest, '5,5': forest })
   const base = setupGame(names, 'actions');
   return {
     ...base,
+    /* Neutralise Confusion so this suite tests one rule at a time. */
+    confusion: { card: null, cancelledBy: null },
     board,
     turnStep: 'action',
     currentPlayerIndex: 0,

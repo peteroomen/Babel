@@ -1,5 +1,8 @@
 import type {
+  ActionCategory,
+  ConfusionId,
   HostKind,
+  SchemeId,
   StructureType,
   ResourceType,
   RiverShape,
@@ -104,6 +107,26 @@ export type GameState = {
   readonly hosts: readonly Host[];
   readonly pendingBeacon: { readonly sites: readonly Coord[] } | null;
   readonly pendingAttack: PendingAttack | null;
+  /** GDD §19: the Confusion card in force this round, and who cancelled it. */
+  readonly confusion: {
+    readonly card: ConfusionId | null;
+    readonly cancelledBy: PlayerId | null;
+  };
+  readonly confusionDeck: readonly ConfusionId[];
+  readonly confusionDiscard: readonly ConfusionId[];
+  readonly schemeDeck: readonly SchemeId[];
+  readonly schemeDiscard: readonly SchemeId[];
+  /** Which Leader has taken each action this round. For Fractured Command. */
+  readonly actionsThisRound: Readonly<Partial<Record<ActionCategory, PlayerId>>>;
+  /**
+   * Set after a Leader acts while holding Frenzied Works: the turn waits for
+   * them to play it or end the turn. GDD §18.
+   */
+  readonly bonusWindow: PlayerId | null;
+  /** True while the Leader is taking the extra action Frenzied Works granted. */
+  readonly inBonusAction: boolean;
+  /** A Host redirected this Heaven Phase by False Prophet. GDD §18. */
+  readonly falseProphet: { readonly hostId: string; readonly to: Coord } | null;
   /** Monotonic counter giving each spawned Host a unique id. */
   readonly hostSeq: number;
   /** The tile drawn at the start of the current turn, awaiting placement. */
@@ -152,7 +175,7 @@ export type GameEvent =
       readonly type: 'payoutSuppressed';
       readonly player: PlayerId;
       readonly at: Coord;
-      readonly reason: 'featureOccupied';
+      readonly reason: 'featureOccupied' | 'lostLedgers';
     }
   | { readonly type: 'actionTaken'; readonly player: PlayerId; readonly action: string }
   /** GDD §9: foreign harvesting buildings paid out on someone else's placement. */
@@ -234,6 +257,20 @@ export type GameEvent =
     }
   | { readonly type: 'hostKilled'; readonly player: PlayerId; readonly id: string }
   | { readonly type: 'mustered'; readonly player: PlayerId; readonly army: number }
+  | { readonly type: 'confusionRevealed'; readonly card: ConfusionId }
+  | {
+      readonly type: 'confusionCancelled';
+      readonly card: ConfusionId;
+      readonly player: PlayerId;
+    }
+  | { readonly type: 'confusionAdded'; readonly cards: readonly ConfusionId[] }
+  | { readonly type: 'schemeBought'; readonly player: PlayerId }
+  | {
+      readonly type: 'schemePlayed';
+      readonly player: PlayerId;
+      readonly scheme: SchemeId;
+    }
+  | { readonly type: 'schemeDeckEmpty' }
   | {
       readonly type: 'wallsBuilt';
       readonly player: PlayerId;
@@ -300,6 +337,18 @@ export type Command =
       readonly assignments: Readonly<Record<string, number>>;
     }
   | { readonly type: 'pass'; readonly player: PlayerId }
+  | { readonly type: 'buyScheme'; readonly player: PlayerId }
+  /** GDD §18. False Prophet also carries the Host and the square it is sent to. */
+  | {
+      readonly type: 'playScheme';
+      readonly player: PlayerId;
+      readonly scheme: SchemeId;
+      readonly hostId?: string;
+      readonly to?: Coord;
+    }
+  /** Decline the Frenzied Works window, or the Confusion window. */
+  | { readonly type: 'endTurn'; readonly player: PlayerId }
+  | { readonly type: 'beginRound'; readonly player: PlayerId }
   /** Collective decisions, issuable by any Leader. See RD-008. */
   | { readonly type: 'placeBeacon'; readonly player: PlayerId; readonly at: Coord }
   | {

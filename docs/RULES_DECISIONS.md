@@ -215,3 +215,42 @@ shielded Seraph rather than finishing an Ophanim, say), this should become a
 real choice in the assignment step rather than a default.
 
 **Status:** adopted 2026-09-15. Implemented in Milestone 4.
+
+---
+
+## RD-012 — Lost Ledgers removes the base payout, not the harvest bonus
+
+**Canon:** GDD §19. "The player placing a terrain tile receives no normal base
+terrain payout this round. Foreign harvesting buildings still resolve
+normally." GDD §9 gives the placer **+1 extra matching resource** when any
+foreign harvesting building triggers.
+
+**Problem:** the +1 goes to the placer, but it is part of the harvest trigger
+rather than the base payout. Canon cancels one and explicitly preserves the
+other, without saying which the +1 belongs to.
+
+**Decision:** the +1 survives. §19 cancels "the normal base terrain payout" by
+name, and says the foreign buildings "still resolve normally" — the +1 is part
+of how they resolve. This also keeps the card interesting rather than flatly
+punishing: under Lost Ledgers, expanding a feature somebody else has invested
+in is the only way a placer gets paid at all.
+
+**Status:** adopted 2026-09-15. Implemented in Milestone 5.
+
+---
+
+## RD-013 — Passing is exempt from Fractured Command
+
+**Canon:** GDD §19. "Each action category may be chosen by only one player this
+round." GDD §11 lists Pass among the seven action categories.
+
+**Problem:** read literally, once one Leader passes nobody else may. A Leader
+who cannot afford any remaining category would then have no legal move at all,
+and the round would deadlock with no rule to break the tie.
+
+**Decision:** Pass is always available. Every other category is restricted as
+written. The card's intent is to stop the table converging on the same strong
+action, and nobody converges on passing.
+
+**Status:** adopted 2026-09-15. Implemented in Milestone 5, and covered by a
+test that builds the deadlock case explicitly.

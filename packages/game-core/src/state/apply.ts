@@ -16,8 +16,22 @@ import {
   structureCost,
   type ResourceType,
 } from '@babel-game/game-data';
+import {
+  SCHEMES,
+  SCHEME_COST,
+  type ActionCategory,
+  type SchemeId,
+} from '@babel-game/game-data';
+import {
+  activeConfusion,
+  addStageConfusion,
+  confusionIs,
+  drawCard,
+  isActionBlockedByConfusion,
+} from '../cards/index.js';
 import { applyHit, rollAttack, validateAssignments } from '../combat/index.js';
 import { getLegalBeaconSites, hostDefence } from '../heaven/beacons.js';
+import { isPassableAt } from '../heaven/path.js';
 import { beaconsOwed, openBeaconDecision, resolveHeavenPhase } from '../heaven/phase.js';
 import { isFoundationOccupied, occupiedKeys } from '../heaven/hosts.js';
 import {
@@ -43,7 +57,7 @@ import {
 } from '../walls/index.js';
 import { resolveHarvest } from '../economy/harvest.js';
 import { placementPayout } from '../economy/payout.js';
-import { coordKey } from '../map/edges.js';
+import { coordKey, neighbours } from '../map/edges.js';
 import { isLegalPlacement, type Board } from '../map/placement.js';
 import { nextInt } from '../rng/index.js';
 import { drawPlaceableTile } from './setup.js';
@@ -174,15 +188,35 @@ function endTurn(state: GameState): { state: GameState; events: GameEvent[] } {
   };
 }
 
-/** Begin the next round. GDD §11: pass the First Player marker clockwise. */
+/**
+ * Begin the next round. GDD §11: reveal one Confusion card, then play passes
+ * clockwise from a new First Player.
+ */
 function advanceRound(state: GameState): { state: GameState; events: GameEvent[] } {
   const round = state.round + 1;
   const firstPlayerIndex = (state.firstPlayerIndex + 1) % state.order.length;
   const nextPlayer = state.order[firstPlayerIndex] as PlayerId;
 
   const events: GameEvent[] = [{ type: 'roundStarted', round }];
-  const drawn = drawFor(state, nextPlayer);
+
+  /* The card that ruled the last round goes to the discard. GDD §19. */
+  const discard = state.confusion.card
+    ? [...state.confusionDiscard, state.confusion.card]
+    : [...state.confusionDiscard];
+
+  const reveal = drawCard(state.confusionDeck, discard, state.rng);
+  if (reveal.card) events.push({ type: 'confusionRevealed', card: reveal.card });
+
+  const drawn = drawFor({ ...state, rng: reveal.rng }, nextPlayer);
   events.push(...drawn.events);
+
+  /**
+   * GDD §18: Common Tongue is played "immediately after Confusion is revealed",
+   * so the round pauses only when somebody actually holds one.
+   */
+  const someoneCanCancel =
+    Boolean(reveal.card) &&
+    state.order.some((id) => state.leaders[id]?.schemeHand.includes('common-tongue'));
 
   return {
     state: {
@@ -190,24 +224,70 @@ function advanceRound(state: GameState): { state: GameState; events: GameEvent[]
       round,
       firstPlayerIndex,
       currentPlayerIndex: firstPlayerIndex,
-      phase: 'turns',
+      phase: someoneCanCancel ? 'confusion' : 'turns',
       turnStep: 'place',
       drawnTile: drawn.draw,
       rng: drawn.rng,
+      confusion: { card: reveal.card, cancelledBy: null },
+      confusionDeck: reveal.deck,
+      confusionDiscard: reveal.discard,
+      /* Fractured Command only constrains within a round. */
+      actionsThisRound: {},
+      bonusWindow: null,
+      inBonusAction: false,
+      falseProphet: null,
     },
     events,
   };
 }
 
+/** GDD §11 lists seven action categories; several commands share one. */
+function categoryOf(type: Command['type']): ActionCategory | null {
+  switch (type) {
+    case 'buildHarvester':
+    case 'buildTower':
+    case 'buildWalls':
+      return 'build';
+    case 'buildBabel':
+      return 'babel';
+    case 'attack':
+      return 'attack';
+    case 'muster':
+      return 'muster';
+    case 'buyScheme':
+      return 'scheme';
+    case 'barter':
+      return 'barter';
+    case 'pass':
+      return 'pass';
+    default:
+      return null;
+  }
+}
+
 /** Shared preconditions for the one action a Leader takes each turn. */
-function requireActionPhase(state: GameState, player: PlayerId): void {
+function requireActionPhase(
+  state: GameState,
+  player: PlayerId,
+  category?: ActionCategory,
+): void {
   if (state.phase === 'gameOver') throw new Error('the game is over');
   if (state.phase === 'heaven') throw new Error('the Heaven Phase must be resolved');
+  if (state.phase === 'confusion') throw new Error('the round has not begun');
   if (state.pendingVote) throw new Error('a vote is open');
   if (state.pendingBeacon) throw new Error('a Beacon must be placed');
   if (state.pendingAttack) throw new Error('assign your hits first');
+  if (state.bonusWindow) throw new Error('play Frenzied Works or end your turn');
   if (player !== currentPlayer(state)) throw new Error('not your turn');
   if (state.turnStep !== 'action') throw new Error('place your tile first');
+
+  if (category && isActionBlockedByConfusion(state, player, category)) {
+    throw new Error(`Confusion forbids that action this round`);
+  }
+  /* GDD §18: the bonus action from Frenzied Works cannot buy a Scheme. */
+  if (category === 'scheme' && state.inBonusAction) {
+    throw new Error('the bonus action cannot buy a Scheme');
+  }
 }
 
 /**
@@ -222,10 +302,33 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
     events,
   });
 
-  /** Log the action, then hand the turn on. */
+  /** Log the action, then hand the turn on — unless a Scheme buys another. */
   const finishAction = (next: GameState, action: string): ApplyResult => {
     events.push({ type: 'actionTaken', player: command.player, action });
-    const ended = endTurn(next);
+
+    /* GDD §19 Fractured Command needs to know who used which category. */
+    const category = categoryOf(command.type);
+    const withCategory: GameState = category
+      ? {
+          ...next,
+          actionsThisRound: { ...next.actionsThisRound, [category]: command.player },
+        }
+      : next;
+
+    /**
+     * GDD §18 Frenzied Works is played *after* the normal action, so a Leader
+     * holding one gets a window before the turn passes. Only they see it, so
+     * nobody else pays a click for a card they do not hold.
+     */
+    const holder = withCategory.leaders[command.player];
+    const canChain =
+      !withCategory.inBonusAction &&
+      Boolean(holder?.schemeHand.includes('frenzied-works'));
+    if (canChain) {
+      return commit({ ...withCategory, bonusWindow: command.player });
+    }
+
+    const ended = endTurn({ ...withCategory, inBonusAction: false });
     events.push(...ended.events);
     return commit(ended.state);
   };
@@ -283,20 +386,35 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
 
       /* GDD §9: foreign harvesting buildings first, so the placer's +1 is known. */
       const occupied = occupiedKeys(state.hosts);
-      const harvest = resolveHarvest(
-        board,
-        state.buildings,
-        occupied,
-        command.at,
-        draw,
-        command.player,
-      );
 
-      /* GDD §6 payout, suppressed inside an occupied feature by GDD §10. */
-      const payout = placementPayout(board, occupied, command.at, draw);
+      /* GDD §19 Silent Workshops: harvesting buildings do not trigger at all. */
+      const harvest = confusionIs(state, 'silent-workshops')
+        ? null
+        : resolveHarvest(
+            board,
+            state.buildings,
+            occupied,
+            command.at,
+            draw,
+            command.player,
+          );
+
+      /* GDD §6 payout, suppressed inside an occupied feature by GDD §10, and
+         denied to the placer by GDD §19 Lost Ledgers. */
+      const lostLedgers = confusionIs(state, 'lost-ledgers');
+      const payout = lostLedgers
+        ? null
+        : placementPayout(board, occupied, command.at, draw);
+
+      /**
+       * RD-012: Lost Ledgers removes the "normal base terrain payout" but says
+       * foreign harvesting buildings still resolve normally. The placer's +1 is
+       * part of that trigger rather than the base payout, so it survives.
+       */
+      const bonus = harvest ? harvest.placerBonus : 0;
 
       if (payout) {
-        const total = payout.amount + (harvest ? harvest.placerBonus : 0);
+        const total = payout.amount + bonus;
         events.push({
           type: 'resourcesGained',
           player: command.player,
@@ -305,12 +423,23 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
           source: 'placement',
         });
         next = { ...next, leaders: credit(next, command.player, payout.resource, total) };
-      } else if (draw.terrain !== 'desert' && draw.terrain !== 'lake') {
+      } else if (harvest && bonus > 0) {
+        events.push({
+          type: 'resourcesGained',
+          player: command.player,
+          resource: harvest.resource,
+          amount: bonus,
+          source: 'harvest',
+        });
+        next = { ...next, leaders: credit(next, command.player, harvest.resource, bonus) };
+      }
+
+      if (!payout && draw.terrain !== 'desert' && draw.terrain !== 'lake') {
         events.push({
           type: 'payoutSuppressed',
           player: command.player,
           at: command.at,
-          reason: 'featureOccupied',
+          reason: lostLedgers ? 'lostLedgers' : 'featureOccupied',
         });
       }
 
@@ -339,7 +468,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
     }
 
     case 'buildHarvester': {
-      requireActionPhase(state, command.player);
+      requireActionPhase(state, command.player, 'build');
       const leader = leaderOf(state, command.player);
       if (!isHarvester(command.building)) throw new Error('use buildTower for a Tower');
       const rejection = canBuildHarvester(
@@ -386,7 +515,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
     }
 
     case 'buildBabel': {
-      requireActionPhase(state, command.player);
+      requireActionPhase(state, command.player, 'babel');
       /* GDD §2: Babel cannot be built while a Host occupies the Foundation. */
       if (isFoundationOccupied(state.hosts)) {
         throw new Error('the Foundation is occupied');
@@ -427,7 +556,12 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       const stage = stageAfterPiece(babel, state.stage, state.order.length);
       if (stage !== state.stage) {
         events.push({ type: 'stageEscalated', from: state.stage, to: stage });
-        next = { ...next, stage };
+        /* GDD §19: the new cards are shuffled into what remains of the deck. */
+        const grown = addStageConfusion(next.confusionDeck, stage, next.rng);
+        if (grown.added.length > 0) {
+          events.push({ type: 'confusionAdded', cards: grown.added });
+        }
+        next = { ...next, stage, confusionDeck: grown.deck, rng: grown.rng };
       }
 
       /* GDD §2: completing the final piece wins the game for humanity. */
@@ -456,7 +590,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
     }
 
     case 'barter': {
-      requireActionPhase(state, command.player);
+      requireActionPhase(state, command.player, 'barter');
       /* GDD §8: discard any 3 resource cards to gain 1 of your choice. */
       if (command.spend.length !== BARTER_COST) {
         throw new Error(`Barter discards exactly ${BARTER_COST} resources`);
@@ -486,7 +620,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
     }
 
     case 'buildTower': {
-      requireActionPhase(state, command.player);
+      requireActionPhase(state, command.player, 'build');
       const leader = leaderOf(state, command.player);
       const rejection = canBuildTower(state.board, state.buildings, leader, command.at);
       if (rejection) throw new Error(`cannot build a Tower: ${rejection}`);
@@ -526,7 +660,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
     }
 
     case 'buildWalls': {
-      requireActionPhase(state, command.player);
+      requireActionPhase(state, command.player, 'build');
       const leader = leaderOf(state, command.player);
       if (!canAfford(leader, WALL_COST)) throw new Error('cannot afford Walls');
 
@@ -577,7 +711,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
     }
 
     case 'muster': {
-      requireActionPhase(state, command.player);
+      requireActionPhase(state, command.player, 'muster');
       const leader = leaderOf(state, command.player);
       /* GDD §15: 1 Food + 1 Metal for one more Army die, to a maximum of 5. */
       if (leader.army >= MAX_ARMY) throw new Error('Army is already at its maximum');
@@ -601,7 +735,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
     }
 
     case 'attack': {
-      requireActionPhase(state, command.player);
+      requireActionPhase(state, command.player, 'attack');
       if (state.hosts.length === 0) throw new Error('there are no Hosts to attack');
 
       const defence = hostDefence(state.order.length, state.stage);
@@ -783,8 +917,135 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
     }
 
     case 'pass': {
-      requireActionPhase(state, command.player);
+      requireActionPhase(state, command.player, 'pass');
       return finishAction(state, 'pass');
+    }
+
+    case 'buyScheme': {
+      requireActionPhase(state, command.player, 'scheme');
+      const leader = leaderOf(state, command.player);
+      if (!canAfford(leader, SCHEME_COST)) throw new Error('cannot afford a Scheme');
+
+      /* GDD §18: blind draw, reshuffling the discard when the pile runs out. */
+      const drawn = drawCard(state.schemeDeck, state.schemeDiscard, state.rng);
+      if (!drawn.card) {
+        events.push({ type: 'schemeDeckEmpty' });
+        throw new Error('no Schemes remain');
+      }
+
+      events.push({ type: 'schemeBought', player: command.player });
+      return finishAction(
+        {
+          ...state,
+          rng: drawn.rng,
+          schemeDeck: drawn.deck,
+          schemeDiscard: drawn.discard,
+          leaders: {
+            ...state.leaders,
+            [command.player]: {
+              ...leader,
+              resources: paySpecific(leader, SCHEME_COST),
+              schemeHand: [...leader.schemeHand, drawn.card],
+            },
+          },
+        },
+        'scheme',
+      );
+    }
+
+    case 'playScheme': {
+      if (state.phase === 'gameOver') throw new Error('the game is over');
+      const leader = state.leaders[command.player];
+      if (!leader) throw new Error('unknown player');
+      if (!leader.schemeHand.includes(command.scheme)) {
+        throw new Error('you do not hold that Scheme');
+      }
+
+      /* Spend the card whatever it does. GDD §18. */
+      const spend = (next: GameState): GameState => {
+        const index = leader.schemeHand.indexOf(command.scheme);
+        const hand = [...leader.schemeHand];
+        hand.splice(index, 1);
+        return {
+          ...next,
+          schemeDiscard: [...next.schemeDiscard, command.scheme],
+          leaders: {
+            ...next.leaders,
+            [command.player]: { ...leaderOf(next, command.player), schemeHand: hand },
+          },
+        };
+      };
+
+      events.push({ type: 'schemePlayed', player: command.player, scheme: command.scheme });
+
+      switch (command.scheme) {
+        case 'common-tongue': {
+          if (state.phase !== 'confusion') {
+            throw new Error('Common Tongue is played as Confusion is revealed');
+          }
+          const card = state.confusion.card;
+          if (!card) throw new Error('there is no Confusion to cancel');
+          events.push({ type: 'confusionCancelled', card, player: command.player });
+          return commit(
+            spend({
+              ...state,
+              phase: 'turns',
+              confusion: { card, cancelledBy: command.player },
+            }),
+          );
+        }
+
+        case 'frenzied-works': {
+          if (state.bonusWindow !== command.player) {
+            throw new Error('Frenzied Works is played right after your own action');
+          }
+          /* GDD §18: take one more action immediately. */
+          return commit(
+            spend({
+              ...state,
+              bonusWindow: null,
+              inBonusAction: true,
+              turnStep: 'action',
+            }),
+          );
+        }
+
+        case 'false-prophet': {
+          if (state.phase !== 'heaven') {
+            throw new Error('False Prophet is played during the Heaven Phase');
+          }
+          if (!command.hostId || !command.to) {
+            throw new Error('False Prophet needs a Host and a destination');
+          }
+          const host = state.hosts.find((h) => h.id === command.hostId);
+          if (!host) throw new Error('unknown Host');
+          /* Any adjacent legal tile, including sideways or away from Babel. */
+          const legal = neighbours(host.at).some(
+            (candidate) =>
+              coordKey(candidate) === coordKey(command.to as GameState['hosts'][number]['at']) &&
+              isPassableAt(state.board, candidate),
+          );
+          if (!legal) throw new Error('that is not an adjacent legal tile');
+
+          return commit(
+            spend({ ...state, falseProphet: { hostId: host.id, to: command.to } }),
+          );
+        }
+      }
+      throw new Error('unknown Scheme');
+    }
+
+    case 'endTurn': {
+      if (state.bonusWindow !== command.player) throw new Error('nothing to end');
+      const ended = endTurn({ ...state, bonusWindow: null, inBonusAction: false });
+      events.push(...ended.events);
+      return commit(ended.state);
+    }
+
+    case 'beginRound': {
+      if (state.phase !== 'confusion') throw new Error('the round has already begun');
+      if (!state.leaders[command.player]) throw new Error('unknown player');
+      return commit({ ...state, phase: 'turns' });
     }
 
     case 'placeBeacon': {

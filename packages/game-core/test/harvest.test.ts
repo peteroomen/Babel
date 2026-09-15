@@ -23,6 +23,8 @@ function table(
   const base = setupGame(names, 'harvest');
   return {
     ...base,
+    /* Neutralise Confusion so this suite tests one rule at a time. */
+    confusion: { card: null, cancelledBy: null },
     board: { ...BOARD },
     buildings,
     hosts: occupied.map((key, i) => {

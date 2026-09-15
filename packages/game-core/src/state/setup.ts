@@ -1,7 +1,13 @@
-import { RIVER_WEIGHTS, TERRAIN_WEIGHTS } from '@babel-game/game-data';
+import {
+  RIVER_WEIGHTS,
+  SCHEME_DECK,
+  TERRAIN_WEIGHTS,
+  confusionCardsForStage,
+  type ConfusionId,
+} from '@babel-game/game-data';
 import { coordKey } from '../map/edges.js';
 import { hasAnyLegalPlacement, type Board } from '../map/placement.js';
-import { createRng, nextInt, weightedPick, type RngState } from '../rng/index.js';
+import { createRng, nextInt, shuffle, weightedPick, type RngState } from '../rng/index.js';
 import { BABEL_COORD, START_TILE_COORD } from './babel.js';
 import type { GameState, LeaderState, PlayerId, TileDraw } from './types.js';
 
@@ -69,7 +75,16 @@ export function setupGame(names: readonly string[], seed: string): GameState {
 
   /* GDD §5: randomise the First Player. */
   const [first, afterFirst] = nextInt(createRng(seed), order.length);
-  const { draw, rng, discarded } = drawPlaceableTile(board, afterFirst);
+
+  /* GDD §19: the Stage-I Confusion deck, and this round's card. */
+  const [confusionDeck, afterConfusionShuffle] = shuffle(
+    afterFirst,
+    confusionCardsForStage(1),
+  );
+  const [schemeDeck, afterSchemeShuffle] = shuffle(afterConfusionShuffle, SCHEME_DECK);
+  const [revealed, ...remainingConfusion] = confusionDeck as ConfusionId[];
+
+  const { draw, rng, discarded } = drawPlaceableTile(board, afterSchemeShuffle);
   const opener = order[first] as PlayerId;
 
   return {
@@ -84,6 +99,15 @@ export function setupGame(names: readonly string[], seed: string): GameState {
     board,
     buildings: {},
     walls: [],
+    confusion: { card: revealed ?? null, cancelledBy: null },
+    confusionDeck: remainingConfusion,
+    confusionDiscard: [],
+    schemeDeck,
+    schemeDiscard: [],
+    actionsThisRound: {},
+    bonusWindow: null,
+    inBonusAction: false,
+    falseProphet: null,
     babel: { stack: [] },
     beacons: [],
     hosts: [],
@@ -95,6 +119,7 @@ export function setupGame(names: readonly string[], seed: string): GameState {
     rng,
     log: [
       { type: 'roundStarted', round: 1 },
+      ...(revealed ? [{ type: 'confusionRevealed', card: revealed } as const] : []),
       ...discarded.map(
         (tile) =>
           ({

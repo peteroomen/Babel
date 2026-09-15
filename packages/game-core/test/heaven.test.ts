@@ -28,7 +28,13 @@ const ophanim = (id: string, x: number, y: number): Host => ({
 });
 
 function game(board: Board, over: Partial<GameState> = {}): GameState {
-  return { ...setupGame(['Ada', 'Peter'], 'heaven'), board, ...over };
+  return {
+    ...setupGame(['Ada', 'Peter'], 'heaven'),
+    /* Neutralise Confusion so this suite tests one rule at a time. */
+    confusion: { card: null, cancelledBy: null },
+    board,
+    ...over,
+  };
 }
 
 describe('passability (GDD §7)', () => {

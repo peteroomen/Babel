@@ -177,15 +177,26 @@ describe('board invariants hold across whole games', () => {
   });
 
   it('exercises every action type the core currently offers', () => {
-    const state = playGame('gamma', 60);
-    const actions = new Set(
-      state.log.flatMap((e) => (e.type === 'actionTaken' ? [e.action.split(' ')[0]] : [])),
-    );
-    expect(actions).toContain('pass');
-    expect(actions).toContain('build');
-    expect(actions).toContain('barter');
-    expect(actions).toContain('walls');
-    expect(actions).toContain('tower');
+    /* Confusion can lock a whole category out of a given round, so no single
+       game is guaranteed to reach every action. Union across seeds instead. */
+    const actions = new Set<string>();
+    for (const seed of seeds) {
+      const state = playGame(seed, 60);
+      for (const event of state.log) {
+        if (event.type === 'actionTaken') actions.add(event.action.split(' ')[0] as string);
+      }
+    }
+    for (const action of ['pass', 'build', 'barter', 'walls', 'tower', 'babel', 'attack']) {
+      expect(actions).toContain(action);
+    }
+  });
+
+  it('reveals exactly one Confusion card per round', () => {
+    const state = playGame('alpha', 60);
+    const rounds = state.log.filter((e) => e.type === 'roundStarted').length;
+    const reveals = state.log.filter((e) => e.type === 'confusionRevealed').length;
+    /* Round 1's card is revealed at setup, alongside its roundStarted. */
+    expect(reveals).toBe(rounds);
   });
 
   it('keeps Prestige equal to the Prestige actually awarded', () => {

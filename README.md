@@ -81,14 +81,17 @@ npm run dev       # hot-seat app
 - **Milestone 4 — defensive geography.** Complete. Towers contributing one
   targeted support die per occupied feature during any Leader's Attack, and
   Walls as temporary barricades that a Host destroys by spending its movement.
-- **Milestone 5 — the compact card layer.** Next: the three Scheme effects and
-  the six escalating Confusion effects.
+- **Milestone 5 — the compact card layer.** Complete. The three Schemes with
+  hidden hands, and the six Confusion effects with the deck growing as Babel
+  escalates. **Canon v0.1 is now fully playable.**
+- **Milestone 6 — playtest instrumentation.** Next: per-game telemetry and
+  deterministic replay from seed plus command log.
 
 Interpretations of under-specified canon are recorded in
 `docs/RULES_DECISIONS.md`.
 
 ## What is not implemented yet
 
-Every action except Scheme is live: Build, Tower, Walls, Babel, Attack, Muster,
-Barter and Pass. Schemes and the Confusion deck arrive in Milestone 5, and
-Scheme appears disabled in the UI until then.
+All seven actions are live. The deferred content in GDD §23 — character powers,
+Titles, roads, trading, more cards or enemies — stays deferred until human play
+says the game needs it.

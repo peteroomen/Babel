@@ -5,7 +5,13 @@
  * The UI renders what the core says is possible and sends back commands.
  */
 import { useMemo, useState } from 'react';
-import { RESOURCE_TYPES, STAGE_LABEL, type BuildingType, type ResourceType } from '@babel-game/game-data';
+import {
+  CONFUSION,
+  RESOURCE_TYPES,
+  SCHEMES,
+  type BuildingType,
+  type ResourceType,
+} from '@babel-game/game-data';
 import {
   applyMove,
   coordKey,
@@ -13,6 +19,8 @@ import {
   getLegalActions,
   getLegalTilePlacements,
   hitsRemaining,
+  neighbours,
+  isPassableAt,
   previewPlacement,
   setupGame,
   type Command,
@@ -21,11 +29,8 @@ import {
   type Rotation,
 } from '@babel-game/game-core';
 import { Board } from './Board.js';
-import { BabelPanel, LeaderPanel, LogPanel } from './Panels.js';
+import { BabelPanel, ConfusionPanel, LeaderPanel, LogPanel } from './Panels.js';
 import { BUILDING_LABEL, HOST_LABEL, RESOURCE_LABEL, TERRAIN_LABEL, INK } from './theme.js';
-
-/** Actions that arrive in later milestones, shown so the gap stays visible. */
-const DEFERRED_ACTIONS = [['Scheme', 'Milestone 5']] as const;
 
 const NAMES = ['Ada', 'Peter', 'Rook', 'Vex'];
 type Mode =
@@ -33,7 +38,8 @@ type Mode =
   | { kind: 'build' }
   | { kind: 'tower' }
   | { kind: 'walls' }
-  | { kind: 'barter' };
+  | { kind: 'barter' }
+  | { kind: 'prophet'; hostId: string | null };
 
 const panel: React.CSSProperties = {
   marginTop: 12,
@@ -75,6 +81,7 @@ export function App() {
   const babelAction = legal.find((a) => a.type === 'buildBabel');
   const towerAction = legal.find((a) => a.type === 'buildTower');
   const wallsAction = legal.find((a) => a.type === 'buildWalls');
+  const schemeAction = legal.find((a) => a.type === 'buyScheme');
   const attackAction = legal.find((a) => a.type === 'attack');
   const musterAction = legal.find((a) => a.type === 'muster');
   const canBarter = legal.some((a) => a.type === 'barter');
@@ -239,6 +246,58 @@ export function App() {
                 the game.
               </div>
             </div>
+          ) : state.phase === 'confusion' && state.confusion.card ? (
+            <div style={panel}>
+              <strong>{CONFUSION[state.confusion.card].label} is revealed</strong>
+              <div style={{ fontSize: 13, margin: '6px 0 10px' }}>
+                {CONFUSION[state.confusion.card].text} Somebody holds Common Tongue and may
+                cancel it now.
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {state.order
+                  .filter((id) => state.leaders[id]?.schemeHand.includes('common-tongue'))
+                  .map((id) => (
+                    <button
+                      key={id}
+                      onClick={() =>
+                        dispatch({ type: 'playScheme', player: id, scheme: 'common-tongue' })
+                      }
+                    >
+                      {state.leaders[id]?.name} plays Common Tongue
+                    </button>
+                  ))}
+                <button onClick={() => dispatch({ type: 'beginRound', player: active })}>
+                  Let it stand
+                </button>
+              </div>
+            </div>
+          ) : state.bonusWindow ? (
+            <div style={panel}>
+              <strong>{state.leaders[state.bonusWindow]?.name} holds Frenzied Works</strong>
+              <div style={{ fontSize: 13, margin: '6px 0 10px' }}>
+                {SCHEMES['frenzied-works'].text}
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button
+                  onClick={() =>
+                    dispatch({
+                      type: 'playScheme',
+                      player: state.bonusWindow as string,
+                      scheme: 'frenzied-works',
+                    })
+                  }
+                >
+                  Play it — take another action
+                </button>
+                <button
+                  onClick={() =>
+                    dispatch({ type: 'endTurn', player: state.bonusWindow as string })
+                  }
+                >
+                  End turn
+                </button>
+              </div>
+            </div>
           ) : state.phase === 'heaven' ? (
             <div style={panel}>
               <strong>Heaven Phase — round {state.round}</strong>
@@ -249,9 +308,77 @@ export function App() {
                       state.hosts.length === 1 ? '' : 's'
                     } advance along the shortest route to Babel, then every Beacon spawns another.`}
               </div>
-              <button onClick={() => dispatch({ type: 'resolveHeaven', player: active })}>
-                Resolve Heaven Phase
-              </button>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                <button onClick={() => dispatch({ type: 'resolveHeaven', player: active })}>
+                  Resolve Heaven Phase
+                </button>
+                {mode.kind !== 'prophet' &&
+                  !state.falseProphet &&
+                  state.order.some((id) =>
+                    state.leaders[id]?.schemeHand.includes('false-prophet'),
+                  ) && (
+                    <button onClick={() => setMode({ kind: 'prophet', hostId: null })}>
+                      Play False Prophet
+                    </button>
+                  )}
+                {state.falseProphet && (
+                  <span style={{ fontSize: 13 }}>
+                    A Host has been led astray — resolve the phase to see it wander.
+                  </span>
+                )}
+              </div>
+
+              {mode.kind === 'prophet' && (
+                <div style={{ fontSize: 13, marginTop: 10 }}>
+                  {mode.hostId === null ? (
+                    <>
+                      <div>Which Host is misled?</div>
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+                        {state.hosts.map((host) => (
+                          <button
+                            key={host.id}
+                            onClick={() => setMode({ kind: 'prophet', hostId: host.id })}
+                          >
+                            {HOST_LABEL[host.kind]} ({host.at.x}, {host.at.y})
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>Send it where? It may go sideways, or away from Babel.</div>
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+                        {neighbours(
+                          state.hosts.find((h) => h.id === mode.hostId)?.at ?? { x: 0, y: 0 },
+                        )
+                          .filter((at) => isPassableAt(state.board, at))
+                          .map((at) => (
+                            <button
+                              key={coordKey(at)}
+                              onClick={() => {
+                                const holder = state.order.find((id) =>
+                                  state.leaders[id]?.schemeHand.includes('false-prophet'),
+                                );
+                                if (holder) {
+                                  dispatch({
+                                    type: 'playScheme',
+                                    player: holder,
+                                    scheme: 'false-prophet',
+                                    hostId: mode.hostId as string,
+                                    to: at,
+                                  });
+                                }
+                              }}
+                            >
+                              ({at.x}, {at.y})
+                            </button>
+                          ))}
+                      </div>
+                    </>
+                  )}{' '}
+                  <button onClick={() => setMode({ kind: 'idle' })}>Cancel</button>
+                </div>
+              )}
             </div>
           ) : state.pendingAttack ? (
             <div style={panel}>
@@ -412,12 +539,18 @@ export function App() {
                   >
                     Barter
                   </button>
+                  <button
+                    disabled={!schemeAction}
+                    title={
+                      schemeAction
+                        ? '1 Food + 1 Metal for a blind Scheme'
+                        : 'Cannot afford, no Schemes left, or not on a bonus action'
+                    }
+                    onClick={() => dispatch({ type: 'buyScheme', player: active })}
+                  >
+                    Scheme
+                  </button>
                   <button onClick={() => dispatch({ type: 'pass', player: active })}>Pass</button>
-                  {DEFERRED_ACTIONS.map(([label, milestone]) => (
-                    <button key={label} disabled title={`Arrives in ${milestone}`}>
-                      {label}
-                    </button>
-                  ))}
                 </div>
               )}
 
@@ -501,6 +634,7 @@ export function App() {
         </section>
 
         <aside style={{ display: 'grid', gap: 12, minWidth: 0 }}>
+          <ConfusionPanel state={state} />
           <BabelPanel state={state} />
           {state.order.map((id, seat) => (
             <LeaderPanel
