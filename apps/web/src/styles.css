@@ -1,38 +1,52 @@
 @import 'tailwindcss';
 
-/*
- * BABEL's palette. ART_DIRECTION.md: warm, handmade, printed-on-matte-card —
- * a cheerful civic project, with Heaven's gold intruding on it.
- */
-@theme {
-  --color-parchment: #f7f2ea;
-  --color-card-warm: #fffdf8;
-  --color-ink: #2b2622;
-  --color-babel: #3a3330;
-  --color-heaven: #d9a441;
-  --color-river: #2f7fb0;
-}
+/* Self-hosted: no third-party font request at runtime. */
+@import '@fontsource/patrick-hand/400.css';
+@import '@fontsource-variable/caveat';
 
+/*
+ * BABEL — papyrus and ink.
+ *
+ * ART_DIRECTION.md asks for a cheerful, handmade civic project. The whole
+ * interface is therefore ink drawn on paper of varying age: the desk is the
+ * deepest tone, panels are fresher sheets laid on it, and the map itself is a
+ * papyrus sheet that grows as the world is explored.
+ */
 :root {
   --radius: 0.625rem;
-  --background: #f7f2ea;
-  --foreground: #2b2622;
-  --card: #fffdf8;
-  --card-foreground: #2b2622;
-  --popover: #fffdf8;
-  --popover-foreground: #2b2622;
-  --primary: #2b2622;
-  --primary-foreground: #fffdf8;
-  --secondary: #ece4d6;
-  --secondary-foreground: #2b2622;
-  --muted: #ece4d6;
-  --muted-foreground: #6b6257;
-  --accent: #e3bc5f;
-  --accent-foreground: #2b2622;
-  --destructive: #b5452f;
-  --border: #0000001f;
-  --input: #00000026;
-  --ring: #b5452f;
+
+  /* Paper, from oldest and most sun-darkened to freshest. */
+  --papyrus-desk: #cbb68f;
+  --papyrus: #eadfc0;
+  --papyrus-light: #f6eed8;
+  --papyrus-sheet: #f1e6c8;
+
+  /* Ink, from a full nib to a dry one. */
+  --ink: #2a211a;
+  --ink-soft: #6d5c46;
+  --ink-line: #2a211a5c;
+
+  --ochre: #c08a2e;
+  --oxblood: #9c3a22;
+
+  --background: #ddcba4;
+  --foreground: #2a211a;
+  --card: #f1e6c8;
+  --card-foreground: #2a211a;
+  --popover: #f6eed8;
+  --popover-foreground: #2a211a;
+  --primary: #2a211a;
+  --primary-foreground: #f6eed8;
+  --secondary: #e0d2ac;
+  --secondary-foreground: #2a211a;
+  --muted: #e0d2ac;
+  --muted-foreground: #6d5c46;
+  --accent: #c08a2e;
+  --accent-foreground: #241a10;
+  --destructive: #9c3a22;
+  --border: #2a211a2e;
+  --input: #2a211a40;
+  --ring: #c08a2e;
 }
 
 @theme inline {
@@ -58,6 +72,12 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-papyrus: var(--papyrus);
+  --color-papyrus-light: var(--papyrus-light);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --font-hand: 'Patrick Hand', ui-rounded, system-ui, sans-serif;
+  --font-scrawl: 'Caveat Variable', 'Patrick Hand', cursive;
 }
 
 @layer base {
@@ -71,11 +91,58 @@
   }
   body {
     margin: 0;
-    background: var(--background);
     color: var(--foreground);
     font-family: ui-sans-serif, system-ui, sans-serif;
     /* The whole game is one screen: nothing outside a panel ever scrolls. */
     overflow: hidden;
     overscroll-behavior: none;
+
+    /* Aged paper: a wash of warmth plus a faint fibre grain. */
+    background-color: var(--background);
+    background-image:
+      radial-gradient(ellipse at 20% 15%, #fff6e055 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 80%, #a8875044 0%, transparent 60%),
+      repeating-linear-gradient(
+        92deg,
+        #00000000 0px,
+        #00000000 2px,
+        #6b552e0b 2px,
+        #6b552e0b 3px
+      );
+  }
+}
+
+@layer components {
+  /*
+   * A sheet of paper. The fill and its pen outline live on a ::before layer so
+   * the deckle filter frays only the paper — text drawn on top stays crisp.
+   */
+  .paper {
+    position: relative;
+    background: transparent;
+    border: 0;
+  }
+  .paper::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    z-index: -1;
+    background: var(--paper-fill, var(--card));
+    border: 1.5px solid var(--ink-line);
+    border-radius: inherit;
+    filter: url(#deckle);
+    /* Lifts the sheet off whatever it lies on. */
+    box-shadow: 1px 2px 0 #2a211a1f;
+  }
+  .paper-soft::before {
+    filter: url(#deckle-fine);
+  }
+
+  /* Drawn by hand: a pen outline that never quite closes the same way twice. */
+  .penned {
+    border-radius: 14px 5px 12px 6px / 6px 12px 5px 14px;
+  }
+  .penned-alt {
+    border-radius: 6px 13px 5px 12px / 12px 5px 14px 6px;
   }
 }

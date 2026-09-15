@@ -20,7 +20,7 @@ function SheetContent({
       <SheetPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40" />
       <SheetPrimitive.Content
         className={cn(
-          'bg-card fixed z-50 flex flex-col gap-3 border p-4 shadow-lg',
+          'paper fixed z-50 flex flex-col gap-3 p-4 [--paper-fill:var(--papyrus-light)]',
           side === 'right' && 'inset-y-0 right-0 w-[min(22rem,90vw)] border-l',
           side === 'left' && 'inset-y-0 left-0 w-[min(22rem,90vw)] border-r',
           side === 'bottom' && 'inset-x-0 bottom-0 max-h-[80vh] border-t',
@@ -40,7 +40,7 @@ function SheetContent({
 }
 
 function SheetTitle({ className, ...props }: React.ComponentProps<typeof SheetPrimitive.Title>) {
-  return <SheetPrimitive.Title className={cn('text-base font-semibold', className)} {...props} />;
+  return <SheetPrimitive.Title className={cn('font-scrawl text-2xl leading-none font-bold', className)} {...props} />;
 }
 
 export { Sheet, SheetTrigger, SheetClose, SheetContent, SheetTitle };

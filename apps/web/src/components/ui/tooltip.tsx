@@ -28,13 +28,13 @@ function TooltipContent({
       <TooltipPrimitive.Content
         sideOffset={sideOffset}
         className={cn(
-          'bg-primary text-primary-foreground z-50 max-w-64 rounded-md px-2.5 py-1.5 text-xs leading-snug shadow-md',
+          'paper paper-soft penned-alt text-ink z-50 max-w-64 rounded-md px-2.5 py-1.5 text-xs leading-snug [--paper-fill:var(--papyrus-light)]',
           className,
         )}
         {...props}
       >
         {children}
-        <TooltipPrimitive.Arrow className="fill-primary z-50 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px]" />
+        <TooltipPrimitive.Arrow className="z-50 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px] fill-[var(--papyrus-light)]" />
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>
   );

@@ -26,6 +26,9 @@ import {
 
 const CELL = 64;
 
+/** How far the papyrus extends past the squares it carries. */
+const SHEET_BLEED = 7;
+
 /**
  * Turn the painted tile art by a quarter turn or three, chosen from the tile's
  * own coordinates.
@@ -164,7 +167,7 @@ export function Board({
    * two tiles — scales up to fill the whole panel, and every tile lurches
    * smaller as the map grows. A floor makes the frame feel stable.
    */
-  const MIN_SPAN = 9;
+  const MIN_SPAN = 7;
   const xs = coords.map((c) => c.x);
   const ys = coords.map((c) => c.y);
   const padX = Math.max(1, Math.ceil((MIN_SPAN - (Math.max(...xs) - Math.min(...xs) + 1)) / 2));
@@ -177,6 +180,18 @@ export function Board({
 
   const px = (c: Coord) => ({ x: (c.x - minX) * CELL, y: (c.y - minY) * CELL });
 
+  /* Every square the map has reached — placed, Babel, or an open frontier —
+     contributes to the sheet, so the papyrus grows as the world does. */
+  const sheetSquares = [
+    ...Object.keys(state.board).map((k) => {
+      const [x, y] = k.split(',').map(Number) as [number, number];
+      return { x, y };
+    }),
+    BABEL_COORD,
+    ...options.map((o) => o.at),
+    ...beaconSites,
+  ];
+
   return (
     <svg
       viewBox={`0 0 ${width} ${height}`}
@@ -187,6 +202,41 @@ export function Board({
       role="img"
       aria-label="BABEL board"
     >
+      {/* The papyrus the map is drawn on, torn at its edges */}
+      <g filter="url(#deckle-map)">
+        {sheetSquares.map((at) => {
+          const { x, y } = px(at);
+          return (
+            <rect
+              key={`sheet-${coordKey(at)}`}
+              x={x - SHEET_BLEED}
+              y={y - SHEET_BLEED}
+              width={CELL + SHEET_BLEED * 2}
+              height={CELL + SHEET_BLEED * 2}
+              fill="var(--papyrus-sheet)"
+            />
+          );
+        })}
+      </g>
+      {/* Fibre grain, clipped to the sheet so it never bleeds onto the desk */}
+      <g clipPath="url(#sheet-clip)" opacity={0.5} filter="url(#fibre)">
+        <rect width={width} height={height} />
+      </g>
+      <clipPath id="sheet-clip">
+        {sheetSquares.map((at) => {
+          const { x, y } = px(at);
+          return (
+            <rect
+              key={`clip-${coordKey(at)}`}
+              x={x - SHEET_BLEED}
+              y={y - SHEET_BLEED}
+              width={CELL + SHEET_BLEED * 2}
+              height={CELL + SHEET_BLEED * 2}
+            />
+          );
+        })}
+      </clipPath>
+
       {/* Placed terrain */}
       {Object.entries(state.board).map(([key, tile]) => {
         const [x, y] = key.split(',').map(Number) as [number, number];

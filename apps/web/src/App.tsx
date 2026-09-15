@@ -31,6 +31,7 @@ import {
 } from '@babel-game/game-core';
 import { BookOpenIcon, PanelRightIcon, RotateCcwIcon, ScrollTextIcon } from 'lucide-react';
 import { Board } from './Board';
+import { PaperFx } from './PaperFx';
 import { BabelCard, ConfusionCard, LeaderRow, LogCard, LogList } from './Panels';
 import { ActionButtons, Act } from './ActionBar';
 import { Badge } from '@/components/ui/badge';
@@ -143,10 +144,13 @@ export function App() {
 
   return (
     <TooltipProvider>
+      <PaperFx />
       <div className="flex h-full flex-col overflow-hidden">
         {/* ── Header ─────────────────────────────────────────────── */}
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
-          <span className="text-lg font-bold tracking-tight">BABEL</span>
+        <header className="bg-papyrus-light/60 flex h-12 shrink-0 items-center gap-2 border-b px-3">
+          <span className="font-scrawl text-3xl leading-none font-bold tracking-tight">
+            BABEL
+          </span>
           <Badge variant="secondary" className="tabular-nums">
             R{state.round}
           </Badge>
@@ -289,7 +293,7 @@ export function App() {
         <div className="flex min-h-0 flex-1">
           <main className="min-w-0 flex-1 p-2">
             <Board
-              className="bg-parchment size-full rounded-lg border"
+              className="size-full"
               state={state}
               selected={selected}
               rotation={rotation}
@@ -352,7 +356,7 @@ export function App() {
         </div>
 
         {/* ── Action bar ─────────────────────────────────────────── */}
-        <footer className="bg-card min-h-14 shrink-0 border-t px-3 py-2">
+        <footer className="bg-papyrus-light/70 min-h-14 shrink-0 border-t px-3 py-2">
           {state.phase === 'gameOver' ? (
             <div className="flex items-center gap-3">
               <span className="font-semibold">
