@@ -10,6 +10,7 @@ import {
   type Rotation,
   type TileDraw,
 } from '@babel-game/game-core';
+import { STAGE_LABEL } from '@babel-game/game-data';
 import {
   BEACON_LIGHT,
   BUILDING_GLYPH,
@@ -26,8 +27,16 @@ import {
 
 const CELL = 64;
 
-/** How far the papyrus extends past the squares it carries. */
-const SHEET_BLEED = 7;
+/**
+ * How far the papyrus sheet reaches past the tiles, in squares.
+ *
+ * The sheet is a rectangle, not the union of the placed squares: a surveyor
+ * draws on a sheet of a given size and fills it in, so the paper leads the map
+ * rather than following its silhouette. One square of margin is also exactly
+ * enough to carry every legal placement, which is always orthogonally adjacent
+ * to a tile already down.
+ */
+const SHEET_PAD = 1;
 
 /**
  * Turn the painted tile art by a quarter turn or three, chosen from the tile's
@@ -63,6 +72,106 @@ function TerrainTile({
         preserveAspectRatio="xMidYMid slice"
         transform={`rotate(${turn} ${CELL / 2} ${CELL / 2})`}
       />
+    </g>
+  );
+}
+
+/**
+ * A surveyor's compass rose, inked onto the desk beside the map.
+ *
+ * Purely decorative: north on the board is -y, which the rose agrees with, but
+ * nothing in the rules reads it.
+ */
+function CompassRose({ cx, cy, r }: { cx: number; cy: number; r: number }) {
+  /* A four-pointed star, as one diamond; two of them at right angles make the
+     cardinal points, a shorter pair at 45 degrees the ordinals. */
+  const point = (len: number, wide: number) =>
+    `M 0 ${-len} L ${wide} 0 L 0 ${len} L ${-wide} 0 Z`;
+
+  return (
+    <g transform={`translate(${cx} ${cy})`} aria-hidden>
+      <g stroke={INK} fill="none" opacity={0.3}>
+        <circle r={r} strokeWidth={1.1} />
+        <circle r={r * 0.62} strokeWidth={0.7} />
+      </g>
+      <g opacity={0.3} fill={INK}>
+        <path d={point(r * 0.66, r * 0.1)} transform="rotate(45)" />
+        <path d={point(r * 0.66, r * 0.1)} transform="rotate(135)" />
+      </g>
+      <g opacity={0.45} fill={INK} stroke={INK} strokeWidth={0.6}>
+        <path d={point(r * 0.94, r * 0.15)} />
+        <path d={point(r * 0.94, r * 0.15)} transform="rotate(90)" />
+      </g>
+      <circle r={r * 0.09} fill={INK} opacity={0.55} />
+      <text
+        y={-r - 3.5}
+        textAnchor="middle"
+        fontSize={Math.max(9, r * 0.46)}
+        fill={INK}
+        opacity={0.55}
+        style={{ fontFamily: 'var(--font-scrawl)' }}
+      >
+        N
+      </text>
+    </g>
+  );
+}
+
+/** The map's title, lettered on a pasted tablet in the desk margin. */
+function Cartouche({
+  cx,
+  cy,
+  w,
+  h,
+  stage,
+}: {
+  cx: number;
+  cy: number;
+  w: number;
+  h: number;
+  stage: string;
+}) {
+  const hw = w / 2;
+  const hh = h / 2;
+  /* A flat hexagon: square in the middle, tapered to a point at each end. */
+  const nose = Math.min(hh * 1.1, w * 0.12);
+  const tablet = `M ${-hw} 0 L ${-hw + nose} ${-hh} L ${hw - nose} ${-hh} L ${hw} 0 L ${
+    hw - nose
+  } ${hh} L ${-hw + nose} ${hh} Z`;
+
+  return (
+    <g transform={`translate(${cx} ${cy})`} aria-hidden>
+      <path d={tablet} fill="var(--papyrus-sheet)" opacity={0.55} filter="url(#deckle-fine)" />
+      <path d={tablet} fill="none" stroke={INK} strokeWidth={1.2} opacity={0.42} />
+      <path
+        d={tablet}
+        fill="none"
+        stroke={INK}
+        strokeWidth={0.6}
+        opacity={0.3}
+        transform="scale(0.93)"
+      />
+      <text
+        y={-h * 0.04}
+        textAnchor="middle"
+        fontSize={h * 0.46}
+        fill={INK}
+        opacity={0.72}
+        letterSpacing={h * 0.06}
+        style={{ fontFamily: 'var(--font-scrawl)' }}
+      >
+        BABEL
+      </text>
+      <text
+        y={h * 0.31}
+        textAnchor="middle"
+        fontSize={h * 0.2}
+        fill={INK}
+        opacity={0.5}
+        style={{ fontFamily: 'var(--font-hand)' }}
+      >
+        {stage}
+      </text>
     </g>
   );
 }
@@ -153,44 +262,85 @@ export function Board({
   );
   const legalKeys = new Set(options.map((o) => coordKey(o.at)));
 
-  const coords = [
-    ...Object.keys(state.board).map((k) => {
-      const [x, y] = k.split(',').map(Number) as [number, number];
-      return { x, y };
-    }),
-    ...options.map((o) => o.at),
-    BABEL_COORD,
-  ];
+  /* The squares the map actually contains: everything placed, plus Babel. The
+     sheet is sized from these alone, so it grows only when the world does. */
+  const placed = Object.keys(state.board).map((k) => {
+    const [x, y] = k.split(',').map(Number) as [number, number];
+    return { x, y };
+  });
+  const mapped = [...placed, BABEL_COORD];
+
+  const sheetMinX = Math.min(...mapped.map((c) => c.x)) - SHEET_PAD;
+  const sheetMaxX = Math.max(...mapped.map((c) => c.x)) + SHEET_PAD;
+  const sheetMinY = Math.min(...mapped.map((c) => c.y)) - SHEET_PAD;
+  const sheetMaxY = Math.max(...mapped.map((c) => c.y)) + SHEET_PAD;
+  const sheetCols = sheetMaxX - sheetMinX + 1;
+  const sheetRows = sheetMaxY - sheetMinY + 1;
 
   /**
-   * Keep a minimum window around the board. Without it the opening position —
-   * two tiles — scales up to fill the whole panel, and every tile lurches
-   * smaller as the map grows. A floor makes the frame feel stable.
+   * Desk around the sheet. One square minimum, so the torn edge and its shadow
+   * have somewhere to fall and the compass and cartouche have room to sit.
+   *
+   * The floor keeps the frame stable: without it the opening position — two
+   * squares — scales up to fill the whole panel, and every tile lurches smaller
+   * as the map grows.
    */
-  const MIN_SPAN = 7;
-  const xs = coords.map((c) => c.x);
-  const ys = coords.map((c) => c.y);
-  const padX = Math.max(1, Math.ceil((MIN_SPAN - (Math.max(...xs) - Math.min(...xs) + 1)) / 2));
-  const padY = Math.max(1, Math.ceil((MIN_SPAN - (Math.max(...ys) - Math.min(...ys) + 1)) / 2));
+  const MIN_SPAN = 8;
+  const padX = Math.max(1, Math.ceil((MIN_SPAN - sheetCols) / 2));
+  const padY = Math.max(1, Math.ceil((MIN_SPAN - sheetRows) / 2));
 
-  const minX = Math.min(...xs) - padX;
-  const minY = Math.min(...ys) - padY;
-  const width = (Math.max(...xs) + padX + 1 - minX) * CELL;
-  const height = (Math.max(...ys) + padY + 1 - minY) * CELL;
+  const minX = sheetMinX - padX;
+  const minY = sheetMinY - padY;
+  const width = (sheetCols + padX * 2) * CELL;
+  const height = (sheetRows + padY * 2) * CELL;
 
   const px = (c: Coord) => ({ x: (c.x - minX) * CELL, y: (c.y - minY) * CELL });
 
-  /* Every square the map has reached — placed, Babel, or an open frontier —
-     contributes to the sheet, so the papyrus grows as the world does. */
-  const sheetSquares = [
-    ...Object.keys(state.board).map((k) => {
-      const [x, y] = k.split(',').map(Number) as [number, number];
-      return { x, y };
-    }),
-    BABEL_COORD,
-    ...options.map((o) => o.at),
-    ...beaconSites,
-  ];
+  const sheet = {
+    x: (sheetMinX - minX) * CELL,
+    y: (sheetMinY - minY) * CELL,
+    width: sheetCols * CELL,
+    height: sheetRows * CELL,
+  };
+
+  /**
+   * The desk ornaments hang off the sheet rather than off the viewBox, so they
+   * stay part of the composition however much desk there happens to be.
+   *
+   * Every offset below is under one square, and the margin is never narrower
+   * than that, so neither ornament can stray outside the frame. They also clear
+   * the sheet by more than the 11 units #deckle-map can displace its edge by.
+   */
+  /* The cartouche grows with the sheet, within limits: the whole board scales
+     to fit its panel, so a fixed width would shrink away on a large map. Its
+     height is then capped by the margin above the sheet, which is one square
+     when the map is big, less the clearance the torn edge needs. */
+  const CLEARANCE = CELL * 0.2;
+  const cartoucheW = Math.min(CELL * 5.5, Math.max(CELL * 3.3, sheet.width * 0.42));
+  const cartoucheH = Math.min(cartoucheW * 0.212, sheet.y - CLEARANCE - CELL * 0.08);
+  const cartouche = {
+    w: cartoucheW,
+    h: cartoucheH,
+    cy: sheet.y - CLEARANCE - cartoucheH / 2,
+  };
+  /* The rose sits diagonally off the sheet's bottom-right corner: far enough
+     out to clear the tear, near enough in to stay inside the frame when the
+     margin is down to its one-square minimum. */
+  const compass = {
+    cx: sheet.x + sheet.width + CELL * 0.5,
+    cy: sheet.y + sheet.height + CELL * 0.5,
+    r: CELL * 0.34,
+  };
+
+  /* Ruled squares: every cell of the sheet that has nothing on it yet. They
+     are the surveyor's guide lines, so they should barely register. */
+  const drawn = new Set(mapped.map(coordKey));
+  const ruled: Coord[] = [];
+  for (let y = sheetMinY; y <= sheetMaxY; y++) {
+    for (let x = sheetMinX; x <= sheetMaxX; x++) {
+      if (!drawn.has(coordKey({ x, y }))) ruled.push({ x, y });
+    }
+  }
 
   return (
     <svg
@@ -202,40 +352,41 @@ export function Board({
       role="img"
       aria-label="BABEL board"
     >
+      {/* Desk furniture, drawn first so the sheet always lies on top of it */}
+      <CompassRose cx={compass.cx} cy={compass.cy} r={compass.r} />
+      <Cartouche
+        cx={sheet.x + sheet.width / 2}
+        cy={cartouche.cy}
+        w={cartouche.w}
+        h={cartouche.h}
+        stage={STAGE_LABEL[state.stage]}
+      />
+
       {/* The papyrus the map is drawn on, torn at its edges */}
       <g filter="url(#deckle-map)">
-        {sheetSquares.map((at) => {
-          const { x, y } = px(at);
-          return (
-            <rect
-              key={`sheet-${coordKey(at)}`}
-              x={x - SHEET_BLEED}
-              y={y - SHEET_BLEED}
-              width={CELL + SHEET_BLEED * 2}
-              height={CELL + SHEET_BLEED * 2}
-              fill="var(--papyrus-sheet)"
-            />
-          );
-        })}
+        <rect
+          x={sheet.x}
+          y={sheet.y}
+          width={sheet.width}
+          height={sheet.height}
+          fill="var(--papyrus-sheet)"
+        />
       </g>
       {/* Fibre grain, clipped to the sheet so it never bleeds onto the desk */}
       <g clipPath="url(#sheet-clip)" opacity={0.5} filter="url(#fibre)">
         <rect width={width} height={height} />
       </g>
       <clipPath id="sheet-clip">
-        {sheetSquares.map((at) => {
-          const { x, y } = px(at);
-          return (
-            <rect
-              key={`clip-${coordKey(at)}`}
-              x={x - SHEET_BLEED}
-              y={y - SHEET_BLEED}
-              width={CELL + SHEET_BLEED * 2}
-              height={CELL + SHEET_BLEED * 2}
-            />
-          );
-        })}
+        <rect x={sheet.x} y={sheet.y} width={sheet.width} height={sheet.height} />
       </clipPath>
+
+      {/* Ruled squares: where a tile could one day go */}
+      <g fill="none" stroke={INK} strokeWidth={0.75} opacity={0.11}>
+        {ruled.map((at) => {
+          const { x, y } = px(at);
+          return <rect key={`rule-${coordKey(at)}`} x={x} y={y} width={CELL} height={CELL} />;
+        })}
+      </g>
 
       {/* Placed terrain */}
       {Object.entries(state.board).map(([key, tile]) => {
