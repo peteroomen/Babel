@@ -42,6 +42,38 @@ Use **TypeScript + React + Vite + Vitest**, with a pure deterministic `game-core
 
 The art/tone target is a **cheerful, handmade civic project to murder God, besieged by horrifying-but-cute celestial geometry**. See `ART_DIRECTION.md`.
 
-## Next implementation step
+## Repository layout
 
-Start with the Milestone 0 framework spike and Milestone 1 spatial-economy vertical slice in `IMPLEMENTATION_PLAN.md`. Keep the first PR small enough to review: grid, terrain/rivers, feature detection, payouts, hot-seat turn rotation, deterministic RNG/logging, and tests.
+```text
+packages/game-core   pure deterministic rules; no framework imports
+packages/game-data   TUNEABLE values: terrain weights, player-count scaling
+apps/web             hot-seat UI, drives game-core directly
+spike/boardgame-io   maintained multiplayer spike (see ADR-001)
+```
+
+```bash
+npm install
+npm test          # vitest, all packages and the spike
+npm run typecheck
+npm run dev       # hot-seat app
+```
+
+## Progress
+
+- **Milestone 0 — framework spike.** Complete. See
+  `docs/ADR-001-framework.md` for the orchestration decision.
+- **Milestone 1 — spatial economy.** Complete. Square grid, five terrain types,
+  river shapes with free rotation and symmetric edge matching, connected-feature
+  detection, adjacency payouts with occupation suppression, 2–4 hot-seat
+  Leaders, and a board UI that highlights legal squares and projects the payout
+  before you commit.
+- **Milestone 2 — industry, Babel and Prestige.** Next.
+
+Interpretations of under-specified canon are recorded in
+`docs/RULES_DECISIONS.md`.
+
+## What Milestone 1 does not do yet
+
+Only Pass is implemented as an action; Build, Babel, Attack, Muster, Scheme and
+Barter arrive in Milestones 2–5 and appear disabled in the UI. There are no
+Hosts, so `occupiedTiles` is populated only by tests until Milestone 3.
