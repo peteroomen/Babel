@@ -11,19 +11,30 @@ import { describe, expect, it } from 'vitest';
 const ROUNDS = 12;
 const play = (variant: Parameters<typeof playGame>[0], seed: string) =>
   playGame(variant, seed, undefined, { rounds: ROUNDS });
+import { CANON_RULES } from '@babel-game/game-data';
 import { LAKE_VARIANTS, VARIANTS, playGame, summarise } from '../src/index.js';
 
-const control = VARIANTS[0]!;
+/* Look variants up by id: the list grows, and a positional index silently
+   points at the wrong rules when it does. */
+const byId = (id: string) => VARIANTS.find((v) => v.id === id)!;
+const control = byId('control');
+const reserve1 = byId('reserve1');
 
 describe('the harness', () => {
   it('offers the four variants Milestone 6 asks to compare', () => {
     expect(VARIANTS.map((v) => v.id)).toEqual([
       'control',
+      'v01',
       'same-kind',
       'reserve1',
       'reserve2',
     ]);
-    expect(control.rules.barterMode).toBe('mixed');
+    /* v0.1 is kept so every report can show the delta from the baseline the
+       earlier rounds of modelling were measured against. */
+    expect(byId('v01').rules.barterMode).toBe('mixed');
+    /* `control` tracks whatever the game currently plays, so a comparison is
+       always against the live rules rather than a frozen snapshot. */
+    expect(control.rules).toEqual(CANON_RULES);
     expect(control.rules.reserveSlots).toBe(0);
   });
 
@@ -62,8 +73,8 @@ describe('the harness', () => {
   });
 
   it('only records Reserve activity for variants that have one', () => {
-    expect(play(VARIANTS[0]!, 'r').turns.every((t) => t.swap === null)).toBe(true);
-    expect(play(VARIANTS[2]!, 'r').turns.every((t) => t.swap !== null)).toBe(true);
+    expect(play(control, 'r').turns.every((t) => t.swap === null)).toBe(true);
+    expect(play(reserve1, 'r').turns.every((t) => t.swap !== null)).toBe(true);
   });
 });
 
@@ -97,6 +108,6 @@ describe('the summary', () => {
 
   it('reports no Reserve statistics for a variant without one', () => {
     expect(summary.reserve).toBeNull();
-    expect(summarise('reserve1', ['a'].map((s) => play(VARIANTS[2]!, s))).reserve).not.toBeNull();
+    expect(summarise('reserve1', ['a'].map((s) => play(reserve1, s))).reserve).not.toBeNull();
   });
 });

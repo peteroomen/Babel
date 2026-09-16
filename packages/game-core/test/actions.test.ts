@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CANON_RULES, LEGACY_V01_RULES } from '@babel-game/game-data';
 import {
   applyMove,
   canBuildHarvester,
@@ -12,8 +13,12 @@ import {
 const forest = { terrain: 'forest', river: 'none', rotation: 0 } as const;
 const hills = { terrain: 'hills', river: 'none', rotation: 0 } as const;
 
-function ready(names: string[], board: Board = { '4,5': forest, '5,5': forest }): GameState {
-  const base = setupGame(names, 'actions');
+function ready(
+  names: string[],
+  board: Board = { '4,5': forest, '5,5': forest },
+  rules = CANON_RULES,
+): GameState {
+  const base = setupGame(names, 'actions', rules);
   return {
     ...base,
     /* Neutralise Confusion so this suite tests one rule at a time. */
@@ -104,9 +109,17 @@ describe('building a harvester (GDD §9)', () => {
   });
 });
 
-describe('Barter (GDD §8)', () => {
+/**
+ * GDD §8 as written, which v0.2 has moved on from: canon now takes four of one
+ * resource. These stay pinned to the frozen v0.1 ruleset because they document
+ * what §8 says; `rules.test.ts` covers what the game actually plays.
+ */
+describe('Barter (GDD §8, under v0.1 rules)', () => {
+  const v01 = (names: string[]) =>
+    ready(names, { '4,5': forest, '5,5': forest }, LEGACY_V01_RULES);
+
   it('turns any three resources into one of choice', () => {
-    const state = ready(['Ada', 'Peter']);
+    const state = v01(['Ada', 'Peter']);
     const after = applyMove(state, {
       type: 'barter',
       player: 'p0',
@@ -120,14 +133,14 @@ describe('Barter (GDD §8)', () => {
   });
 
   it('requires exactly three cards', () => {
-    const state = ready(['Ada', 'Peter']);
+    const state = v01(['Ada', 'Peter']);
     expect(() =>
       applyMove(state, { type: 'barter', player: 'p0', spend: ['wood', 'wood'], gain: 'brick' }),
     ).toThrow(/exactly 3/);
   });
 
   it('refuses to spend resources the Leader does not hold', () => {
-    const base = ready(['Ada', 'Peter']);
+    const base = v01(['Ada', 'Peter']);
     const poor: GameState = {
       ...base,
       leaders: {

@@ -512,3 +512,58 @@ sinks rather than more actions.
 
 **Hold: Desert blocking Hosts** until Beacon siting stops rewarding it with
 closer spawns.
+
+---
+
+# Canon v0.2 — adopted
+
+`CANON_RULES` now carries the two levers the sweep backed. `LEGACY_V01_RULES`
+is frozen alongside it so every future report can still show the delta from the
+baseline the earlier rounds were measured against, and the harness keeps a
+`v01` variant for exactly that.
+
+- **Babel costs a broad bundle**: 1B+1W+1F, 2B+2W+1M, 3B+2W+2M+1F by Stage.
+  Same totals per piece as v0.1 (3, 5, 8) — only the mix moved.
+- **Barter takes four of one resource.**
+
+Over 25 games at 3 Leaders: 88% shared wins against v0.1's 44%, 58 rounds
+against 72.
+
+## What the economy looks like now
+
+The question this was all supposed to answer — do resources still pile up?
+
+**Yes, nearly as much.** Per Leader over a whole game:
+
+| | v0.1 earned | v0.1 unspent | v0.2 earned | v0.2 unspent |
+|---|---|---|---|---|
+| Food | 69.9 | 41.8 (**60%**) | 67.4 | 38.2 (**57%**) |
+| Wood | 74.1 | 36.5 (49%) | 57.6 | 17.8 (**31%**) |
+| Brick | 60.4 | 16.5 (27%) | 50.6 | 23.1 (**46%**) |
+| Metal | 38.7 | 22.9 (59%) | 38.0 | 11.9 (**31%**) |
+| **Total** | **243.1** | **117.7 (48%)** | **213.7** | **91.0 (43%)** |
+
+Forty-three per cent of everything earned is still never spent. The broad curve
+did not drain the pile — it **moved** it:
+
+- **Wood and Metal are fixed.** Both fall from about half unspent to under a
+  third. Babel now eats them, which is exactly what it was for, and Metal
+  finally has a sink.
+- **Brick got worse**, 27% → 46%. Babel wants less of it than it used to, so the
+  resource that was the bottleneck is now surplus. The shortage moved rather
+  than closing.
+- **Food is the outstanding problem**, and was already the worst under v0.1:
+  57% unspent, 38 per Leader. Its only sinks are Muster (1), a Scheme (1) and
+  one or two per Babel piece. Nothing else in the game asks for Food at all.
+
+This is the action-scarcity result from round four showing up per resource. A
+Leader earns every turn and acts once, so a pile accumulates whatever is on the
+menu; widening what Babel asks for redistributes which pile grows without
+changing the total much.
+
+**Two things did improve that the playtest complained about.** Harvesters go
+from 14% to 19% of early actions — worth building, because their output is now
+worth something to Babel. And Babel itself rises from 14% to 21% of late
+actions, so the endgame is less exclusively Attack.
+
+**The next lever is Food**, or the action budget itself — not another sink.

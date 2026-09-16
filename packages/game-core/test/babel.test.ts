@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  LEGACY_V01_RULES,
+  RESOURCE_TYPES,
+  type ResourceType,
+} from '@babel-game/game-data';
+import {
   applyMove,
   isBabelComplete,
   piecesPerStage,
@@ -50,9 +55,11 @@ describe('building a Babel piece (GDD §12)', () => {
     const state = ready(['Ada', 'Peter']);
     const { state: after, events } = build(state);
 
-    /* Stage I: 2 Brick + 1 Food, 2 Prestige. */
-    expect(after.leaders['p0']!.resources.brick).toBe(18);
-    expect(after.leaders['p0']!.resources.food).toBe(19);
+    /* v0.2 Stage I: 1 Brick + 1 Wood + 1 Food, 2 Prestige. */
+    const paid = state.rules.babelPieceCost[1];
+    expect(after.leaders['p0']!.resources.brick).toBe(20 - (paid.brick ?? 0));
+    expect(after.leaders['p0']!.resources.wood).toBe(20 - (paid.wood ?? 0));
+    expect(after.leaders['p0']!.resources.food).toBe(20 - (paid.food ?? 0));
     expect(after.leaders['p0']!.prestige).toBe(2);
     expect(after.babel.stack).toEqual(['p0']);
     expect(events).toContainEqual({
@@ -63,16 +70,33 @@ describe('building a Babel piece (GDD §12)', () => {
     });
   });
 
+  /**
+   * v0.2 spreads a piece across three resources per Stage instead of asking for
+   * Brick and Food. The totals per piece are unchanged at 3, 5 and 8 — that was
+   * the point of the curve, to move the mix without moving the price.
+   */
   it.each([
-    [1, 2, 1, 2],
-    [2, 4, 1, 3],
-    [3, 6, 2, 4],
-  ])('Stage %i costs %i Brick + %i Food for %i Prestige', (stage, brick, food, prestige) => {
-    const state = ready(['Ada', 'Peter'], stage as 1 | 2 | 3);
+    [1, { brick: 1, wood: 1, food: 1 }, 2],
+    [2, { brick: 2, wood: 2, metal: 1 }, 3],
+    [3, { brick: 3, wood: 2, metal: 2, food: 1 }, 4],
+  ] as const)('Stage %i charges %o for %i Prestige', (stage, cost, prestige) => {
+    const state = ready(['Ada', 'Peter'], stage);
     const after = build(state).state;
-    expect(20 - after.leaders['p0']!.resources.brick).toBe(brick);
-    expect(20 - after.leaders['p0']!.resources.food).toBe(food);
+    for (const resource of RESOURCE_TYPES) {
+      expect(20 - after.leaders['p0']!.resources[resource]).toBe(
+        (cost as Partial<Record<ResourceType, number>>)[resource] ?? 0,
+      );
+    }
     expect(after.leaders['p0']!.prestige).toBe(prestige);
+    expect(Object.values(cost).reduce((a, b) => a + b, 0)).toBe([3, 5, 8][stage - 1]);
+  });
+
+  it('keeps the v0.1 curve available for comparison', () => {
+    expect(LEGACY_V01_RULES.babelPieceCost).toEqual({
+      1: { brick: 2, food: 1 },
+      2: { brick: 4, food: 1 },
+      3: { brick: 6, food: 2 },
+    });
   });
 
   it('refuses when the Leader cannot afford a piece', () => {

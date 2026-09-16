@@ -1,5 +1,4 @@
 import {
-  BROAD_PIECE_COST,
   CANON_RULES,
   MONUMENT_RULE,
   TERMINATOR_RIVER_WEIGHTS,
@@ -23,13 +22,15 @@ export type Factor = {
   readonly on: Partial<RuleSet>;
 };
 
+/**
+ * The levers still open, measured against whatever the game currently plays.
+ *
+ * Same-kind Barter at four and the broad Babel curve were the two the first
+ * sweep carried, and they are canon v0.2 now — so they are the floor here
+ * rather than factors. `LEGACY_V01_RULES` is how to get the old baseline back.
+ */
 export const FACTORS: readonly Factor[] = [
-  {
-    key: 'B',
-    label: 'Barter: four of one kind',
-    on: { barterMode: 'sameKind', barterCost: 4 },
-  },
-  { key: 'P', label: 'Babel: broad cost curve', on: { babelPieceCost: BROAD_PIECE_COST } },
+  { key: 'X', label: 'Rivers must extend', on: { riverMustExtend: true } },
   { key: 'R', label: 'Rivers: terminators', on: { riverWeights: TERMINATOR_RIVER_WEIGHTS } },
   { key: 'D', label: 'Desert blocks Hosts', on: { impassableTerrain: ['lake', 'desert'] } },
   { key: 'M', label: 'Monument (Prestige sink)', on: { monument: MONUMENT_RULE } },

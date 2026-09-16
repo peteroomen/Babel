@@ -107,13 +107,18 @@ function playGame(seed: string, turns: number): GameState {
         command = { type: 'attack', player: me };
         break;
       case 'barter': {
-        /* Spend from whatever the Leader actually holds. */
+        /* Spend what the rules in force actually accept: any mix under v0.1,
+           a single deep stack under the same-kind rule v0.2 plays. */
         const hand = state.leaders[me]!.resources;
-        const held = RESOURCES.flatMap((r) => Array<ResourceType>(hand[r]).fill(r));
+        const cost = state.rules.barterCost;
+        const spend =
+          state.rules.barterMode === 'sameKind'
+            ? Array<ResourceType>(cost).fill(choice.spendable[0]!)
+            : RESOURCES.flatMap((r) => Array<ResourceType>(hand[r]).fill(r)).slice(0, cost);
         command = {
           type: 'barter',
           player: me,
-          spend: held.slice(0, 3),
+          spend,
           gain: RESOURCES[roll(RESOURCES.length)]!,
         };
         break;
@@ -178,10 +183,15 @@ describe('board invariants hold across whole games', () => {
 
   it('exercises every action type the core currently offers', () => {
     /* Confusion can lock a whole category out of a given round, so no single
-       game is guaranteed to reach every action. Union across seeds instead. */
+       game is guaranteed to reach every action. Union across seeds instead.
+       More seeds and a longer horizon than the other invariants need: this
+       bot chooses uniformly from the legal set, and v0.2's same-kind Barter
+       makes a random walk slow to accumulate the four-of-a-kind it needs, so
+       the expensive actions take longer to come up. Real agents reach them
+       readily — Towers are 12% of actions in the harness. */
     const actions = new Set<string>();
-    for (const seed of seeds) {
-      const state = playGame(seed, 60);
+    for (const seed of [...seeds, 'zeta', 'eta', 'theta', 'iota', 'kappa']) {
+      const state = playGame(seed, 110);
       for (const event of state.log) {
         if (event.type === 'actionTaken') actions.add(event.action.split(' ')[0] as string);
       }
@@ -280,7 +290,9 @@ describe('board invariants hold across whole games', () => {
           spend(event.player, structureCost(event.building));
           break;
         case 'babelPieceBuilt':
-          spend(event.player, BABEL_PIECE_COST[event.stage]);
+          /* The curve is a ruleset value now, so the ledger has to read the
+             rules the game was played under rather than the v0.1 constant. */
+          spend(event.player, state.rules.babelPieceCost[event.stage]);
           break;
         case 'mustered':
           spend(event.player, MUSTER_COST);

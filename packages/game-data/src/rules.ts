@@ -120,32 +120,15 @@ export type RuleSet = {
   readonly terrainWeights: Readonly<Record<TerrainType, number>>;
 };
 
-/** Canon v0.1: mixed Barter at three cards, free Attack, no Reserve, no Lake. */
-export const CANON_RULES: RuleSet = {
-  barterMode: 'mixed',
-  barterCost: 3,
-  attackDieCost: null,
-  babelPieceCost: BABEL_PIECE_COST,
-  riverWeights: RIVER_WEIGHTS,
-  impassableTerrain: ['lake'],
-  riverMustExtend: false,
-  monument: null,
-  reserveSlots: 0,
-  terrainWeights: TERRAIN_WEIGHTS,
-};
-
-/** At most this many Reserve slots. A guard, not a design statement. */
-export const MAX_RESERVE_SLOTS = 4;
-
 /**
- * An alternative Babel cost curve where every Stage wants three resources.
+ * The Babel cost curve as of v0.2: every Stage wants three resources.
  *
- * Same total per piece as canon — 3, 5 and 8 — but spread, so a Leader's income
+ * Same total per piece as v0.1 — 3, 5 and 8 — but spread, so a Leader's income
  * is useful to Babel whatever terrain they are sitting on instead of everyone
  * competing for the one terrain that yields Brick. It also gives Metal a sink,
- * which canon never does.
+ * which v0.1 never did.
  */
-export const BROAD_PIECE_COST: RuleSet['babelPieceCost'] = {
+export const BROAD_PIECE_COST: Record<Stage, Partial<Record<ResourceType, number>>> = {
   1: { brick: 1, wood: 1, food: 1 },
   2: { brick: 2, wood: 2, metal: 1 },
   3: { brick: 3, wood: 2, metal: 2, food: 1 },
@@ -175,6 +158,54 @@ export const TERMINATOR_RIVER_WEIGHTS: RuleSet['riverWeights'] = {
   desert: { none: 100, straight: 0, bend: 0, tee: 0, source: 0 },
   lake: { none: 100, straight: 0, bend: 0, tee: 0, source: 0 },
 };
+
+/**
+ * Canon v0.1, frozen.
+ *
+ * Kept so the harness can always show the delta against the baseline every
+ * earlier round of modelling was measured from. Nothing plays under it by
+ * default any more.
+ */
+export const LEGACY_V01_RULES: RuleSet = {
+  barterMode: 'mixed',
+  barterCost: 3,
+  attackDieCost: null,
+  babelPieceCost: BABEL_PIECE_COST,
+  riverWeights: RIVER_WEIGHTS,
+  impassableTerrain: ['lake'],
+  riverMustExtend: false,
+  monument: null,
+  reserveSlots: 0,
+  terrainWeights: TERRAIN_WEIGHTS,
+};
+
+/**
+ * Canon v0.2 — what the game plays under now.
+ *
+ * Two changes from v0.1, both carried by the factorial sweep in
+ * docs/MILESTONE_6_BASELINE.md, which measured each across every setting of the
+ * others over 384 games:
+ *
+ * - **Babel costs a broad bundle** (+21.9 points on the shared win rate). Every
+ *   Stage wants three resources instead of Brick and Food, so a Leader's income
+ *   is useful to Babel whatever ground they are sitting on, and Metal finally
+ *   has a sink.
+ * - **Barter takes four of one resource** (+9.4 points, and the only lever that
+ *   moved Barter's share of actions at all). It stops being the way to convert
+ *   any pile into the one thing Babel wants.
+ *
+ * Together: 80% shared wins against v0.1's 60%, and games of 48 rounds rather
+ * than 66.
+ */
+export const CANON_RULES: RuleSet = {
+  ...LEGACY_V01_RULES,
+  barterMode: 'sameKind',
+  barterCost: 4,
+  babelPieceCost: BROAD_PIECE_COST,
+};
+
+/** At most this many Reserve slots. A guard, not a design statement. */
+export const MAX_RESERVE_SLOTS = 4;
 
 /** The Monument as modelled: a broad bundle for 3 Prestige. */
 export const MONUMENT_RULE: RuleSet['monument'] = {

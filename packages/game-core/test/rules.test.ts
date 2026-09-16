@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { CANON_RULES, type ResourceType, type RuleSet } from '@babel-game/game-data';
+import {
+  CANON_RULES,
+  LEGACY_V01_RULES,
+  type ResourceType,
+  type RuleSet,
+} from '@babel-game/game-data';
 import {
   applyMove,
   currentPlayer,
@@ -40,11 +45,21 @@ function atAction(state: GameState): GameState {
 }
 
 describe('the ruleset travels with the game', () => {
-  it('defaults to canon v0.1', () => {
+  it('defaults to canon v0.2', () => {
     const state = setupGame(['Ada', 'Peter'], 'seed');
     expect(state.rules).toEqual(CANON_RULES);
-    expect(state.rules.barterMode).toBe('mixed');
+    /* v0.2: same-kind Barter at four cards and the broad Babel curve. */
+    expect(state.rules.barterMode).toBe('sameKind');
+    expect(state.rules.barterCost).toBe(4);
+    expect(state.rules.babelPieceCost[1]).toEqual({ brick: 1, wood: 1, food: 1 });
     expect(state.reserve).toEqual([]);
+  });
+
+  it('keeps v0.1 available, and it is not what anyone plays', () => {
+    const state = setupGame(['Ada', 'Peter'], 'seed', LEGACY_V01_RULES);
+    expect(state.rules.barterMode).toBe('mixed');
+    expect(state.rules.barterCost).toBe(3);
+    expect(LEGACY_V01_RULES).not.toEqual(CANON_RULES);
   });
 
   it('rejects a Reserve larger than the guard allows', () => {
@@ -53,7 +68,10 @@ describe('the ruleset travels with the game', () => {
     );
   });
 
-  it('leaves canon play unchanged — a pass-only game still ends in defeat', () => {
+  it('still loses a pass-only game, under either ruleset', () => {
+    expect(playRounds(setupGame(['Ada', 'Peter'], 'canon', LEGACY_V01_RULES), 200).lossReason).toBe(
+      'foundationBreached',
+    );
     const state = playRounds(setupGame(['Ada', 'Peter'], 'canon'), 200);
     expect(state.phase).toBe('gameOver');
     expect(state.lossReason).toBe('foundationBreached');
@@ -61,8 +79,11 @@ describe('the ruleset travels with the game', () => {
 });
 
 describe('same-kind Barter', () => {
+  /* Three of a kind, so the rule can be tested independently of v0.2's cost. */
   const open = () =>
-    atAction(setupGame(['Ada', 'Peter'], 'barter', rules({ barterMode: 'sameKind' })));
+    atAction(
+      setupGame(['Ada', 'Peter'], 'barter', rules({ barterMode: 'sameKind', barterCost: 3 })),
+    );
 
   it('accepts three of one resource', () => {
     const state = withHand(open(), { wood: 3 });
@@ -95,8 +116,8 @@ describe('same-kind Barter', () => {
     expect(legal.find((action) => action.type === 'barter')).toBeUndefined();
   });
 
-  it('is still offered to that Leader under canon rules', () => {
-    const state = withHand(atAction(setupGame(['Ada', 'Peter'], 'barter')), {
+  it('is still offered to that Leader under v0.1 rules', () => {
+    const state = withHand(atAction(setupGame(['Ada', 'Peter'], 'barter', LEGACY_V01_RULES)), {
       wood: 2,
       food: 1,
     });
@@ -104,12 +125,12 @@ describe('same-kind Barter', () => {
       (action) => action.type === 'barter',
     );
     expect(barter).toBeDefined();
-    /* Canon reports every resource held as spendable; same-kind reports only
+    /* v0.1 reports every resource held as spendable; same-kind reports only
        the stacks deep enough to convert. */
     expect(barter).toMatchObject({ spendable: ['food', 'wood'] });
   });
 
-  it('reports only stacks of three as spendable', () => {
+  it('reports only stacks deep enough to spend', () => {
     const state = withHand(open(), { wood: 4, food: 2, brick: 3 });
     const barter = getLegalActions(state, currentPlayer(state)).find(
       (action) => action.type === 'barter',

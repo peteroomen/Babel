@@ -1,6 +1,7 @@
 import {
   BROAD_PIECE_COST,
   CANON_RULES,
+  LEGACY_V01_RULES,
   MONUMENT_RULE,
   TERMINATOR_RIVER_WEIGHTS,
   TERRAIN_WEIGHTS,
@@ -28,7 +29,8 @@ const withRules = (id: string, label: string, note: string, rules: Partial<RuleS
 });
 
 export const VARIANTS: readonly Variant[] = [
-  withRules('control', 'Control', 'Canon v0.1: blind draw, mixed Barter', {}),
+  withRules('control', 'Control', 'Canon v0.2: the live rules', {}),
+  { id: 'v01', label: 'v0.1', note: 'The pre-Milestone-6 baseline', rules: LEGACY_V01_RULES },
   withRules('same-kind', 'Same-kind Barter', 'Blind draw, 3 of one resource', {
     barterMode: 'sameKind',
   }),

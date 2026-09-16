@@ -81,7 +81,7 @@ export function ActionButtons({
   const attack = find('attack');
   const muster = find('muster');
   const scheme = find('buyScheme');
-  const barter = legal.some((a) => a.type === 'barter');
+  const barter = find('barter');
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
@@ -172,8 +172,12 @@ export function ActionButtons({
         onClick={onBarter}
         hint={
           barter
-            ? 'Discard any 3 cards for 1 of your choice. Deliberately inefficient — bad luck protection, not an economy.'
-            : 'You need three resource cards.'
+            ? `Discard ${barter.cost}${
+                state.rules.barterMode === 'sameKind' ? ' of one resource' : ' cards'
+              } for 1 of your choice. Deliberately inefficient — bad luck protection, not an economy.`
+            : state.rules.barterMode === 'sameKind'
+              ? `You need ${state.rules.barterCost} of a single resource.`
+              : `You need ${state.rules.barterCost} resource cards.`
         }
       />
       <Act

@@ -158,12 +158,13 @@ describe('Lost Ledgers (GDD §19)', () => {
 describe('Fractured Command (GDD §19)', () => {
   it('lets only one Leader use each action category', () => {
     let state = under('fractured-command');
-    state = applyMove(state, { type: 'barter', player: 'p0', spend: ['wood', 'wood', 'food'], gain: 'brick' }).state;
+    const four = ['wood', 'wood', 'wood', 'wood'] as const;
+    state = applyMove(state, { type: 'barter', player: 'p0', spend: four, gain: 'brick' }).state;
 
     /* p1's turn; Barter is spoken for. */
     const next: GameState = { ...state, turnStep: 'action', drawnTile: null };
     expect(() =>
-      applyMove(next, { type: 'barter', player: 'p1', spend: ['wood', 'wood', 'food'], gain: 'brick' }),
+      applyMove(next, { type: 'barter', player: 'p1', spend: four, gain: 'brick' }),
     ).toThrow(/Confusion forbids/);
     expect(getLegalActions(next, 'p1').map((a) => a.type)).not.toContain('barter');
   });

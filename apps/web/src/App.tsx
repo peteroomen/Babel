@@ -381,10 +381,10 @@ export function App() {
                   />
                   <Choice
                     label="Barter"
-                    hint="Canon takes any three resources. The experiment takes three of the same, so Barter stops being a precision converter."
+                    hint="v0.2 takes four of one resource, so Barter is an escape valve for a surplus stack rather than the way to convert any pile into the one thing Babel wants. v0.1 took any three."
                     options={[
-                      { value: 'mixed', label: 'Any 3' },
-                      { value: 'sameKind', label: 'Same 3' },
+                      { value: 'mixed', label: 'Any' },
+                      { value: 'sameKind', label: 'Same kind' },
                     ]}
                     value={table.rules.barterMode}
                     onChange={(barterMode) =>
@@ -393,10 +393,10 @@ export function App() {
                   />
                   <Choice
                     label="Babel costs"
-                    hint="Canon asks for Brick and Food only — 2, 4 and 6 Brick by Stage, all from one terrain. Broad spreads the same total across three resources per Stage, so your income is useful whatever ground you are on."
+                    hint="v0.2 spreads the same total across three resources per Stage, so your income is useful whatever ground you are on — and Metal finally has a sink. v0.1 asked for Brick and Food only, all from one terrain."
                     options={[
-                      { value: 'canon', label: 'Brick' },
                       { value: 'broad', label: 'Broad' },
+                      { value: 'canon', label: 'v0.1' },
                     ]}
                     value={
                       table.rules.babelPieceCost === BROAD_PIECE_COST ? 'broad' : 'canon'
@@ -415,7 +415,7 @@ export function App() {
                   />
                   <Choice
                     label="Barter cost"
-                    hint="How many cards a Barter discards. Three quarters of all Barters in the model are a Leader converting into Brick for Babel; a fourth card taxes that directly."
+                    hint="How many cards a Barter discards. v0.2 asks four: under the old three, three quarters of all Barters were a Leader converting into Brick for Babel."
                     options={[3, 4].map((n) => ({ value: n, label: String(n) }))}
                     value={table.rules.barterCost}
                     onChange={(barterCost) => restart({ rules: { ...table.rules, barterCost } })}
