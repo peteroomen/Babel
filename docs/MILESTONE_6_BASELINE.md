@@ -260,3 +260,119 @@ The action mix says these agents attack on two turns in five and barter on one
 in six. If your own play looks nothing like that, the numbers are describing a
 different game from the one you are playing — which is exactly why the
 playtest matters more than another run.
+
+---
+
+# Third round — confirmation, and Babel's cost curve
+
+## Same-kind Barter at four cards, confirmed
+
+`npm run model -- --confirm --games 90`
+
+| | Control | Same-kind, 4 cards |
+|---|---|---|
+| Shared win rate | 60.0% | **78.9%** |
+| Timeouts | 10.0% | 2.2% |
+| Mean rounds | 64.1 | 57.1 |
+| Babel pieces standing | 9.8 | 11.9 |
+| Barter share | 15.8% | 13.0% |
+| Build share | 5.9% | 8.5% |
+
+At n=90 the gap is +18.9 points against a difference standard error of about 7,
+so roughly 2.7 standard errors. The n=25 result held.
+
+One thing the smaller run could not see — **strategic diversity improves
+sharply**:
+
+| Individual wins by | Control | Same-kind, 4 cards |
+|---|---|---|
+| Architect | 3.4% | 19.7% |
+| Commander | 41.4% | 33.8% |
+| Industrialist | 57.4% | 45.1% |
+
+Canon has the Architect functionally unable to win on Prestige. Under
+same-kind-4 all three strategies are live. Milestone 6 asks explicitly that
+extra agency must not collapse strategic diversity; this does the opposite.
+
+**Confirmed recommendation: `barterMode: 'sameKind'`, `barterCost: 4`.**
+
+## Babel's cost curve
+
+`npm run model -- --babel --games 45`. Every candidate holds the *total*
+resources per piece at canon's 3, 5 and 8, so these test the mix, not the price,
+and all run on canon Barter so the two do not confound.
+
+| | Cost by Stage | Win rate | Rounds | Pieces | Barter |
+|---|---|---|---|---|---|
+| **Control** | B2+F1 / B4+F1 / B6+F2 | 64.4% | 65.1 | 10.6 | 16.5% |
+| **Layered** | B2+F1 / B3+W2 / B4+M3+F1 | 68.9% | 61.6 | 10.8 | 16.3% |
+| **Broad** | B1+W1+F1 / B2+W2+M1 / B3+W2+M2+F1 | **84.4%** | 61.9 | **13.4** | 16.0% |
+| **Metal spine** | B2+F1 / B2+W3 / B2+M4+F2 | 68.9% | 71.6 | 11.5 | 16.2% |
+
+**Broad is the strongest single change tested anywhere in this milestone.**
+Every Stage wanting three resources means every Leader's income is useful to
+Babel, whatever terrain they happen to be sitting on, instead of everyone
+competing for the one terrain that yields Brick.
+
+It also gives Metal a sink at last — Metal left unspent falls from 21.1 per
+Leader to 11.2. The first baseline noted Metal as the bottleneck that gates
+Muster, Towers and Schemes; asking Babel for some of it makes Metal something a
+Leader actively works for rather than a wall they hit.
+
+**Metal spine is the one to avoid.** Four Metal per piece in Stage III is more
+than the board reliably supplies: games run longest (71.6 rounds), timeouts are
+worst (15.6%), and Brick piles up unused at 34.4 per Leader.
+
+### The hypothesis that did not hold
+
+Changing the cost mix **does not reduce Barter**. Every curve lands within half
+a point of control: 16.5% → 16.3% / 16.0% / 16.2%.
+
+The reasoning behind the idea was sound — three quarters of all Barters convert
+into Brick, so spreading the cost off Brick ought to remove the need. It does
+not, because Barter is a *response to being short of something*, not a response
+to being short of Brick specifically. Spreading Babel's cost across four
+resources changes which resource a Leader is short of; it does not change how
+often they are short. The Barter lever is Barter's own cost, and the Babel
+lever is a different, larger improvement that happens to be about something
+else.
+
+## They do not stack
+
+`npm run model -- --stack --games 45`
+
+| | Control | Same-kind 4 | Broad Babel | **Both** |
+|---|---|---|---|---|
+| Shared win rate | 64.4% | 77.8% | **84.4%** | 73.3% |
+| Mean rounds | 65.1 | 54.8 | 61.9 | 54.4 |
+| Barter share | 16.5% | 13.2% | 16.0% | **10.7%** |
+| Resources from Barter | 4.8% | 3.4% | 4.5% | **2.7%** |
+| Access rate | 47.2% | 42.6% | 48.5% | 40.3% |
+
+Together they land *below* either alone. The two changes pull in opposite
+directions on resource access: Broad raises it to 48.5% by making every income
+stream useful, while same-kind-4 lowers it to 42.6% by removing the conversion
+escape. Combined, 40.3% — the tightest of anything tested, and apparently past
+the point where the table can absorb it.
+
+The combination is not bad, and it does produce the lowest Barter share in the
+milestone (10.7%) and the most even spread of individual wins (27/27/39). But
+it buys those with a win rate eleven points below Broad alone, and at n=45 that
+gap is only about 1.4 standard errors — enough to say "no additive benefit",
+not enough to rank them confidently.
+
+## Where this leaves v0.2
+
+Two independent, well-evidenced improvements that should not both be taken:
+
+1. **Broad Babel cost** — the bigger win-rate effect, keeps games a touch
+   shorter, gives Metal a purpose. Does nothing about Barter.
+2. **Same-kind Barter at four** — confirmed at n=90, cuts Barter, and fixes the
+   Architect's inability to win on Prestige.
+
+They address different complaints. If the concern is the *game*, take Broad. If
+the concern is *Barter*, take same-kind-4. Taking both measurably costs win
+rate without a matching gain.
+
+Both are in the browser's table settings. This is now a question about which
+game is more fun, which no amount of further running will answer.

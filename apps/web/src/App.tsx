@@ -7,6 +7,7 @@
  */
 import { useMemo, useState } from 'react';
 import {
+  BROAD_PIECE_COST,
   CANON_RULES,
   CONFUSION,
   RESOURCE_TYPES,
@@ -386,6 +387,28 @@ export function App() {
                     value={table.rules.barterMode}
                     onChange={(barterMode) =>
                       restart({ rules: { ...table.rules, barterMode } })
+                    }
+                  />
+                  <Choice
+                    label="Babel costs"
+                    hint="Canon asks for Brick and Food only — 2, 4 and 6 Brick by Stage, all from one terrain. Broad spreads the same total across three resources per Stage, so your income is useful whatever ground you are on."
+                    options={[
+                      { value: 'canon', label: 'Brick' },
+                      { value: 'broad', label: 'Broad' },
+                    ]}
+                    value={
+                      table.rules.babelPieceCost === BROAD_PIECE_COST ? 'broad' : 'canon'
+                    }
+                    onChange={(choice) =>
+                      restart({
+                        rules: {
+                          ...table.rules,
+                          babelPieceCost:
+                            choice === 'broad'
+                              ? BROAD_PIECE_COST
+                              : CANON_RULES.babelPieceCost,
+                        },
+                      })
                     }
                   />
                   <Choice

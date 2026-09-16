@@ -1,4 +1,5 @@
 import { TERRAIN_WEIGHTS, type ResourceType, type TerrainType } from './terrain.js';
+import { BABEL_PIECE_COST, type Stage } from './babel.js';
 
 /**
  * Rules that are under experiment rather than settled.
@@ -70,6 +71,15 @@ export type RuleSet = {
    */
   readonly reserveSlots: number;
   /**
+   * What one Babel piece costs, by Stage.
+   *
+   * The model shows three quarters of all Barters are a Leader converting into
+   * Brick, which makes this curve — not Barter's own rules — the thing actually
+   * driving Barter frequency. Brick comes only from Hills, and canon asks for
+   * 2, 4 and 6 of it.
+   */
+  readonly babelPieceCost: Record<Stage, Partial<Record<ResourceType, number>>>;
+  /**
    * Terrain draw weights. Carried here rather than read from the module so the
    * Lake question (§22: "Lake frequency has not yet been modelled") can be
    * harnessed as explicit, comparable numbers across variants.
@@ -82,9 +92,24 @@ export const CANON_RULES: RuleSet = {
   barterMode: 'mixed',
   barterCost: 3,
   attackDieCost: null,
+  babelPieceCost: BABEL_PIECE_COST,
   reserveSlots: 0,
   terrainWeights: TERRAIN_WEIGHTS,
 };
 
 /** At most this many Reserve slots. A guard, not a design statement. */
 export const MAX_RESERVE_SLOTS = 4;
+
+/**
+ * An alternative Babel cost curve where every Stage wants three resources.
+ *
+ * Same total per piece as canon — 3, 5 and 8 — but spread, so a Leader's income
+ * is useful to Babel whatever terrain they are sitting on instead of everyone
+ * competing for the one terrain that yields Brick. It also gives Metal a sink,
+ * which canon never does.
+ */
+export const BROAD_PIECE_COST: RuleSet['babelPieceCost'] = {
+  1: { brick: 1, wood: 1, food: 1 },
+  2: { brick: 2, wood: 2, metal: 1 },
+  3: { brick: 3, wood: 2, metal: 2, food: 1 },
+};

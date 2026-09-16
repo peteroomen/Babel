@@ -569,7 +569,9 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         throw new Error('the Foundation is occupied');
       }
       const leader = leaderOf(state, command.player);
-      if (!canBuildBabel(leader, state.stage)) throw new Error('cannot afford a Babel piece');
+      if (!canBuildBabel(leader, state.stage, state.rules)) {
+        throw new Error('cannot afford a Babel piece');
+      }
 
       const prestige = piecePrestige(state.stage);
       const babel = { stack: [...state.babel.stack, command.player] };
@@ -594,7 +596,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
           ...state.leaders,
           [command.player]: {
             ...leader,
-            resources: paySpecific(leader, pieceCost(state.stage)),
+            resources: paySpecific(leader, pieceCost(state.stage, state.rules)),
             prestige: leader.prestige + prestige,
           },
         },

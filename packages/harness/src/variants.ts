@@ -1,4 +1,9 @@
-import { CANON_RULES, TERRAIN_WEIGHTS, type RuleSet } from '@babel-game/game-data';
+import {
+  BROAD_PIECE_COST,
+  CANON_RULES,
+  TERRAIN_WEIGHTS,
+  type RuleSet,
+} from '@babel-game/game-data';
 
 /**
  * The variants IMPLEMENTATION_PLAN.md Milestone 6 asks to compare.
@@ -63,6 +68,80 @@ export const LEVER_VARIANTS: readonly Variant[] = [
     attackDieCost: { resource: 'food', amount: 1, flat: true },
     barterMode: 'sameKind',
     barterCost: 4,
+  }),
+];
+
+/**
+ * The one candidate the lever round put ahead of canon, for a longer run.
+ *
+ * +16 points on the win rate at n=25 is under two standard errors, so it needs
+ * more seeds before it can become canon.
+ */
+export const CONFIRM_VARIANTS: readonly Variant[] = [
+  withRules('control', 'Control', 'Canon v0.1', {}),
+  withRules('same-kind-4', 'Same-kind, 4 cards', 'Four of one resource', {
+    barterMode: 'sameKind',
+    barterCost: 4,
+  }),
+];
+
+/**
+ * Babel cost curves.
+ *
+ * Three quarters of every Barter is a Leader converting into Brick for Babel,
+ * so the cost curve is what is really driving Barter frequency. Canon asks for
+ * Brick and Food only — 2, 4 and 6 Brick by Stage — and Brick comes from one
+ * terrain.
+ *
+ * Every candidate below holds the *total* resources per piece at canon's 3, 5
+ * and 8, so these test the mix rather than the price. They run on canon Barter
+ * so the two changes do not confound.
+ */
+export const BABEL_VARIANTS: readonly Variant[] = [
+  withRules('control', 'Control', 'Brick 2/4/6 + Food', {}),
+  withRules('layered', 'Layered', 'Brick spine, one ally per Stage', {
+    babelPieceCost: {
+      /* Foundations of earth and straw; the ascent needs scaffolding; the
+         siege needs iron. */
+      1: { brick: 2, food: 1 },
+      2: { brick: 3, wood: 2 },
+      3: { brick: 4, metal: 3, food: 1 },
+    },
+  }),
+  withRules('broad', 'Broad', 'Every Stage wants three resources', {
+    babelPieceCost: BROAD_PIECE_COST,
+  }),
+  withRules('metal-spine', 'Metal spine', 'Brick early, Metal late', {
+    babelPieceCost: {
+      /* Brick held flat and Metal carrying the top of the Tower: the "instead
+         of Brick" reading, and a hard test since Metal is the scarcest thing
+         on the board. */
+      1: { brick: 2, food: 1 },
+      2: { brick: 2, wood: 3 },
+      3: { brick: 2, metal: 4, food: 2 },
+    },
+  }),
+];
+
+/**
+ * The two leading candidates, alone and together.
+ *
+ * Both beat canon on their own; whether they stack is a separate question,
+ * since a game can be improved past the point of being interesting.
+ */
+export const STACK_VARIANTS: readonly Variant[] = [
+  withRules('control', 'Control', 'Canon v0.1', {}),
+  withRules('same-kind-4', 'Same-kind 4', 'Barter: four of one', {
+    barterMode: 'sameKind',
+    barterCost: 4,
+  }),
+  withRules('broad', 'Broad Babel', 'Every Stage wants three resources', {
+    babelPieceCost: BROAD_PIECE_COST,
+  }),
+  withRules('both', 'Both', 'Broad Babel + same-kind 4', {
+    barterMode: 'sameKind',
+    barterCost: 4,
+    babelPieceCost: BROAD_PIECE_COST,
   }),
 ];
 

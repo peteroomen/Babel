@@ -353,3 +353,42 @@ describe('committing fewer Army dice', () => {
     expect(rolled?.type === 'attackRolled' && rolled.rolls.length).toBe(4);
   });
 });
+
+describe('the Babel cost curve is tuneable', () => {
+  const curved = rules({
+    babelPieceCost: {
+      1: { wood: 2, metal: 1 },
+      2: { brick: 3, wood: 2 },
+      3: { brick: 4, metal: 3, food: 1 },
+    },
+  });
+
+  it('charges and checks against the same curve', () => {
+    /* The affordability check and the payment must read the same rules. A
+       defaulted argument once let the check fall back to canon while the
+       payment used the variant, which threw mid-game in the harness. */
+    const state = withHand(atAction(setupGame(['Ada', 'Peter'], 'curve', curved)), {
+      wood: 2,
+      metal: 1,
+    });
+    const me = currentPlayer(state);
+    const babel = getLegalActions(state, me).find((a) => a.type === 'buildBabel');
+    expect(babel).toMatchObject({ cost: { wood: 2, metal: 1 } });
+
+    const after = applyMove(state, { type: 'buildBabel', player: me }).state;
+    expect(after.babel.stack).toEqual([me]);
+    expect(after.leaders[me]!.resources).toMatchObject({ wood: 0, metal: 0 });
+  });
+
+  it('refuses a Leader holding only the canon cost', () => {
+    const state = withHand(atAction(setupGame(['Ada', 'Peter'], 'curve', curved)), {
+      brick: 2,
+      food: 1,
+    });
+    const me = currentPlayer(state);
+    expect(
+      getLegalActions(state, me).find((a) => a.type === 'buildBabel'),
+    ).toBeUndefined();
+    expect(() => applyMove(state, { type: 'buildBabel', player: me })).toThrow(/cannot afford/);
+  });
+});

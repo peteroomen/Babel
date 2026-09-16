@@ -1,8 +1,9 @@
 import {
-  BABEL_PIECE_COST,
   BABEL_PIECE_PRESTIGE,
+  CANON_RULES,
   SCALING,
   type LeaderCount,
+  type RuleSet,
   type Stage,
 } from '@babel-game/game-data';
 import { canAfford } from '../buildings/index.js';
@@ -14,11 +15,17 @@ export const piecesPerStage = (leaderCount: number): number =>
 /** Total pieces needed to finish Babel. GDD §4: three Stages of equal size. */
 export const totalPieces = (leaderCount: number): number => piecesPerStage(leaderCount) * 3;
 
-export const pieceCost = (stage: Stage) => BABEL_PIECE_COST[stage];
+/** What a piece costs under the rules in force. GDD §12, TUNEABLE. */
+export const pieceCost = (stage: Stage, rules: RuleSet = CANON_RULES) =>
+  rules.babelPieceCost[stage];
 export const piecePrestige = (stage: Stage) => BABEL_PIECE_PRESTIGE[stage];
 
-export function canBuildBabel(leader: LeaderState, stage: Stage): boolean {
-  return canAfford(leader, pieceCost(stage));
+export function canBuildBabel(
+  leader: LeaderState,
+  stage: Stage,
+  rules: RuleSet = CANON_RULES,
+): boolean {
+  return canAfford(leader, pieceCost(stage, rules));
 }
 
 /**

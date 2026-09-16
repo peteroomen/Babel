@@ -1,5 +1,4 @@
 import {
-  BABEL_PIECE_COST,
   BUILDINGS,
   MAX_ARMY,
   MUSTER_COST,
@@ -115,7 +114,7 @@ export function threatDistance(state: GameState): number {
  */
 export function goal(state: GameState, me: PlayerId, archetype: Archetype): Cost {
   const leader = state.leaders[me]!;
-  const piece = BABEL_PIECE_COST[state.stage];
+  const piece = state.rules.babelPieceCost[state.stage];
 
   switch (archetype) {
     case 'architect':

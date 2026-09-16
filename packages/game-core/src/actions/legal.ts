@@ -114,8 +114,12 @@ export function getLegalActions(state: GameState, playerId: PlayerId): LegalActi
     }
   }
 
-  if (!blocked('babel') && !isFoundationOccupied(state.hosts) && canBuildBabel(leader, state.stage)) {
-    actions.push({ type: 'buildBabel', cost: pieceCost(state.stage) });
+  if (
+    !blocked('babel') &&
+    !isFoundationOccupied(state.hosts) &&
+    canBuildBabel(leader, state.stage, state.rules)
+  ) {
+    actions.push({ type: 'buildBabel', cost: pieceCost(state.stage, state.rules) });
   }
 
   /**
