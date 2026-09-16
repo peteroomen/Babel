@@ -105,6 +105,11 @@ export type GameState = {
   /** GDD §17: temporary barricades on edges between land tiles. */
   readonly walls: readonly WallEdge[];
   readonly beacons: readonly Coord[];
+  /**
+   * Threat points each Beacon has saved, parallel to `beacons`. Empty unless
+   * the rules pace Heaven by budget rather than one Host per Beacon per round.
+   */
+  readonly beaconCharge: readonly number[];
   readonly hosts: readonly Host[];
   readonly pendingBeacon: { readonly sites: readonly Coord[] } | null;
   readonly pendingAttack: PendingAttack | null;
@@ -271,6 +276,21 @@ export type GameEvent =
       readonly remaining: number;
     }
   | { readonly type: 'foundationOccupied'; readonly hostId: string }
+  /** A Colossus stopped at a building and pulled it down. */
+  | {
+      readonly type: 'buildingRazed';
+      readonly hostId: string;
+      readonly at: Coord;
+      readonly owner: PlayerId;
+      readonly building: StructureType;
+    }
+  /** A Swarm was killed and left something behind. */
+  | {
+      readonly type: 'hostSplit';
+      readonly from: string;
+      readonly into: readonly string[];
+      readonly at: Coord;
+    }
   | { readonly type: 'humanityLoses'; readonly reason: 'foundationBreached' }
   | {
       readonly type: 'attackRolled';

@@ -1,5 +1,6 @@
 import {
   BUILDING_PRESTIGE,
+  HOSTS,
   COMBAT_DIE_BONUS,
   COMBAT_PRESTIGE,
   MAX_ARMY,
@@ -34,7 +35,7 @@ import { affordableDice } from '../actions/legal.js';
 import { getLegalBeaconSites, hostDefence } from '../heaven/beacons.js';
 import { isPassableAt } from '../heaven/path.js';
 import { beaconsOwed, openBeaconDecision, resolveHeavenPhase } from '../heaven/phase.js';
-import { isFoundationOccupied, occupiedKeys } from '../heaven/hosts.js';
+import { isFoundationOccupied, newHost, occupiedKeys } from '../heaven/hosts.js';
 import {
   canBuildBabel,
   isBabelComplete,
@@ -919,12 +920,26 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
 
       /* The easiest target on the board sets the bar a die has to clear to
          count at all; assignment then checks each hit against its own target. */
+      /**
+       * A Herald raises the Defence of everything standing with it, so the
+       * answer is to shoot the Herald first — a target-priority decision the
+       * table does not otherwise have to make. The aura never applies to the
+       * Herald itself, or a pair of them would be unkillable.
+       */
+      const auraAt = (host: GameState['hosts'][number]) =>
+        state.hosts
+          .filter((other) => other.id !== host.id && HOSTS[other.kind].aura > 0)
+          .filter((other) =>
+            getConnectedFeature(state.board, other.at).includes(coordKey(host.at)),
+          )
+          .reduce((sum, other) => sum + HOSTS[other.kind].aura, 0);
       const defenceOf = (host: GameState['hosts'][number]) =>
-        hostDefence(state.order.length, state.stage, state.rules, host.kind);
+        hostDefence(state.order.length, state.stage, state.rules, host.kind) + auraAt(host);
       const defence = Math.min(...state.hosts.map(defenceOf));
       const bonus = state.rules.combatDieBonus;
       let rng = state.rng;
       let hosts = [...state.hosts];
+      let towerSeq = state.hostSeq;
       let leaders = state.leaders;
       let combatPrestige = 0;
 
@@ -945,6 +960,9 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         const feature = new Set(getConnectedFeature(state.board, { x: tx, y: ty }));
         const inFeature = hosts
           .filter((host) => feature.has(coordKey(host.at)))
+          /* A Warded Host is beyond prepared ground: only an Army reaches it,
+             so a table that has settled into Towers has to muster again. */
+          .filter((host) => !HOSTS[host.kind].wardedFromTowers)
           .sort((l, r) => l.id.localeCompare(r.id));
         if (inFeature.length === 0) continue;
 
@@ -973,6 +991,18 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         if (outcome.killed) {
           events.push({ type: 'hostKilled', player: command.player, id: target.id });
           hosts.splice(index, 1);
+          /* A Tower kill leaves the same wreckage an Army kill would. */
+          const spec = HOSTS[target.kind].splitsInto;
+          if (spec) {
+            const born: string[] = [];
+            for (let i = 0; i < spec.count; i++) {
+              towerSeq += 1;
+              const id = `h${towerSeq}`;
+              hosts.push(newHost(id, spec.kind, target.at));
+              born.push(id);
+            }
+            events.push({ type: 'hostSplit', from: target.id, into: born, at: target.at });
+          }
           /* The attacker still earns the normal kill Prestige. GDD §16. */
           combatPrestige += COMBAT_PRESTIGE;
         } else {
@@ -1072,6 +1102,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       const withCombat: GameState = {
         ...state,
         rng,
+        hostSeq: towerSeq,
         hosts,
         leaders: {
           ...leaders,
@@ -1125,15 +1156,40 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       if (invalid) throw new Error(invalid);
 
       const hosts = [...state.hosts];
+      let hostSeq = state.hostSeq;
       let killed = 0;
+
+      /**
+       * What a Swarm leaves behind.
+       *
+       * Killing one is not the end of it: two Ophanim take its place on the
+       * same square. Chip damage is punished and concentrated fire rewarded,
+       * which is exactly the shape Munitions is for. Ophanim do not split, so
+       * this terminates.
+       */
+      const split = (dead: GameState['hosts'][number]): void => {
+        const spec = HOSTS[dead.kind].splitsInto;
+        if (!spec) return;
+        const born: string[] = [];
+        for (let i = 0; i < spec.count; i++) {
+          hostSeq += 1;
+          const id = `h${hostSeq}`;
+          hosts.push(newHost(id, spec.kind, dead.at));
+          born.push(id);
+        }
+        events.push({ type: 'hostSplit', from: dead.id, into: born, at: dead.at });
+      };
+
       for (const [id, count] of Object.entries(command.assignments)) {
         for (let hit = 0; hit < count; hit++) {
           const index = hosts.findIndex((host) => host.id === id);
           if (index === -1) break;
-          const outcome = applyHit(hosts[index] as GameState['hosts'][number]);
+          const dying = hosts[index] as GameState['hosts'][number];
+          const outcome = applyHit(dying);
           if (outcome.killed) {
             events.push({ type: 'hostKilled', player: command.player, id });
             hosts.splice(index, 1);
+            split(dying);
             killed += 1;
           } else {
             events.push({
@@ -1163,6 +1219,8 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         {
           ...state,
           hosts,
+          /* A Swarm's offspring need ids nobody else will reuse. */
+          hostSeq,
           pendingAttack: null,
           leaders: {
             ...state.leaders,
@@ -1314,9 +1372,11 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       }
 
       const beacons = [...state.beacons, command.at];
+      /* A new gate opens empty and has to save up like the rest. */
+      const beaconCharge = [...state.beaconCharge, 0];
       events.push({ type: 'beaconPlaced', at: command.at, total: beacons.length });
 
-      const opened = openBeaconDecision({ ...state, beacons });
+      const opened = openBeaconDecision({ ...state, beacons, beaconCharge });
       events.push(...opened.events);
       return commit(opened.state);
     }

@@ -87,4 +87,8 @@ export const HOST_LABEL = {
   seraph: 'Seraph',
   zealot: 'Zealot',
   flier: 'Throne',
+  herald: 'Herald',
+  colossus: 'Colossus',
+  swarm: 'Swarm',
+  warded: 'Warded',
 } as const;

@@ -263,6 +263,10 @@ export function describe(event: GameEvent, state: GameState): string {
       return `${who(event.player)} plays ${SCHEMES[event.scheme].label}`;
     case 'schemeDeckEmpty':
       return `No Schemes remain`;
+    case 'buildingRazed':
+      return `A Colossus pulls down ${who(event.owner)}'s ${BUILDING_LABEL[event.building]}`;
+    case 'hostSplit':
+      return `The Swarm breaks apart — ${event.into.length} more take its place`;
     case 'reserveSwapped':
       return `${who(event.player)} takes ${TERRAIN_LABEL[event.took.terrain]} from the Reserve, leaving ${TERRAIN_LABEL[event.gave.terrain]}`;
     case 'resourcesSpoiled':

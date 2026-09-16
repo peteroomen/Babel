@@ -35,6 +35,9 @@ export function resolveHeavenPhase(
   const moved: Host[] = [];
   const arrivals: Host[] = [];
   let walls = [...state.walls];
+  /* A Colossus pulls buildings down as it comes, so the standing set changes
+     during movement rather than only at the end of the phase. */
+  let standing = { ...state.buildings };
 
   /* GDD §19 March of Heaven: every Host already on the board gets +1 movement. */
   const marching = confusionIs(state, 'march-of-heaven') ? 1 : 0;
@@ -109,6 +112,30 @@ export function resolveHeavenPhase(
       });
       current = { ...current, at: chosen };
 
+      /**
+       * A Colossus goes after the economy rather than the Tower: it stops at
+       * the first building it reaches and pulls it down. Ignoring one costs a
+       * Leader something other than Babel, which is the point — every other
+       * Host can be answered by racing it to the Foundation.
+       */
+      if (HOSTS[host.kind].razes) {
+        const key = coordKey(current.at);
+        const razed = standing[key];
+        if (razed) {
+          events.push({
+            type: 'buildingRazed',
+            hostId: host.id,
+            at: current.at,
+            owner: razed.owner,
+            building: razed.type,
+          });
+          standing = Object.fromEntries(
+            Object.entries(standing).filter(([at]) => at !== key),
+          );
+          break;
+        }
+      }
+
       /* Reaching Babel ends this Host's movement for the phase. */
       if (coordKey(current.at) === coordKey(BABEL_COORD)) break;
     }
@@ -172,9 +199,13 @@ export function resolveHeavenPhase(
    */
   let hostSeq = state.hostSeq;
   const spawned: Host[] = [];
+  const charge = [...state.beaconCharge];
+  const income = state.rules.beaconIncome;
+
   state.beacons.forEach((beacon, index) => {
-    if (!beaconSpawnsThisRound(index, state.round, state.rules)) return;
     const tier = beaconTier(index, state.rules);
+
+    /* Pick what this gate sends before working out whether it can afford it. */
     let kind: HostKind;
     if (tier) {
       kind = tier.kind;
@@ -183,6 +214,21 @@ export function resolveHeavenPhase(
       rng = next;
       kind = rolled;
     }
+
+    if (income === null) {
+      /* GDD §13 as written: one Host per Beacon per round, subject to the
+         gate's own cadence where the rules give it one. */
+      if (!beaconSpawnsThisRound(index, state.round, state.rules)) return;
+    } else {
+      /* Paced by threat points instead: the gate saves its income until it can
+         afford what it sends, so an expensive kind is rare without needing a
+         cadence, and one number thins the whole board. */
+      charge[index] = (charge[index] ?? 0) + income;
+      const price = HOSTS[kind].cost;
+      if (charge[index]! < price) return;
+      charge[index] = charge[index]! - price;
+    }
+
     hostSeq += 1;
     const host = newHost(`h${hostSeq}`, kind, beacon);
     spawned.push(host);
@@ -227,6 +273,8 @@ export function resolveHeavenPhase(
       walls,
       hostSeq,
       leaders,
+      beaconCharge: charge,
+      buildings: standing,
       babel: { stack },
       hosts: [...survivors, ...spawned],
     },

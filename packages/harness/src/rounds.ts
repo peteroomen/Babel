@@ -1,5 +1,6 @@
 import {
   CANON_RULES,
+  DEEP_BEACONS,
   MUNITIONS_RULE,
   TIERED_BEACONS,
   type RuleSet,
@@ -71,6 +72,42 @@ export const HEAVEN_VARIANTS: readonly Variant[] = [
   }),
   on('tiered-fast', 'Three gates, all every round', 'Tiers without the stagger', {
     beaconTiers: TIERED_BEACONS.map((tier) => ({ ...tier, everyNRounds: 1, offset: 0 })),
+  }),
+];
+
+/**
+ * The harder roster, and how thin Heaven can get before it stops mattering.
+ *
+ * `beaconIncome` is points per gate per round. The whole roster costs more than
+ * an Ophanim, so the same income buys far fewer bodies: the question is whether
+ * four nastier arrivals do the work of twelve ordinary ones.
+ */
+export const ROSTER_VARIANTS: readonly Variant[] = [
+  on('uniform', 'Uniform', 'v0.2: an Ophanim per Beacon per round', FREE),
+  on('deep-1', 'Deep roster, 1/round', 'Herald, Colossus, Swarm, Warded', {
+    ...FREE,
+    beaconTiers: DEEP_BEACONS,
+    beaconIncome: 1,
+  }),
+  on('deep-2', 'Deep roster, 2/round', 'Twice the threat budget', {
+    ...FREE,
+    beaconTiers: DEEP_BEACONS,
+    beaconIncome: 2,
+  }),
+  on('deep-half', 'Deep roster, 1 per 2 rounds', 'Half the budget again', {
+    ...FREE,
+    beaconTiers: DEEP_BEACONS,
+    beaconIncome: 0.5,
+  }),
+  on('deep-1-munitions', 'Deep roster + Munitions', 'Can the table buy an answer?', {
+    ...FREE,
+    beaconTiers: DEEP_BEACONS,
+    beaconIncome: 1,
+    munitions: MUNITIONS_RULE,
+  }),
+  on('thin-ophanim', 'Ophanim only, 1 point/round', 'Same budget, no variety', {
+    ...FREE,
+    beaconIncome: 1,
   }),
 ];
 

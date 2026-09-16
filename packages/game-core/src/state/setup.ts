@@ -131,6 +131,7 @@ export function setupGame(
     falseProphet: null,
     babel: { stack: [] },
     beacons: [],
+    beaconCharge: [],
     hosts: [],
     hostSeq: 0,
     pendingBeacon: null,

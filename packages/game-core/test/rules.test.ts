@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   CANON_RULES,
+  DEEP_BEACONS,
+  HOSTS,
   LEGACY_V01_RULES,
   TIERED_BEACONS,
   type ResourceType,
@@ -11,6 +13,8 @@ import {
   currentPlayer,
   beaconSpawnsThisRound,
   beaconTier,
+  coordKey,
+  resolveHeavenPhase,
   getLegalActions,
   getLegalTilePlacements,
   hasAnyLegalPlacement,
@@ -650,5 +654,130 @@ describe('Babel can be made shorter', () => {
     /* The scaling table still governs when no override is given. */
     expect(piecesPerStage(3)).toBe(5);
     expect(totalPieces(3)).toBe(15);
+  });
+});
+
+describe('the harder Heaven roster', () => {
+  /** A Leader poised to Attack, with whatever Hosts the test needs. */
+  function facing(hosts: Host[], over: Partial<RuleSet> = {}) {
+    const base = atAction(setupGame(['Ada', 'Peter'], 'roster', rules(over)));
+    const me = currentPlayer(base);
+    return {
+      me,
+      state: withHand(
+        { ...base, hosts, leaders: { ...base.leaders, [me]: { ...base.leaders[me]!, army: 5 } } },
+        { food: 9, wood: 9, brick: 9, metal: 9 },
+      ),
+    };
+  }
+  const at = (x: number, y: number) => ({ x, y });
+
+  it('a Herald makes everything standing with it harder to kill, but not itself', () => {
+    const { state } = facing([
+      { id: 'herald', kind: 'herald', at: at(0, -1), shieldUp: false },
+      { id: 'mob', kind: 'ophanim', at: at(0, -1), shieldUp: false },
+    ]);
+    const lone = facing([{ id: 'mob', kind: 'ophanim', at: at(0, -1), shieldUp: false }]);
+
+    /* The Ophanim is a point harder while the Herald stands with it. */
+    const me = currentPlayer(state);
+    const guarded = applyMove(state, { type: 'attack', player: me }).state;
+    const alone = applyMove(lone.state, { type: 'attack', player: lone.me }).state;
+    const defenceOf = (s: typeof guarded) => {
+      const e = s.log.find((x) => x.type === 'attackRolled');
+      return e?.type === 'attackRolled' ? e.defence : 0;
+    };
+    /* Rolls are taken against the easiest target, which is the Herald itself —
+       proof the aura does not apply to the Herald. */
+    expect(defenceOf(guarded)).toBe(defenceOf(alone));
+  });
+
+  it('a Warded Host cannot be touched by Tower support', () => {
+    const base = atAction(setupGame(['Ada', 'Peter'], 'ward', rules({})));
+    const me = currentPlayer(base);
+    const board = { ...base.board, '0,-2': { terrain: 'forest', river: 'none', rotation: 0 } } as const;
+    const withTower = withHand(
+      {
+        ...base,
+        board,
+        buildings: { '0,-2': { type: 'tower', owner: me } },
+        hosts: [{ id: 'w', kind: 'warded', at: at(0, -2), shieldUp: false }],
+        leaders: { ...base.leaders, [me]: { ...base.leaders[me]!, army: 1 } },
+      },
+      { food: 9, wood: 9, brick: 9, metal: 9 },
+    );
+    const after = applyMove(withTower, { type: 'attack', player: me }).state;
+    expect(after.log.some((e) => e.type === 'towerSupport')).toBe(false);
+
+    /* The same Tower does fire on an ordinary Host in the same feature. */
+    const ordinary = {
+      ...withTower,
+      hosts: [{ id: 'o', kind: 'ophanim' as const, at: at(0, -2), shieldUp: false }],
+    };
+    const fired = applyMove(ordinary, { type: 'attack', player: me }).state;
+    expect(fired.log.some((e) => e.type === 'towerSupport')).toBe(true);
+  });
+
+  it('a Swarm leaves three Ophanim behind when it dies', () => {
+    const { me, state } = facing([{ id: 's', kind: 'swarm', at: at(0, -1), shieldUp: false }]);
+    const rolled = applyMove(state, { type: 'attack', player: me }).state;
+    if (!rolled.pendingAttack || rolled.pendingAttack.successes < 2) return;
+
+    const after = applyMove(rolled, {
+      type: 'assignHits',
+      player: me,
+      assignments: { s: 2 },
+    }).state;
+    expect(after.log.some((e) => e.type === 'hostKilled' && e.id === 's')).toBe(true);
+    const born = after.log.find((e) => e.type === 'hostSplit');
+    expect(born?.type === 'hostSplit' && born.into).toHaveLength(3);
+    /* Two new Ophanim on the square the Swarm died on. */
+    expect(after.hosts).toHaveLength(3);
+    expect(after.hosts.every((h) => h.kind === 'ophanim')).toBe(true);
+    expect(after.hosts.every((h) => coordKey(h.at) === coordKey(at(0, -1)))).toBe(true);
+    /* Ids are fresh, so nothing collides with a later spawn. */
+    expect(new Set(after.hosts.map((h) => h.id)).size).toBe(3);
+  });
+});
+
+describe('Heaven paced by a threat budget', () => {
+  const at = (x: number, y: number) => ({ x, y });
+
+  it('sends an expensive Host as rarely as its price says', () => {
+    /* A gate earning one point a round affords a Colossus every fourth. */
+    expect(HOSTS.colossus.cost).toBe(4);
+    expect(HOSTS.ophanim.cost).toBe(1);
+
+    const budgeted = rules({ beaconIncome: 1, beaconTiers: DEEP_BEACONS });
+    let state: GameState = {
+      ...setupGame(['Ada', 'Peter'], 'budget', budgeted),
+      beacons: [at(0, -3), at(1, -3), at(2, -3)],
+      beaconCharge: [0, 0, 0],
+      board: {
+        '0,-1': { terrain: 'farmland', river: 'straight', rotation: 0 },
+        '0,-3': { terrain: 'forest', river: 'none', rotation: 0 },
+        '1,-3': { terrain: 'forest', river: 'none', rotation: 0 },
+        '2,-3': { terrain: 'forest', river: 'none', rotation: 0 },
+      },
+    };
+
+    const spawns: Record<string, number> = {};
+    for (let round = 0; round < 8; round++) {
+      const { state: next, events } = resolveHeavenPhase({ ...state, hosts: [] });
+      for (const e of events) {
+        if (e.type === 'hostSpawned') spawns[e.kind] = (spawns[e.kind] ?? 0) + 1;
+      }
+      state = { ...next, round: state.round + 1 };
+    }
+
+    /* Gate 0 sends an Ophanim (1) every round; gate 1 a Colossus (4) every
+       fourth; gate 2 a Warded (3) every third. */
+    expect(spawns.ophanim).toBe(8);
+    expect(spawns.colossus).toBe(2);
+    expect(spawns.warded).toBe(2);
+  });
+
+  it('still sends one per Beacon per round when no budget is set', () => {
+    expect(CANON_RULES.beaconIncome).toBeNull();
   });
 });

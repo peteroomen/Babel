@@ -1,7 +1,12 @@
 import { TERRAIN_WEIGHTS, type ResourceType, type TerrainType } from './terrain.js';
 import { BABEL_PIECE_COST, type Stage } from './babel.js';
 import { MONUMENT_COST, MONUMENT_PRESTIGE } from './buildings.js';
-import { BEACON_TIERS, COMBAT_DIE_BONUS, type BeaconTier } from './heaven.js';
+import {
+  BEACON_TIERS,
+  COMBAT_DIE_BONUS,
+  DEEP_BEACON_TIERS,
+  type BeaconTier,
+} from './heaven.js';
 import { RIVER_WEIGHTS, type RiverShape } from './rivers.js';
 
 /**
@@ -155,6 +160,15 @@ export type RuleSet = {
    */
   readonly beaconTiers: readonly BeaconTier[] | null;
   /**
+   * Threat points each Beacon earns per Heaven Phase, or null to spawn one Host
+   * per Beacon per round as the GDD describes.
+   *
+   * The lever on how crowded the board gets. A gate saves its income until it
+   * can afford its kind, so lowering this number thins every gate at once, and
+   * an expensive Host stays rare without needing a cadence of its own.
+   */
+  readonly beaconIncome: number | null;
+  /**
    * Added to every Host's Defence, by Stage.
    *
    * Per-Stage because a flat +1 is a cliff rather than a knob: Stage III already
@@ -248,6 +262,7 @@ export const LEGACY_V01_RULES: RuleSet = {
   impassableTerrain: ['lake'],
   riverMustExtend: false,
   beaconTiers: null,
+  beaconIncome: null,
   hostDefenceBonus: [0, 0, 0],
   beaconBonus: 0,
   combatDieBonus: COMBAT_DIE_BONUS,
@@ -311,6 +326,9 @@ export const HUNGRY_PIECE_COST: Record<Stage, Partial<Record<ResourceType, numbe
 
 /** Heaven with three kinds of gate, as modelled. */
 export const TIERED_BEACONS = BEACON_TIERS;
+
+/** Heaven with the harder roster: Herald, Colossus, Swarm, Warded. */
+export const DEEP_BEACONS = DEEP_BEACON_TIERS;
 
 /** Two of one resource buys one more Attack die, up to three. */
 export const MUNITIONS_RULE: RuleSet['munitions'] = {

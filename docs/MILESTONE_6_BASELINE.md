@@ -762,3 +762,77 @@ the table does not currently have, which is the point of variety:
 
 Each creates demand for a *different* answer rather than more of the same, which
 is what would make the defensive economy interesting. None is modelled yet.
+
+---
+
+# Round seven — fewer Hosts, nastier ones
+
+Four new kinds, each posing a problem the table's existing answers do not cover:
+
+| Kind | Cost | What it does |
+|---|---|---|
+| **Herald** | 2 | +2 Defence to every *other* Host in its feature. Shoot it first. |
+| **Colossus** | 4 | 4 hits, +2 Defence. Stops at the first building and razes it. |
+| **Swarm** | 3 | 2 hits. Leaves three Ophanim behind when killed. |
+| **Warded** | 3 | 3 hits, +2 Defence. Tower support cannot touch it. |
+
+## How they spawn: a threat budget, not a cadence
+
+Each Beacon earns points per Heaven Phase and saves them until it can afford
+what it sends. One number — `beaconIncome` — thins the whole board, and an
+expensive Host is naturally rare without needing a schedule of its own. A
+Colossus at 4 points on an income of 1 is a once-in-four-rounds event.
+
+This is what answers "less spam" directly, and it is a single knob.
+
+## It works — but only once the kinds are worth their price
+
+| | win | rounds | Hosts/game | Hosts/round |
+|---|---|---|---|---|
+| Uniform Ophanim (today) | 80% | 40 | 77 | 1.91 |
+| **Deep roster, budget 1/round** | **64%** | 51 | **66** | **1.29** |
+| Deep roster, budget 2/round | 0% | 44 | 68 | 1.53 |
+| Deep roster, budget 3/round | 4% | 42 | 71 | 1.70 |
+| Deep roster, budget 2 + Munitions | 8% | 45 | 69 | 1.52 |
+
+**Budget 1 lands at 64% with a third fewer Hosts per round.** That is the
+result asked for: a board with less on it, and a game that is harder rather
+than easier. Colossi raze about six buildings a game, so Heaven is now
+attacking the economy as well as the Tower.
+
+The knob is sharp. Doubling the budget takes it from 64% to 0%, and Munitions
+only claws back 8 points of that. Between 1 and 2 there is a whole game's worth
+of difficulty, so this wants fractional income or a slower ramp before it is
+shippable.
+
+## The first attempt made the game easier, and that is the lesson
+
+Built with the kinds at +1 Defence and 2 hits, every budgeted variant was
+*easier* than the spam it replaced — 96% at one point per round against 80%.
+The control gives it away: Ophanim-only on the same budget was also 96%.
+
+**Thinning the board is a straight difficulty cut unless per-Host threat scales
+with the price.** A Colossus costing four times an Ophanim has to be worth four
+Ophanim, and at 2 hits and +1 Defence it was worth about two. Raised to 4 hits
+and +2 Defence, the same budget produces a real game.
+
+## A structural catch: only three gates ever open
+
+A 3-Leader table opens at most three Beacons (GDD §4), so **a roster of five
+kinds only ever uses the first three.** The Swarm and the Herald never spawned
+in any of these games.
+
+The order of the tier list is therefore a design decision, not a detail. The
+first three are now Ophanim, Colossus, Warded — familiar pressure, an economy
+attacker, and a Host that Towers cannot answer. Swarm and Herald remain
+untested in play, and would need either a place in the first three or a higher
+Beacon count to appear at all.
+
+## What is still open
+
+- Fractional or ramping `beaconIncome`, since 1 and 2 bracket the whole
+  difficulty range.
+- Swarm and Herald, which have code and tests but have never been in a game.
+- Whether Munitions is the right answer to a Warded Host, or whether the table
+  should have to Muster — the point of the kind was to force an Army, and
+  buying dice may be letting it off.
