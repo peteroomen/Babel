@@ -9,11 +9,16 @@ import {
 import { canAfford } from '../buildings/index.js';
 import type { BabelState, LeaderState } from '../state/types.js';
 
-export const piecesPerStage = (leaderCount: number): number =>
-  SCALING[leaderCount as LeaderCount].piecesPerStage;
+/**
+ * Pieces per Stage. GDD §4 scales this by player count; a ruleset may override
+ * it to make the Tower shorter or taller without touching the scaling table.
+ */
+export const piecesPerStage = (leaderCount: number, rules: RuleSet = CANON_RULES): number =>
+  rules.piecesPerStage ?? SCALING[leaderCount as LeaderCount].piecesPerStage;
 
 /** Total pieces needed to finish Babel. GDD §4: three Stages of equal size. */
-export const totalPieces = (leaderCount: number): number => piecesPerStage(leaderCount) * 3;
+export const totalPieces = (leaderCount: number, rules: RuleSet = CANON_RULES): number =>
+  piecesPerStage(leaderCount, rules) * 3;
 
 /** What a piece costs under the rules in force. GDD §12, TUNEABLE. */
 export const pieceCost = (stage: Stage, rules: RuleSet = CANON_RULES) =>
@@ -37,15 +42,20 @@ export function stageAfterPiece(
   babel: BabelState,
   currentStage: Stage,
   leaderCount: number,
+  rules: RuleSet = CANON_RULES,
 ): Stage {
-  const perStage = piecesPerStage(leaderCount);
+  const perStage = piecesPerStage(leaderCount, rules);
   const reached = Math.min(3, Math.floor(babel.stack.length / perStage) + 1) as Stage;
   return Math.max(currentStage, reached) as Stage;
 }
 
 /** GDD §2: completing the final piece of Babel wins the game for humanity. */
-export function isBabelComplete(babel: BabelState, leaderCount: number): boolean {
-  return babel.stack.length >= totalPieces(leaderCount);
+export function isBabelComplete(
+  babel: BabelState,
+  leaderCount: number,
+  rules: RuleSet = CANON_RULES,
+): boolean {
+  return babel.stack.length >= totalPieces(leaderCount, rules);
 }
 
 /** How many pieces remain before the next permanent escalation. */
@@ -53,8 +63,9 @@ export function piecesToNextEscalation(
   babel: BabelState,
   currentStage: Stage,
   leaderCount: number,
+  rules: RuleSet = CANON_RULES,
 ): number | null {
   if (currentStage >= 3) return null;
-  const threshold = piecesPerStage(leaderCount) * currentStage;
+  const threshold = piecesPerStage(leaderCount, rules) * currentStage;
   return Math.max(0, threshold - babel.stack.length);
 }

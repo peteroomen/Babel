@@ -1,4 +1,13 @@
-import { CANON_RULES, SCALING, type LeaderCount, type Stage } from '@babel-game/game-data';
+import {
+  CANON_RULES,
+  HOSTS,
+  SCALING,
+  type BeaconTier,
+  type HostKind,
+  type LeaderCount,
+  type RuleSet,
+  type Stage,
+} from '@babel-game/game-data';
 import { BABEL_COORD } from '../state/babel.js';
 import { coordKey, neighbours, type Coord } from '../map/edges.js';
 import { isBabel, tileAt, type Board } from '../map/placement.js';
@@ -55,13 +64,43 @@ export function requiredBeacons(
   leaderCount: number,
   stage: Stage,
   round: number,
+  rules: RuleSet = CANON_RULES,
 ): number {
   const row = SCALING[leaderCount as LeaderCount];
   if (round < row.firstBeaconRound) return 0;
-  return row.beaconsByStage[stage - 1] ?? 0;
+  return (row.beaconsByStage[stage - 1] ?? 0) + rules.beaconBonus;
 }
 
-export const hostDefence = (leaderCount: number, stage: Stage): number =>
-  SCALING[leaderCount as LeaderCount].hostDefenceByStage[stage - 1] ?? 5;
+/**
+ * The roll a die must beat. A Host kind may add to it, so an armoured or
+ * airborne Host is harder to bring down than the Ophanim the table is used to.
+ */
+export const hostDefence = (
+  leaderCount: number,
+  stage: Stage,
+  rules: RuleSet = CANON_RULES,
+  kind?: HostKind,
+): number =>
+  (SCALING[leaderCount as LeaderCount].hostDefenceByStage[stage - 1] ?? 5) +
+  (rules.hostDefenceBonus[stage - 1] ?? 0) +
+  (kind ? HOSTS[kind].defence : 0);
+
+/** Which gate a Beacon is, by the order it was sited. */
+export const beaconTier = (
+  index: number,
+  rules: RuleSet = CANON_RULES,
+): BeaconTier | null =>
+  rules.beaconTiers ? (rules.beaconTiers[index % rules.beaconTiers.length] ?? null) : null;
+
+/** Whether the Beacon at this index sends anything this round. */
+export function beaconSpawnsThisRound(
+  index: number,
+  round: number,
+  rules: RuleSet = CANON_RULES,
+): boolean {
+  const tier = beaconTier(index, rules);
+  if (!tier) return true;
+  return (round + tier.offset) % tier.everyNRounds === 0;
+}
 
 export { BABEL_COORD };

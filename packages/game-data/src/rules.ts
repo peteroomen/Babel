@@ -1,6 +1,7 @@
 import { TERRAIN_WEIGHTS, type ResourceType, type TerrainType } from './terrain.js';
 import { BABEL_PIECE_COST, type Stage } from './babel.js';
 import { MONUMENT_COST, MONUMENT_PRESTIGE } from './buildings.js';
+import { BEACON_TIERS, COMBAT_DIE_BONUS, type BeaconTier } from './heaven.js';
 import { RIVER_WEIGHTS, type RiverShape } from './rivers.js';
 
 /**
@@ -143,6 +144,42 @@ export type RuleSet = {
    * are leaving on the table.
    */
   readonly resourceCap: number | null;
+  /**
+   * What each Beacon sends, by the order it was sited, or null for the uniform
+   * spawn the GDD describes.
+   *
+   * The first Beacon keeps sending the Hosts the table already knows how to
+   * fight; later ones open problems that the current answers do not cover — an
+   * armoured Host that needs two hits and a better roll, and a flier that
+   * ignores the rivers the whole defensive map is built on.
+   */
+  readonly beaconTiers: readonly BeaconTier[] | null;
+  /**
+   * Added to every Host's Defence, by Stage.
+   *
+   * Per-Stage because a flat +1 is a cliff rather than a knob: Stage III already
+   * asks for d6+2 against 7, so one more point takes a die from a third to a
+   * sixth and the table simply cannot keep up.
+   */
+  readonly hostDefenceBonus: readonly [number, number, number];
+  /** Extra Beacons beyond the scaling table, from the first Beacon onward. */
+  readonly beaconBonus: number;
+  /** GDD §15: each combat die is d6 plus this. Lower is harder. */
+  readonly combatDieBonus: number;
+  /** Babel pieces per Stage, or null to use the player-count scaling table. */
+  readonly piecesPerStage: number | null;
+  /**
+   * Buying extra Attack dice with resources.
+   *
+   * The one shape of defensive spending that fits a combat system with no
+   * range: dice are the only currency, so the pile buys more of them. Optional,
+   * never a tax — the Attack-cost experiments showed that pricing what a table
+   * must do every round starves it.
+   */
+  readonly munitions: {
+    readonly cost: Partial<Record<ResourceType, number>>;
+    readonly maxExtraDice: number;
+  } | null;
   /** The personal Prestige sink, or null for canon where none exists. */
   readonly monument: {
     readonly cost: Partial<Record<ResourceType, number>>;
@@ -210,6 +247,12 @@ export const LEGACY_V01_RULES: RuleSet = {
   riverWeights: RIVER_WEIGHTS,
   impassableTerrain: ['lake'],
   riverMustExtend: false,
+  beaconTiers: null,
+  hostDefenceBonus: [0, 0, 0],
+  beaconBonus: 0,
+  combatDieBonus: COMBAT_DIE_BONUS,
+  piecesPerStage: null,
+  munitions: null,
   barterIsFree: false,
   babelPiecesPerAction: 1,
   armyUpkeepFood: 0,
@@ -264,4 +307,13 @@ export const HUNGRY_PIECE_COST: Record<Stage, Partial<Record<ResourceType, numbe
   1: { brick: 1, food: 2 },
   2: { brick: 2, wood: 1, food: 2 },
   3: { brick: 2, wood: 2, metal: 1, food: 3 },
+};
+
+/** Heaven with three kinds of gate, as modelled. */
+export const TIERED_BEACONS = BEACON_TIERS;
+
+/** Two of one resource buys one more Attack die, up to three. */
+export const MUNITIONS_RULE: RuleSet['munitions'] = {
+  cost: { metal: 1, wood: 1 },
+  maxExtraDice: 3,
 };

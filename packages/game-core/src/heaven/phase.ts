@@ -1,4 +1,4 @@
-import { HOSTS } from '@babel-game/game-data';
+import { HOSTS, type HostKind } from '@babel-game/game-data';
 import { confusionIs } from '../cards/index.js';
 import { isPassableAt } from './path.js';
 import { coordKey, type Coord } from '../map/edges.js';
@@ -7,7 +7,7 @@ import { nextInt } from '../rng/index.js';
 import { stepOptions } from './path.js';
 import { BABEL_COORD } from '../state/babel.js';
 import type { GameEvent, GameState, Host } from '../state/types.js';
-import { getLegalBeaconSites, requiredBeacons } from './beacons.js';
+import { beaconSpawnsThisRound, beaconTier, getLegalBeaconSites, requiredBeacons } from './beacons.js';
 import { hostAtBabel, newHost, rollHostKind } from './hosts.js';
 
 export type HeavenPlan = Readonly<Record<string, readonly Coord[]>>;
@@ -64,13 +64,14 @@ export function resolveHeavenPhase(
       continue;
     }
 
+    /* A Throne's map is not everyone else's: it flies, so the rivers that
+       define the walking routes are simply not there for it. */
+    const how = {
+      impassable: state.rules.impassableTerrain,
+      flies: HOSTS[host.kind].flies,
+    };
     for (let point = 0; point < HOSTS[host.kind].movement + marching; point++) {
-      const options = stepOptions(
-        state.board,
-        current.at,
-        undefined,
-        state.rules.impassableTerrain,
-      );
+      const options = stepOptions(state.board, current.at, undefined, how);
       if (options.length === 0) break;
 
       /* Take the next square the players asked for, if it is a legal step. */
@@ -160,17 +161,33 @@ export function resolveHeavenPhase(
     };
   }
 
-  /* 3. Every Beacon spawns one Host. GDD §13. */
+  /**
+   * 3. Beacons spawn. GDD §13.
+   *
+   * Under the tiered rules a Beacon's index — the order it was sited — decides
+   * both what it sends and how often, so the first gate on the board keeps
+   * sending what the table already knows how to fight while the later ones open
+   * new problems on their own cadence. Otherwise every Beacon sends one Host
+   * every round, as the GDD describes.
+   */
   let hostSeq = state.hostSeq;
   const spawned: Host[] = [];
-  for (const beacon of state.beacons) {
-    const [kind, next] = rollHostKind(rng, state.stage);
-    rng = next;
+  state.beacons.forEach((beacon, index) => {
+    if (!beaconSpawnsThisRound(index, state.round, state.rules)) return;
+    const tier = beaconTier(index, state.rules);
+    let kind: HostKind;
+    if (tier) {
+      kind = tier.kind;
+    } else {
+      const [rolled, next] = rollHostKind(rng, state.stage);
+      rng = next;
+      kind = rolled;
+    }
     hostSeq += 1;
     const host = newHost(`h${hostSeq}`, kind, beacon);
     spawned.push(host);
     events.push({ type: 'hostSpawned', id: host.id, kind, at: beacon });
-  }
+  });
 
   /**
    * Army upkeep, where the rules charge it.
@@ -221,7 +238,7 @@ export function resolveHeavenPhase(
 export function beaconsOwed(state: GameState): number {
   return Math.max(
     0,
-    requiredBeacons(state.order.length, state.stage, state.round) - state.beacons.length,
+    requiredBeacons(state.order.length, state.stage, state.round, state.rules) - state.beacons.length,
   );
 }
 

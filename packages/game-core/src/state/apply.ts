@@ -652,7 +652,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         placed += 1;
 
         /* GDD §12: permanent escalation at the end of Stage I and Stage II. */
-        const stage = stageAfterPiece(babel, next.stage, next.order.length);
+        const stage = stageAfterPiece(babel, next.stage, next.order.length, next.rules);
         if (stage !== next.stage) {
           events.push({ type: 'stageEscalated', from: next.stage, to: stage });
           /* GDD §19: the new cards are shuffled into what remains of the deck. */
@@ -664,7 +664,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         }
 
         /* GDD §2: completing the final piece wins the game for humanity. */
-        if (isBabelComplete(babel, next.order.length)) {
+        if (isBabelComplete(babel, next.order.length, next.rules)) {
           const best = Math.max(...Object.values(next.leaders).map((l) => l.prestige));
           const topPrestige = next.order.filter((id) => next.leaders[id]!.prestige === best);
           events.push({ type: 'humanityWins', topPrestige });
@@ -917,7 +917,12 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       requireActionPhase(state, command.player, 'attack');
       if (state.hosts.length === 0) throw new Error('there are no Hosts to attack');
 
-      const defence = hostDefence(state.order.length, state.stage);
+      /* The easiest target on the board sets the bar a die has to clear to
+         count at all; assignment then checks each hit against its own target. */
+      const defenceOf = (host: GameState['hosts'][number]) =>
+        hostDefence(state.order.length, state.stage, state.rules, host.kind);
+      const defence = Math.min(...state.hosts.map(defenceOf));
+      const bonus = state.rules.combatDieBonus;
       let rng = state.rng;
       let hosts = [...state.hosts];
       let leaders = state.leaders;
@@ -945,15 +950,19 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
 
         const [roll, nextRng] = rollD6(rng);
         rng = nextRng;
-        const hit = roll + COMBAT_DIE_BONUS >= defence;
         const target = inFeature[0] as GameState['hosts'][number];
+        /* A Tower die is a combat die like any other: it uses the ruleset's
+           bonus and the target's own Defence. Reading the constant here meant
+           a variant that changed the bonus silently left Towers behind, which
+           made two settings that should be identical disagree by 35 points. */
+        const hit = roll + bonus >= defenceOf(target);
 
         events.push({
           type: 'towerSupport',
           owner: building.owner,
           at: { x: tx, y: ty },
           roll,
-          defence,
+          defence: defenceOf(target),
           hit,
           targetId: target.id,
         });
@@ -1014,7 +1023,32 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       }
       const paid = price ? (price.flat ? price.amount : dice * price.amount) : 0;
 
-      const { result, rng: afterArmy } = rollAttack(rng, dice, defence);
+      /**
+       * Munitions: extra dice bought outright.
+       *
+       * The only shape of defensive spending a combat system with no range can
+       * take — dice are the currency, so a pile buys more of them. Optional and
+       * never a tax: pricing what a table has to do every round starves it, as
+       * the Attack-cost rounds showed.
+       */
+      const munitions = state.rules.munitions;
+      const asked = command.extraDice ?? 0;
+      /* Reject rather than clamp: quietly rolling fewer dice than the caller
+         asked for would hide a UI bug behind a plausible-looking result. */
+      if (asked > 0 && !munitions) throw new Error('these rules have no Munitions');
+      if (asked < 0 || (munitions && asked > munitions.maxExtraDice)) {
+        throw new Error(`Munitions buy at most ${munitions?.maxExtraDice ?? 0} extra dice`);
+      }
+      const extraDice = asked;
+      let munitionsBill: Partial<Record<ResourceType, number>> = {};
+      if (extraDice > 0 && munitions) {
+        munitionsBill = Object.fromEntries(
+          Object.entries(munitions.cost).map(([r, n]) => [r, (n ?? 0) * extraDice]),
+        );
+        if (!canAfford(leader, munitionsBill)) throw new Error('cannot afford that many Munitions');
+      }
+
+      const { result, rng: afterArmy } = rollAttack(rng, dice + extraDice, defence, bonus);
       rng = afterArmy;
 
       events.push({
@@ -1044,9 +1078,18 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
           [command.player]: {
             ...leader,
             prestige: leader.prestige + combatPrestige,
-            resources: price
-              ? { ...leader.resources, [price.resource]: leader.resources[price.resource] - paid }
-              : leader.resources,
+            resources: paySpecific(
+              {
+                ...leader,
+                resources: price
+                  ? {
+                      ...leader.resources,
+                      [price.resource]: leader.resources[price.resource] - paid,
+                    }
+                  : leader.resources,
+              },
+              munitionsBill,
+            ),
           },
         },
       };
@@ -1073,7 +1116,12 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       if (!pending) throw new Error('no Attack is awaiting assignment');
       if (pending.player !== command.player) throw new Error('not your Attack');
 
-      const invalid = validateAssignments(state.hosts, command.assignments, pending.successes);
+      const invalid = validateAssignments(state.hosts, command.assignments, pending.successes, {
+        rolls: pending.rolls,
+        bonus: state.rules.combatDieBonus,
+        defenceOf: (host) =>
+          hostDefence(state.order.length, state.stage, state.rules, host.kind),
+      });
       if (invalid) throw new Error(invalid);
 
       const hosts = [...state.hosts];

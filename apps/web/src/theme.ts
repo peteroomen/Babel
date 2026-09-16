@@ -85,4 +85,6 @@ export const BEACON_LIGHT = '#f0c860';
 export const HOST_LABEL = {
   ophanim: 'Ophanim Host',
   seraph: 'Seraph',
+  zealot: 'Zealot',
+  flier: 'Throne',
 } as const;

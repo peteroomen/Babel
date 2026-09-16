@@ -658,3 +658,107 @@ break, something only Towers reach, something Walls actually stop — before
 there is anything to sweep. Worth doing as its own milestone, because it is the
 one idea here that would create demand for *kinds* of spending rather than more
 of the same.
+
+---
+
+# Round six — paying for free Barter, and Heaven with more than one gate
+
+Four separate sweeps rather than one factorial: these levers change different
+subsystems, and mixing them would measure the combination rather than the parts.
+
+## The target band, found
+
+| | win | rounds | pieces standing | surplus |
+|---|---|---|---|---|
+| v0.2 today | 80% | 59 | 12.0 | 105 |
+| + free Barter | 93% | 48 | 14.0 | 68 |
+| + free Barter, three gates **staggered** | **100%** | 36 | 15.0 | 31 |
+| **+ free Barter, three gates every round** | **63%** | 53 | 10.2 | 74 |
+| + that, and Defence +1 through Stage II | 73% | 53 | 11.3 | 86 |
+| + free Barter, three gates, **Munitions** | 87% | 49 | 13.2 | 47 |
+| + free Barter, Babel 7 per Stage | 90% | 55 | 19.4 | 91 |
+
+**Free Barter plus three gates firing every round lands at 63%** — inside the
+60–70% band, at 53 rounds, with Babel genuinely at risk (10.2 pieces standing
+rather than 14). That is the pairing.
+
+## Variety is not difficulty — the stagger is doing the work
+
+The spec had the Zealot and Throne gates firing on alternate rounds. Modelled as
+written, **Heaven gets easier, not harder: 100% wins.** Two of the three gates
+at half rate cuts total spawns by a third, and the tougher kinds do not come
+close to making that back.
+
+Run the same three kinds at one Host per gate per round and it is 63%. So:
+
+- **the kinds are worth about 20 points** of difficulty (uniform 72% → tiered at
+  full rate 52%, in the isolated Heaven sweep);
+- **the stagger is worth about 37 points** in the other direction.
+
+Variety changed the texture — spawns come out as roughly 1533 Ophanim / 1232
+Zealots / 806 Thrones, and Attack falls from 40.5% of actions to 32.2% because
+there is less to shoot at. But the difficulty came almost entirely from volume,
+not from the new kinds. If the Zealot and Throne are meant to be a step up
+rather than a breather, they need to arrive at full rate, or be much nastier
+than +1 Defence and a river-crossing move.
+
+## Munitions works, and is a sink as well as a defence
+
+On the same hard Heaven: **63% → 87%**, and surplus falls from 74 to 47.
+
+This is the only defensive spending that fits a combat system with no range —
+dice are the currency, so a pile buys more of them. It answers both halves of
+the problem at once, and unlike the Monument it does not compete for the action:
+it rides the Attack a Leader was taking anyway. The first defence sweep reported
+it as mildly *negative*, which was an artefact of running it against the
+staggered gates where nothing needed buying.
+
+## Shortening Babel does the opposite of what it looks like
+
+| pieces per Stage | win | rounds | pieces standing |
+|---|---|---|---|
+| 5 (v0.2 at 3 Leaders) | 72% | 56 | 11.2 |
+| 4 | 88% | 53 | 10.6 |
+| 3 | 40% | 32 | 3.6 |
+| 2 | 28% | 22 | 1.7 |
+
+**Not monotonic, and the short end is brutal.** Babel's pieces are also Babel's
+health — Heaven knocks them off, and at zero the Foundation falls — so a shorter
+Tower is a thinner buffer. Worse, fewer pieces per Stage means escalation
+arrives sooner: at 2 per Stage the table is facing Stage III by the fourth
+piece. Going the other way barely helps either: 7 per Stage is 90% and 55 rounds,
+so a taller Babel is longer rather than harder.
+
+**Babel height is not a length knob.** Game length lives in the spawn rate and
+the economy; changing the Tower's height mostly moves how fast Heaven escalates.
+
+## A bug worth recording
+
+The first difficulty sweep had "Defence +1" and "dice are d6+1" — mathematically
+the same change — disagreeing by 35 points. Tower support dice were reading the
+`COMBAT_DIE_BONUS` constant directly instead of the ruleset, so a variant that
+changed the die bonus silently left every Tower behind. Fixed; Tower dice now
+use the ruleset's bonus and the target's own Defence.
+
+Also: a flat Defence bonus is a cliff, not a knob. Stage III already asks d6+2
+against 7; one more point takes a die from a third to a sixth and the table
+cannot keep up. `hostDefenceBonus` is now per Stage.
+
+## More Heaven ideas worth building
+
+The kinds tested are both "slightly harder Ophanim". These would need answers
+the table does not currently have, which is the point of variety:
+
+- **Herald** — raises the Defence of every other Host in its feature. Makes
+  killing the right target first matter, and rewards Towers, which fire into
+  their own feature.
+- **Colossus** — stops on the first building it reaches and destroys it instead
+  of walking on. Attacks the economy rather than the Tower, so ignoring it costs
+  something other than Babel.
+- **Swarm** — splits into two Ophanim when killed. Punishes chip damage and
+  rewards concentrated fire, which is exactly what Munitions buys.
+- **Warded** — immune to Tower support; only Army dice touch it. Forces Muster
+  on a table that has settled into Towers.
+
+Each creates demand for a *different* answer rather than more of the same, which
+is what would make the defensive economy interesting. None is modelled yet.

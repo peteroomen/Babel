@@ -168,7 +168,7 @@ export function getLegalActions(state: GameState, playerId: PlayerId): LegalActi
       stack += 1;
       stage = Math.min(
         3,
-        Math.max(stage, Math.floor(stack / piecesPerStage(state.order.length)) + 1),
+        Math.max(stage, Math.floor(stack / piecesPerStage(state.order.length, state.rules)) + 1),
       ) as typeof stage;
     }
     actions.push({
@@ -193,7 +193,7 @@ export function getLegalActions(state: GameState, playerId: PlayerId): LegalActi
       actions.push({
         type: 'attack',
         dice,
-        defence: hostDefence(state.order.length, state.stage),
+        defence: hostDefence(state.order.length, state.stage, state.rules),
         cost: price
           ? { resource: price.resource, amount: price.flat ? price.amount : dice * price.amount }
           : null,

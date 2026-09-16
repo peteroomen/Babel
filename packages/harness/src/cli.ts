@@ -3,6 +3,12 @@ import { CLASSIC_TABLE, ARCHETYPE_LABEL } from '@babel-game/game-ai';
 import { playGame } from './play.js';
 import { summarise, type Summary } from './metrics.js';
 import {
+  DEFENCE_VARIANTS,
+  DIFFICULTY_VARIANTS,
+  HEAVEN_VARIANTS,
+  HEIGHT_VARIANTS,
+} from './rounds.js';
+import {
   BABEL_VARIANTS,
   GEO_VARIANTS,
   SINK_VARIANTS,
@@ -45,6 +51,10 @@ const SETS: readonly { flag: string; variants: readonly Variant[] }[] = [
   { flag: 'confirm', variants: CONFIRM_VARIANTS },
   { flag: 'stack', variants: STACK_VARIANTS },
   { flag: 'geo', variants: GEO_VARIANTS },
+  { flag: 'difficulty', variants: DIFFICULTY_VARIANTS },
+  { flag: 'height', variants: HEIGHT_VARIANTS },
+  { flag: 'heaven', variants: HEAVEN_VARIANTS },
+  { flag: 'defence', variants: DEFENCE_VARIANTS },
   { flag: 'sink', variants: SINK_VARIANTS },
 ];
 const variants: readonly Variant[] = SETS.find((set) => flag(set.flag))?.variants ?? VARIANTS;

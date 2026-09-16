@@ -15,6 +15,7 @@ export function rollAttack(
   rng: RngState,
   dice: number,
   defence: number,
+  bonus: number = COMBAT_DIE_BONUS,
 ): { result: AttackRoll; rng: RngState } {
   const rolls: number[] = [];
   let state = rng;
@@ -23,7 +24,7 @@ export function rollAttack(
     state = next;
     rolls.push(roll);
   }
-  const successes = rolls.filter((roll) => roll + COMBAT_DIE_BONUS >= defence).length;
+  const successes = rolls.filter((roll) => roll + bonus >= defence).length;
   return { result: { rolls, successes }, rng: state };
 }
 
@@ -48,13 +49,41 @@ export function applyHit(host: Host): HitOutcome {
   return { host: null, shieldBroken: false, killed: true };
 }
 
-/** Whether an assignment of successful dice is spendable as described. */
+/**
+ * How many of these rolls beat a given Defence.
+ *
+ * Once Host kinds have their own Defence, "successes" is no longer a single
+ * number: a roll that kills an Ophanim may bounce off a Zealot.
+ */
+export const rollsBeating = (
+  rolls: readonly number[],
+  defence: number,
+  bonus: number,
+): number => rolls.filter((roll) => roll + bonus >= defence).length;
+
+/**
+ * Whether an assignment of dice to Hosts is spendable as described.
+ *
+ * With one Defence for everything this was a sum. With per-kind Defence it is a
+ * matching problem: a die that only just beat the easiest target cannot be
+ * spent on the hardest. Sorting the targets hardest-first and checking each
+ * running total against the dice good enough to reach that far is Hall's
+ * condition, and it is exact — every die good enough for a hard target is also
+ * good enough for an easy one, so the thresholds nest.
+ */
 export function validateAssignments(
   hosts: readonly Host[],
   assignments: Readonly<Record<string, number>>,
   successes: number,
+  /* Omitted under a single Defence, where the sum is all that matters. */
+  scored?: {
+    readonly rolls: readonly number[];
+    readonly bonus: number;
+    readonly defenceOf: (host: Host) => number;
+  },
 ): string | null {
   let total = 0;
+  const assigned: { host: Host; count: number }[] = [];
   for (const [id, count] of Object.entries(assignments)) {
     if (count < 0 || !Number.isInteger(count)) return 'hit counts must be whole numbers';
     const host = hosts.find((h) => h.id === id);
@@ -62,7 +91,22 @@ export function validateAssignments(
     /* A die can hit only one Host, and overkill is wasted rather than illegal. */
     if (count > hitsRemaining(host)) return `too many hits assigned to ${id}`;
     total += count;
+    assigned.push({ host, count });
   }
   if (total > successes) return 'more hits assigned than dice succeeded';
+
+  if (scored) {
+    const byHardest = [...assigned].sort(
+      (a, b) => scored.defenceOf(b.host) - scored.defenceOf(a.host),
+    );
+    let needed = 0;
+    for (const { host, count } of byHardest) {
+      needed += count;
+      const good = rollsBeating(scored.rolls, scored.defenceOf(host), scored.bonus);
+      if (needed > good) {
+        return `not enough dice beat Defence ${scored.defenceOf(host)} to hit ${host.id}`;
+      }
+    }
+  }
   return null;
 }

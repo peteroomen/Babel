@@ -298,7 +298,7 @@ export type ActionChoice =
   | { kind: 'buildMonument'; at: Coord }
   | { kind: 'buildWalls'; edges: readonly { a: Coord; b: Coord }[] }
   | { kind: 'muster' }
-  | { kind: 'attack'; dice: number }
+  | { kind: 'attack'; dice: number; extraDice: number }
   | { kind: 'buyScheme' }
   | { kind: 'barter'; spend: ResourceType[]; gain: ResourceType };
 
@@ -441,8 +441,33 @@ export function chooseAction(
     return Math.max(0, Math.min(worthRolling, Math.floor(spare / price.amount)));
   })();
   const attackAffordable = attack !== undefined && attackDice > 0;
+
+  /**
+   * Munitions: buy dice when the board needs more than the Army can deliver.
+   *
+   * Only ever bought out of genuine surplus — what remains after the Leader's
+   * own plan is funded — so this turns a pile into damage rather than competing
+   * with Babel for the resources that build it.
+   */
+  const extraDice = ((): number => {
+    const munitions = state.rules.munitions;
+    if (!munitions || !attack) return 0;
+    const need = state.hosts.reduce(
+      (sum, host) => sum + (host.kind === 'seraph' && host.shieldUp ? 2 : 1),
+      0,
+    );
+    const short = Math.max(0, need - attackDice);
+    const plan = goal(state, me, archetype);
+    let afford = munitions.maxExtraDice;
+    for (const [resource, amount] of Object.entries(munitions.cost)) {
+      const spare = leader.resources[resource as ResourceType] - (plan[resource as ResourceType] ?? 0);
+      afford = Math.min(afford, Math.floor(Math.max(0, spare) / (amount ?? 1)));
+    }
+    return Math.max(0, Math.min(short, afford, munitions.maxExtraDice));
+  })();
+
   const swing = (): ActionChoice | null =>
-    attackAffordable ? { kind: 'attack', dice: attackDice } : null;
+    attackAffordable ? { kind: 'attack', dice: attackDice, extraDice } : null;
   const defend = (armyCap: number): (ActionChoice | null)[] => [
     towerAt(),
     canMuster(armyCap) ? { kind: 'muster' } : null,

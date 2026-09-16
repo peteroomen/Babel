@@ -397,6 +397,8 @@ export type Command =
        * Army rolls for nothing, so there is no decision to make.
        */
       readonly dice?: number;
+      /** Extra dice bought with resources, where the rules allow Munitions. */
+      readonly extraDice?: number;
     }
   /** Assign successful dice among Hosts after rolling. GDD §15. */
   | {

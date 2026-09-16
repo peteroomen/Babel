@@ -2,6 +2,9 @@ import {
   applyMove,
   currentPlayer,
   getLegalActions,
+  hitsRemaining,
+  hostDefence,
+  rollsBeating,
   type Command,
   type GameState,
   type PlayerId,
@@ -52,14 +55,27 @@ export function nextCommand(
   const pending = state.pendingAttack;
   if (pending) {
     if (!seats[pending.player]) return null;
+    /**
+     * Spend the dice hardest target first.
+     *
+     * Once Host kinds have their own Defence, a die that only just beat an
+     * Ophanim cannot be spent on a Zealot — so the assignment has to start with
+     * the targets that need the best rolls, while the good dice are still
+     * unspent. Going easiest-first would strand them.
+     */
+    const bonus = state.rules.combatDieBonus;
+    const defenceOf = (host: (typeof state.hosts)[number]) =>
+      hostDefence(state.order.length, state.stage, state.rules, host.kind);
     const assignments: Record<string, number> = {};
-    let left = pending.successes;
-    for (const host of state.hosts) {
-      if (left <= 0) break;
-      /* A Seraph with its Shield up soaks two hits before it dies. GDD §14. */
-      const take = Math.min(left, host.kind === 'seraph' && host.shieldUp ? 2 : 1);
+    let spent = 0;
+
+    for (const host of [...state.hosts].sort((a, b) => defenceOf(b) - defenceOf(a))) {
+      const good = rollsBeating(pending.rolls, defenceOf(host), bonus) - spent;
+      if (good <= 0) continue;
+      const take = Math.min(good, pending.successes - spent, hitsRemaining(host));
+      if (take <= 0) continue;
       assignments[host.id] = take;
-      left -= take;
+      spent += take;
     }
     return { type: 'assignHits', player: pending.player, assignments };
   }
@@ -101,7 +117,12 @@ export function nextCommand(
     case 'muster':
       return { type: 'muster', player: me };
     case 'attack':
-      return { type: 'attack', player: me, dice: choice.dice };
+      return {
+        type: 'attack',
+        player: me,
+        dice: choice.dice,
+        extraDice: choice.extraDice,
+      };
     case 'buyScheme':
       return { type: 'buyScheme', player: me };
     case 'barter':

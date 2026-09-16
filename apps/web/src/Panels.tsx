@@ -129,7 +129,7 @@ export function BabelCard({ state }: { state: GameState }) {
                   className={cn(
                     'h-3 flex-1 min-w-1.5 rounded-[2px]',
                     i < built ? 'bg-babel' : 'bg-foreground/10',
-                    (i + 1) % piecesPerStage(leaders) === 0 && 'ring-1 ring-destructive/70',
+                    (i + 1) % piecesPerStage(leaders, state.rules) === 0 && 'ring-1 ring-destructive/70',
                   )}
                 />
               ))}

@@ -2,17 +2,26 @@ import { describe, expect, it } from 'vitest';
 import {
   CANON_RULES,
   LEGACY_V01_RULES,
+  TIERED_BEACONS,
   type ResourceType,
   type RuleSet,
 } from '@babel-game/game-data';
 import {
   applyMove,
   currentPlayer,
+  beaconSpawnsThisRound,
+  beaconTier,
   getLegalActions,
   getLegalTilePlacements,
   hasAnyLegalPlacement,
+  hostDefence,
+  isPassableAt,
+  piecesPerStage,
+  totalPieces,
+  validateAssignments,
   setupGame,
   type GameState,
+  type Host,
 } from '../src/index.js';
 import { playRounds, settleTable } from './helpers.js';
 
@@ -518,5 +527,128 @@ describe('levers on the resource pile', () => {
     /* Could only feed one die, so the rest starve rather than going into debt. */
     expect(after.leaders[other]!.army).toBe(1);
     expect(after.leaders[other]!.resources.food).toBe(0);
+  });
+});
+
+describe('Heaven with more than one kind of gate', () => {
+  const tiered = rules({ beaconTiers: TIERED_BEACONS });
+
+  it('sends a different Host from each Beacon, by the order they were sited', () => {
+    /* GDD §13 numbers Beacons by siting order; the ruleset maps that to a gate. */
+    expect(beaconTier(0, tiered)?.kind).toBe('ophanim');
+    expect(beaconTier(1, tiered)?.kind).toBe('zealot');
+    expect(beaconTier(2, tiered)?.kind).toBe('flier');
+    /* A fourth Beacon cycles rather than running out of gates. */
+    expect(beaconTier(3, tiered)?.kind).toBe('ophanim');
+    expect(beaconTier(0, CANON_RULES)).toBeNull();
+  });
+
+  it('staggers the slower gates so they alternate rather than arrive together', () => {
+    const rounds = [1, 2, 3, 4, 5, 6];
+    const first = rounds.map((r) => beaconSpawnsThisRound(0, r, tiered));
+    const second = rounds.map((r) => beaconSpawnsThisRound(1, r, tiered));
+    const third = rounds.map((r) => beaconSpawnsThisRound(2, r, tiered));
+
+    expect(first).toEqual([true, true, true, true, true, true]);
+    expect(second).toEqual([false, true, false, true, false, true]);
+    expect(third).toEqual([true, false, true, false, true, false]);
+    /* Never both slow gates in the same round. */
+    for (const r of rounds) expect(second[r - 1] && third[r - 1]).toBe(false);
+  });
+
+  it('makes the tougher kinds need a better roll', () => {
+    const base = hostDefence(3, 1, tiered, 'ophanim');
+    expect(hostDefence(3, 1, tiered, 'zealot')).toBe(base + 1);
+    expect(hostDefence(3, 1, tiered, 'flier')).toBe(base + 1);
+    /* And the blunt knob stacks on top of the kind. */
+    expect(hostDefence(3, 1, rules({ hostDefenceBonus: [2, 0, 0] }), 'zealot')).toBe(base + 3);
+  });
+
+  it('lets a Throne cross the rivers that stop everything else', () => {
+    const board = {
+      '0,-1': { terrain: 'farmland', river: 'straight', rotation: 0 },
+    } as const;
+    /* A river tile is impassable on foot and irrelevant in the air. */
+    expect(isPassableAt(board, { x: 0, y: -1 })).toBe(false);
+    expect(
+      isPassableAt(board, { x: 0, y: -1 }, { impassable: ['lake'], flies: true }),
+    ).toBe(true);
+  });
+
+  it('will not let a die spent on a Zealot be one that only beat an Ophanim', () => {
+    const hosts: Host[] = [
+      { id: 'soft', kind: 'ophanim', at: { x: 0, y: 1 }, shieldUp: false },
+      { id: 'hard', kind: 'zealot', at: { x: 0, y: 2 }, shieldUp: false },
+    ];
+    const scored = {
+      /* One die clears Defence 6, the other only Defence 5. */
+      rolls: [4, 3],
+      bonus: 2,
+      defenceOf: (host: Host) => (host.kind === 'zealot' ? 6 : 5),
+    };
+    expect(validateAssignments(hosts, { soft: 1, hard: 1 }, 2, scored)).toBeNull();
+    /* Both hits on the Zealot needs two dice that beat 6, and only one did. */
+    expect(validateAssignments(hosts, { hard: 2 }, 2, scored)).toMatch(/not enough dice/);
+  });
+});
+
+describe('Munitions', () => {
+  it('buys extra Attack dice out of the pile', () => {
+    const munitions = { cost: { metal: 1, wood: 1 }, maxExtraDice: 3 };
+    const base = atAction(setupGame(['Ada', 'Peter'], 'muni', rules({ munitions })));
+    const me = currentPlayer(base);
+    const state = withHand(
+      {
+        ...base,
+        hosts: [{ id: 'h1', kind: 'ophanim', at: { x: 0, y: -1 }, shieldUp: false }],
+        leaders: { ...base.leaders, [me]: { ...base.leaders[me]!, army: 1 } },
+      },
+      { metal: 4, wood: 4 },
+    );
+
+    const after = applyMove(state, { type: 'attack', player: me, extraDice: 2 }).state;
+    const rolled = after.log.find((e) => e.type === 'attackRolled');
+    /* One Army die plus two bought. */
+    expect(rolled?.type === 'attackRolled' && rolled.rolls.length).toBe(3);
+    expect(after.leaders[me]!.resources).toMatchObject({ metal: 2, wood: 2 });
+  });
+
+  it('refuses more than the rules allow, or than the Leader can pay for', () => {
+    const munitions = { cost: { metal: 1, wood: 1 }, maxExtraDice: 3 };
+    const base = atAction(setupGame(['Ada', 'Peter'], 'muni', rules({ munitions })));
+    const me = currentPlayer(base);
+    const poor = withHand(
+      {
+        ...base,
+        hosts: [{ id: 'h1', kind: 'ophanim', at: { x: 0, y: -1 }, shieldUp: false }],
+      },
+      { metal: 1, wood: 1 },
+    );
+    expect(() => applyMove(poor, { type: 'attack', player: me, extraDice: 3 })).toThrow(
+      /cannot afford/,
+    );
+  });
+
+  it('is refused entirely where the rules have no Munitions', () => {
+    const base = atAction(setupGame(['Ada', 'Peter'], 'none'));
+    const me = currentPlayer(base);
+    const state = withHand(
+      { ...base, hosts: [{ id: 'h1', kind: 'ophanim', at: { x: 0, y: -1 }, shieldUp: false }] },
+      { metal: 4, wood: 4 },
+    );
+    expect(() => applyMove(state, { type: 'attack', player: me, extraDice: 1 })).toThrow(
+      /no Munitions/,
+    );
+  });
+});
+
+describe('Babel can be made shorter', () => {
+  it('overrides the pieces each Stage needs', () => {
+    const short = rules({ piecesPerStage: 2 });
+    expect(piecesPerStage(3, short)).toBe(2);
+    expect(totalPieces(3, short)).toBe(6);
+    /* The scaling table still governs when no override is given. */
+    expect(piecesPerStage(3)).toBe(5);
+    expect(totalPieces(3)).toBe(15);
   });
 });
