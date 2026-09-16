@@ -24,6 +24,16 @@ export type Summary = {
   /** Share of all actions taken, by kind. */
   readonly actionMix: Readonly<Record<string, number>>;
   /**
+   * Barters per 100 turns, counted from the events.
+   *
+   * `actionMix` cannot see a Barter that does not consume the turn's action, so
+   * under free-Barter rules it reports 0% while the table trades every turn.
+   * This counts what actually happened.
+   */
+  readonly bartersPer100Turns: number;
+  /** Resources destroyed by Barter: it takes several cards and returns one. */
+  readonly barterBurn: number;
+  /**
    * Of the turns a Leader began short of something their plan needed, the
    * share in which they actually got some of it, from any source.
    */
@@ -62,6 +72,12 @@ export function summarise(variant: string, games: readonly GameRecord[]): Summar
   for (const turn of turns) actionCounts[turn.action] = (actionCounts[turn.action] ?? 0) + 1;
   const actionMix = Object.fromEntries(
     Object.entries(actionCounts).map(([action, count]) => [action, share(count, turns.length)]),
+  );
+
+  const barters = events.filter((event) => event.type === 'bartered');
+  const burn = barters.reduce(
+    (total, event) => total + (event.type === 'bartered' ? event.spent.length - 1 : 0),
+    0,
   );
 
   const wanting = turns.filter((turn) => turn.wanted !== null);
@@ -153,6 +169,8 @@ export function summarise(variant: string, games: readonly GameRecord[]): Summar
     meanRounds: mean(games.map((game) => game.rounds)),
     meanRoundsWon: won.length === 0 ? null : mean(won.map((game) => game.rounds)),
     actionMix,
+    bartersPer100Turns: share(barters.length, turns.length) * 100,
+    barterBurn: share(burn, games.length * 3),
     accessRate: share(satisfied.length, wanting.length),
     turnsWanting: wanting.length,
     bySource,

@@ -89,7 +89,7 @@ export function nextCommand(
   const choice = chooseAction(state, me, archetype, getLegalActions(state, me), rand);
   switch (choice.kind) {
     case 'buildBabel':
-      return { type: 'buildBabel', player: me };
+      return { type: 'buildBabel', player: me, pieces: choice.pieces };
     case 'buildHarvester':
       return { type: 'buildHarvester', player: me, at: choice.at, building: choice.building };
     case 'buildTower':

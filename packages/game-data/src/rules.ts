@@ -107,6 +107,42 @@ export type RuleSet = {
    * tile with nowhere to connect is redrawn under RD-002.
    */
   readonly riverMustExtend: boolean;
+  /**
+   * Barter does not consume the turn's action.
+   *
+   * The sharpest lever on the pile, because same-kind Barter is already an
+   * incinerator: four cards in, one out, three destroyed. It is simply gated
+   * behind the scarcest thing a Leader has, which is the action — and the
+   * measured problem is that a Leader earns every turn and acts once. Free, it
+   * runs every turn instead of occasionally. One per turn, so it cannot loop.
+   */
+  readonly barterIsFree: boolean;
+  /**
+   * How many Babel pieces one Build action may add.
+   *
+   * The other way at action scarcity: rather than giving a Leader more actions,
+   * let one action consume proportionally more. A Leader sitting on a pile can
+   * turn it into Tower in a single turn instead of dribbling it in over six.
+   */
+  readonly babelPiecesPerAction: number;
+  /**
+   * Food per Army die, paid every Heaven Phase. 0 for no upkeep.
+   *
+   * Muster is a one-off today — the Army is bought once and never costs
+   * anything again — which is why Food is the resource least spent. Upkeep
+   * turns a standing Army into a recurring bill, and Food is the thing there is
+   * most of. A Leader that cannot pay loses a die.
+   */
+  readonly armyUpkeepFood: number;
+  /**
+   * Most of any single resource a Leader may hold at the end of their turn;
+   * the excess spoils. null for no limit.
+   *
+   * Blunt, and included mainly as a control: it puts a ceiling on how much of
+   * the pile is reachable at all, which tells us how much the gentler levers
+   * are leaving on the table.
+   */
+  readonly resourceCap: number | null;
   /** The personal Prestige sink, or null for canon where none exists. */
   readonly monument: {
     readonly cost: Partial<Record<ResourceType, number>>;
@@ -174,6 +210,10 @@ export const LEGACY_V01_RULES: RuleSet = {
   riverWeights: RIVER_WEIGHTS,
   impassableTerrain: ['lake'],
   riverMustExtend: false,
+  barterIsFree: false,
+  babelPiecesPerAction: 1,
+  armyUpkeepFood: 0,
+  resourceCap: null,
   monument: null,
   reserveSlots: 0,
   terrainWeights: TERRAIN_WEIGHTS,
@@ -211,4 +251,17 @@ export const MAX_RESERVE_SLOTS = 4;
 export const MONUMENT_RULE: RuleSet['monument'] = {
   cost: MONUMENT_COST,
   prestige: MONUMENT_PRESTIGE,
+};
+
+/**
+ * A Babel curve that leans on Food.
+ *
+ * Food is the resource least spent under v0.2 — 57% of it is never used, and
+ * nothing outside Muster, a Scheme and a point or two per piece asks for any.
+ * Same totals per piece as v0.2 (3, 5, 8); only the mix moves toward Food.
+ */
+export const HUNGRY_PIECE_COST: Record<Stage, Partial<Record<ResourceType, number>>> = {
+  1: { brick: 1, food: 2 },
+  2: { brick: 2, wood: 1, food: 2 },
+  3: { brick: 2, wood: 2, metal: 1, food: 3 },
 };

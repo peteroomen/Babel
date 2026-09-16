@@ -413,3 +413,110 @@ describe('the Babel cost curve is tuneable', () => {
     expect(() => applyMove(state, { type: 'buildBabel', player: me })).toThrow(/cannot afford/);
   });
 });
+
+describe('levers on the resource pile', () => {
+  it('a free Barter leaves the turn open, once', () => {
+    const state = withHand(
+      atAction(setupGame(['Ada', 'Peter'], 'free', rules({ barterIsFree: true }))),
+      { wood: 8 },
+    );
+    const me = currentPlayer(state);
+    const four = ['wood', 'wood', 'wood', 'wood'] as const;
+
+    const after = applyMove(state, { type: 'barter', player: me, spend: four, gain: 'metal' }).state;
+    /* Still this Leader's turn, still owing an action. */
+    expect(currentPlayer(after)).toBe(me);
+    expect(after.turnStep).toBe('action');
+    expect(after.leaders[me]!.resources).toMatchObject({ wood: 4, metal: 1 });
+    expect(after.freeBarterUsed).toBe(true);
+
+    /* Exactly one, or a Leader could grind a whole hand down in a single turn. */
+    expect(getLegalActions(after, me).find((a) => a.type === 'barter')).toBeUndefined();
+    expect(() =>
+      applyMove(after, { type: 'barter', player: me, spend: four, gain: 'metal' }),
+    ).toThrow(/already taken your free Barter/);
+  });
+
+  it('a paid Barter still ends the turn', () => {
+    const state = withHand(atAction(setupGame(['Ada', 'Peter'], 'paid')), { wood: 8 });
+    const me = currentPlayer(state);
+    const after = applyMove(state, {
+      type: 'barter',
+      player: me,
+      spend: ['wood', 'wood', 'wood', 'wood'],
+      gain: 'metal',
+    }).state;
+    expect(currentPlayer(after)).not.toBe(me);
+  });
+
+  it('builds several Babel pieces in one action, paying each Stage in turn', () => {
+    const state = withHand(
+      atAction(setupGame(['Ada', 'Peter'], 'many', rules({ babelPiecesPerAction: 3 }))),
+      { brick: 9, wood: 9, food: 9, metal: 9 },
+    );
+    const me = currentPlayer(state);
+    const babel = getLegalActions(state, me).find((a) => a.type === 'buildBabel');
+    expect(babel).toMatchObject({ pieces: 3 });
+
+    const after = applyMove(state, { type: 'buildBabel', player: me }).state;
+    expect(after.babel.stack).toEqual([me, me, me]);
+    /* 2 Leaders build 3 pieces per Stage, so the third piece escalates. */
+    expect(after.stage).toBe(2);
+    /* The first three pieces are Stage I at 1 Brick + 1 Wood + 1 Food each. */
+    expect(after.leaders[me]!.resources).toMatchObject({ brick: 6, wood: 6, food: 6 });
+    expect(after.leaders[me]!.prestige).toBe(6);
+  });
+
+  it('stops early when the hand runs out mid-action', () => {
+    const state = withHand(
+      atAction(setupGame(['Ada', 'Peter'], 'short', rules({ babelPiecesPerAction: 5 }))),
+      { brick: 2, wood: 2, food: 2, metal: 0 },
+    );
+    const me = currentPlayer(state);
+    const after = applyMove(state, { type: 'buildBabel', player: me }).state;
+    expect(after.babel.stack).toHaveLength(2);
+    expect(after.leaders[me]!.resources).toMatchObject({ brick: 0, wood: 0, food: 0 });
+  });
+
+  it('spoils what a Leader holds over the cap, at the end of their turn', () => {
+    const state = withHand(atAction(setupGame(['Ada', 'Peter'], 'cap', rules({ resourceCap: 5 }))), {
+      wood: 9,
+      food: 3,
+    });
+    const me = currentPlayer(state);
+    const after = applyMove(state, { type: 'pass', player: me }).state;
+    expect(after.leaders[me]!.resources).toMatchObject({ wood: 5, food: 3 });
+    expect(after.log).toContainEqual({
+      type: 'resourcesSpoiled',
+      player: me,
+      lost: { wood: 4 },
+    });
+  });
+
+  it('charges Army upkeep each Heaven Phase, and starves an Army that cannot pay', () => {
+    const base = setupGame(['Ada', 'Peter'], 'upkeep', rules({ armyUpkeepFood: 1 }));
+    const me = currentPlayer(base);
+    const other = base.order.find((id) => id !== me)!;
+    const state: GameState = {
+      ...base,
+      phase: 'heaven',
+      leaders: {
+        ...base.leaders,
+        [me]: { ...base.leaders[me]!, army: 3, resources: { food: 5, wood: 0, brick: 0, metal: 0 } },
+        [other]: {
+          ...base.leaders[other]!,
+          army: 4,
+          resources: { food: 1, wood: 0, brick: 0, metal: 0 },
+        },
+      },
+    };
+    const after = applyMove(state, { type: 'resolveHeaven', player: me }).state;
+
+    /* Paid in full: three dice kept, three Food gone. */
+    expect(after.leaders[me]!.army).toBe(3);
+    expect(after.leaders[me]!.resources.food).toBe(2);
+    /* Could only feed one die, so the rest starve rather than going into debt. */
+    expect(after.leaders[other]!.army).toBe(1);
+    expect(after.leaders[other]!.resources.food).toBe(0);
+  });
+});

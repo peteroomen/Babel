@@ -126,6 +126,11 @@ export type GameState = {
   readonly bonusWindow: PlayerId | null;
   /** True while the Leader is taking the extra action Frenzied Works granted. */
   readonly inBonusAction: boolean;
+  /**
+   * Whether this Leader has already taken their free Barter this turn. Always
+   * false under rules where Barter costs the action.
+   */
+  readonly freeBarterUsed: boolean;
   /** A Host redirected this Heaven Phase by False Prophet. GDD §18. */
   readonly falseProphet: { readonly hostId: string; readonly to: Coord } | null;
   /** Monotonic counter giving each spawned Host a unique id. */
@@ -210,6 +215,19 @@ export type GameEvent =
       readonly player: PlayerId;
       readonly stage: Stage;
       readonly pieces: number;
+    }
+  /** Resources over the cap at the end of a turn, discarded. */
+  | {
+      readonly type: 'resourcesSpoiled';
+      readonly player: PlayerId;
+      readonly lost: Readonly<Partial<Record<ResourceType, number>>>;
+    }
+  /** Food paid to keep an Army standing, and the dice lost when it cannot be. */
+  | {
+      readonly type: 'upkeepPaid';
+      readonly player: PlayerId;
+      readonly food: number;
+      readonly diceLost: number;
     }
   /** GDD §12: reaching the end of a Stage escalates Heaven permanently. */
   | { readonly type: 'stageEscalated'; readonly from: Stage; readonly to: Stage }
@@ -357,7 +375,12 @@ export type Command =
       readonly player: PlayerId;
       readonly edges: readonly WallEdge[];
     }
-  | { readonly type: 'buildBabel'; readonly player: PlayerId }
+  | {
+      readonly type: 'buildBabel';
+      readonly player: PlayerId;
+      /** Pieces to add in this one action. Defaults to as many as affordable. */
+      readonly pieces?: number;
+    }
   | {
       readonly type: 'barter';
       readonly player: PlayerId;

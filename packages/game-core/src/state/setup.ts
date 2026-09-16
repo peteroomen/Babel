@@ -127,6 +127,7 @@ export function setupGame(
     actionsThisRound: {},
     bonusWindow: null,
     inBonusAction: false,
+    freeBarterUsed: false,
     falseProphet: null,
     babel: { stack: [] },
     beacons: [],

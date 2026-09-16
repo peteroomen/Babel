@@ -172,12 +172,44 @@ export function resolveHeavenPhase(
     events.push({ type: 'hostSpawned', id: host.id, kind, at: beacon });
   }
 
+  /**
+   * Army upkeep, where the rules charge it.
+   *
+   * Muster is otherwise a one-off: an Army is bought once and never costs
+   * anything again, which is a large part of why Food is the resource least
+   * spent. Charged here, at the round boundary, a standing Army is a recurring
+   * bill. A Leader who cannot pay keeps only the dice their Food covers — the
+   * Army starves rather than going into debt.
+   */
+  let leaders = state.leaders;
+  const upkeep = state.rules.armyUpkeepFood;
+  if (upkeep > 0) {
+    for (const id of state.order) {
+      const leader = leaders[id];
+      if (!leader || leader.army === 0) continue;
+      const affordable = Math.min(leader.army, Math.floor(leader.resources.food / upkeep));
+      const diceLost = leader.army - affordable;
+      const food = affordable * upkeep;
+      if (food === 0 && diceLost === 0) continue;
+      events.push({ type: 'upkeepPaid', player: id, food, diceLost });
+      leaders = {
+        ...leaders,
+        [id]: {
+          ...leader,
+          army: affordable,
+          resources: { ...leader.resources, food: leader.resources.food - food },
+        },
+      };
+    }
+  }
+
   return {
     state: {
       ...state,
       rng,
       walls,
       hostSeq,
+      leaders,
       babel: { stack },
       hosts: [...survivors, ...spawned],
     },

@@ -54,7 +54,8 @@ function report(cells: readonly Cell[]): void {
   console.log('\nMAIN EFFECTS — each lever averaged over every setting of the others');
   const metrics = [
     ['win rate', (s: Summary) => s.sharedWinRate, pct],
-    ['Barter share', (s: Summary) => act(s, 'barter'), pct],
+    ['Barters/100 turns', (s: Summary) => s.bartersPer100Turns, (v: number) => v.toFixed(1)],
+    ['Barter burn', (s: Summary) => s.barterBurn, (v: number) => v.toFixed(0)],
     ['rounds', (s: Summary) => s.meanRounds, (v: number) => v.toFixed(1)],
     ['Babel pieces', (s: Summary) => s.meanBabelPieces, (v: number) => v.toFixed(1)],
     ['surplus', (s: Summary) => s.surplus, (v: number) => v.toFixed(0)],
@@ -107,13 +108,13 @@ function report(cells: readonly Cell[]): void {
     [
       cellId(c.mask),
       pct(c.summary.sharedWinRate),
-      pct(act(c.summary, 'barter')),
+      c.summary.bartersPer100Turns.toFixed(0),
       c.summary.meanRounds.toFixed(0),
       c.summary.meanBabelPieces.toFixed(1),
       c.summary.surplus.toFixed(0),
       pct(c.summary.timeoutRate),
     ];
-  const head = ['Cell', 'win', 'barter', 'rounds', 'pieces', 'surplus', 'timeout'];
+  const head = ['Cell', 'win', 'barter/100', 'rounds', 'pieces', 'surplus', 'timeout'];
   console.log('\nBEST CELLS');
   console.log(table([head, ...ranked.slice(0, 8).map(line)]));
   console.log('\nWORST CELLS');

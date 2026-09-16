@@ -8,9 +8,10 @@ import {
   WALL_SEGMENTS,
   type ResourceType,
 } from '@babel-game/game-data';
-import { canBuildBabel, pieceCost } from '../babel/index.js';
+import { canBuildBabel, pieceCost, piecesPerStage } from '../babel/index.js';
 import {
   canAfford,
+  paySpecific,
   getLegalBuildSites,
   getLegalMonumentSites,
   getLegalTowerSites,
@@ -39,7 +40,12 @@ export function affordableDice(
 
 export type LegalAction =
   | { readonly type: 'pass' }
-  | { readonly type: 'buildBabel'; readonly cost: Partial<Record<ResourceType, number>> }
+  | {
+      readonly type: 'buildBabel';
+      readonly cost: Partial<Record<ResourceType, number>>;
+      /** How many pieces this one action would add, at current holdings. */
+      readonly pieces: number;
+    }
   | {
       readonly type: 'buildHarvester';
       readonly sites: readonly { at: Coord; type: BuildingType }[];
@@ -50,6 +56,8 @@ export type LegalAction =
       readonly spendable: readonly ResourceType[];
       /** How many cards this Barter discards, under the rules in force. */
       readonly cost: number;
+      /** True when Barter does not consume the turn's action. */
+      readonly free: boolean;
     }
   | { readonly type: 'buildTower'; readonly sites: readonly Coord[] }
   | {
@@ -146,7 +154,28 @@ export function getLegalActions(state: GameState, playerId: PlayerId): LegalActi
     !isFoundationOccupied(state.hosts) &&
     canBuildBabel(leader, state.stage, state.rules)
   ) {
-    actions.push({ type: 'buildBabel', cost: pieceCost(state.stage, state.rules) });
+    /* How far a single Build action would actually get, spending down the
+       hand piece by piece at the price of the Stage each one lands in. */
+    let pieces = 0;
+    let hand = { ...leader.resources };
+    let stage = state.stage;
+    let stack = state.babel.stack.length;
+    while (pieces < state.rules.babelPiecesPerAction) {
+      const cost = pieceCost(stage, state.rules);
+      if (!canAfford({ ...leader, resources: hand }, cost)) break;
+      hand = paySpecific({ ...leader, resources: hand }, cost) as Record<ResourceType, number>;
+      pieces += 1;
+      stack += 1;
+      stage = Math.min(
+        3,
+        Math.max(stage, Math.floor(stack / piecesPerStage(state.order.length)) + 1),
+      ) as typeof stage;
+    }
+    actions.push({
+      type: 'buildBabel',
+      cost: pieceCost(state.stage, state.rules),
+      pieces: Math.max(1, pieces),
+    });
   }
 
   /**
@@ -202,7 +231,10 @@ export function getLegalActions(state: GameState, playerId: PlayerId): LegalActi
     const held = RESOURCE_TYPES.reduce((sum, r) => sum + leader.resources[r], 0);
     const enough =
       state.rules.barterMode === 'sameKind' ? spendable.length > 0 : held >= cost;
-    if (enough) actions.push({ type: 'barter', spendable, cost });
+    const spent = state.rules.barterIsFree && state.freeBarterUsed;
+    if (enough && !spent) {
+      actions.push({ type: 'barter', spendable, cost, free: state.rules.barterIsFree });
+    }
   }
 
   return actions;

@@ -1,5 +1,6 @@
 import {
   CANON_RULES,
+  HUNGRY_PIECE_COST,
   MONUMENT_RULE,
   TERMINATOR_RIVER_WEIGHTS,
   type RuleSet,
@@ -30,6 +31,15 @@ export type Factor = {
  * rather than factors. `LEGACY_V01_RULES` is how to get the old baseline back.
  */
 export const FACTORS: readonly Factor[] = [
+  { key: 'F', label: 'Barter is free', on: { barterIsFree: true } },
+  { key: 'N', label: 'Babel: 3 pieces per action', on: { babelPiecesPerAction: 3 } },
+  { key: 'K', label: 'Babel: hungry curve', on: { babelPieceCost: HUNGRY_PIECE_COST } },
+  { key: 'U', label: 'Army upkeep: 1 Food/die', on: { armyUpkeepFood: 1 } },
+  { key: 'C', label: 'Resource cap of 10', on: { resourceCap: 10 } },
+];
+
+/** Levers measured in earlier rounds, kept so a sweep can revisit them. */
+export const PARKED_FACTORS: readonly Factor[] = [
   { key: 'X', label: 'Rivers must extend', on: { riverMustExtend: true } },
   { key: 'R', label: 'Rivers: terminators', on: { riverWeights: TERMINATOR_RIVER_WEIGHTS } },
   { key: 'D', label: 'Desert blocks Hosts', on: { impassableTerrain: ['lake', 'desert'] } },

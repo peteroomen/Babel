@@ -567,3 +567,94 @@ worth something to Babel. And Babel itself rises from 14% to 21% of late
 actions, so the endgame is less exclusively Attack.
 
 **The next lever is Food**, or the action budget itself — not another sink.
+
+---
+
+# Round five — giving the pile somewhere to go
+
+Five levers, swept factorially against v0.2: 32 cells, 12 games each.
+
+| Lever | Δ win | Δ Barters/100 turns | Δ burn | Δ rounds | Δ pieces | Δ surplus |
+|---|---|---|---|---|---|---|
+| **F** Barter is free | **+12.0%** | **+14.6** | **+13** | −4.3 | +1.7 | −10 |
+| **N** Babel: 3 pieces per action | +0.5% | +2.6 | +1 | −4.0 | +0.1 | −10 |
+| **C** Resource cap of 10 | −0.5% | +1.7 | +4 | +2.5 | −0.0 | **−17** |
+| **K** Babel: hungry (Food-heavy) curve | −6.8% | +0.5 | −0 | −1.7 | −1.0 | −2 |
+| **U** Army upkeep, 1 Food per die | **−77.6%** | −7.4 | −26 | −36.1 | −11.8 | −34 |
+
+## Free Barter is the answer, and the reason is arithmetic
+
+Same-kind Barter at four **destroys three resources every time it runs**: four
+cards in, one out. It was already the best sink in the game — it was just gated
+behind the only thing a Leader is actually short of, which is the action.
+
+Unpaywalled, it runs three times as often, and the pile collapses:
+
+| | win | rounds | earned/Leader | unspent | **never spent** |
+|---|---|---|---|---|---|
+| v0.2 today | 84% | 58 | 217 | 108 | **50%** |
+| + free Barter | 88% | 43 | 163 | 46 | **28%** |
+| + free Barter + 3 pieces per action | 92% | 41 | 158 | 30 | **19%** |
+| + both, and a cap of 10 | 92% | 40 | 155 | 19 | **12%** |
+
+Barters go from 11 per 100 turns to 33, destroying 42 resources per Leader
+rather than 19. The leftovers also even out — Food 42/Wood 24/Brick 27/Metal 16
+becomes 15/10/11/10 — so no single resource is the dead pile any more.
+
+Games also shorten from 58 rounds to 43, which was the other complaint.
+
+**It comes with a bill.** 88–92% shared wins is too easy; v0.2 already sits at
+84% with these agents. Draining the pile makes Leaders more capable, so this
+wants paying back in difficulty — more Beacons, higher Host Defence, or a
+shorter Babel — rather than adopting on its own. That is a knob we have.
+
+One caveat on "earned": it falls from 217 to 155 mainly because games are
+shorter. The share never spent is the honest measure, and it is the one that
+moves from a half to roughly a tenth.
+
+## Three pieces per action is a pacing lever, not a power one
+
++0.5% on the win rate and −10 on surplus: it drains and shortens without making
+the game easier. That is exactly what a fix for action scarcity should look
+like — it lets one action consume proportionally more instead of handing out
+more actions.
+
+## The cap is the control it was meant to be
+
+−0.5% on the win rate, the largest single drop in surplus (−17). It confirms
+there is nothing structurally preventing the pile from being spent: it is pure
+opportunity. Useful as a measuring stick; too blunt to ship.
+
+## Two rejections
+
+**A Food-heavy Babel curve makes things worse** (−6.8%). Food is not idle
+because nothing wants it — Muster wants it, and so does every Scheme. Pointing
+Babel at Food puts the Tower in direct competition with the Army for the one
+resource that was already the tightest thing in a real fight.
+
+**Army upkeep at 1 Food per die is catastrophic** (−77.6%, games over by round
+20, Babel never off the ground). The arithmetic kills it: Food income is about
+1.15 per Leader per round, so a per-die bill of 1 consumes the entire Food
+economy the moment an Army reaches two dice. Same shape as the Attack-cost
+result — a per-unit price on something used every round is five to ten times
+too expensive. A flat or banded upkeep might work; per-die cannot.
+
+## A metric that was lying
+
+The first run of this sweep reported free Barter as cutting Barter's share of
+actions to **0.0%**, which read as "nobody barters". The opposite was true: a
+free Barter is not the turn's action, so `actionMix` could not see it at all.
+The summary now counts Barters from the event log, plus the resources each one
+destroys. Worth remembering that a metric defined against one rule quietly
+stops measuring the thing when the rule changes.
+
+## Not modelled: Heaven with more than one kind of threat
+
+The idea that each Beacon spawns its own kind of Host, with some needing
+answers the table does not have yet, is the most interesting thing in this
+round and the only one not tested. It is a content change rather than a number:
+it needs Host kinds with distinct counters — armour that Army dice cannot
+break, something only Towers reach, something Walls actually stop — before
+there is anything to sweep. Worth doing as its own milestone, because it is the
+one idea here that would create demand for *kinds* of spending rather than more
+of the same.

@@ -265,6 +265,16 @@ export function describe(event: GameEvent, state: GameState): string {
       return `No Schemes remain`;
     case 'reserveSwapped':
       return `${who(event.player)} takes ${TERRAIN_LABEL[event.took.terrain]} from the Reserve, leaving ${TERRAIN_LABEL[event.gave.terrain]}`;
+    case 'resourcesSpoiled':
+      return `${who(event.player)} loses ${Object.entries(event.lost)
+        .map(([r, n]) => `${n} ${RESOURCE_LABEL[r as keyof typeof RESOURCE_LABEL]}`)
+        .join(', ')} — over the limit`;
+    case 'upkeepPaid':
+      return event.diceLost > 0
+        ? `${who(event.player)} cannot feed their Army — ${event.diceLost} die${
+            event.diceLost === 1 ? '' : 's'
+          } lost`
+        : `${who(event.player)} feeds their Army (${event.food} Food)`;
     case 'reserveRefreshed':
       return event.reason === 'dead'
         ? `A Reserve tile had nowhere left to go — replaced`

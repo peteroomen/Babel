@@ -292,7 +292,7 @@ export function chooseBarter(
 
 export type ActionChoice =
   | { kind: 'pass' }
-  | { kind: 'buildBabel' }
+  | { kind: 'buildBabel'; pieces: number }
   | { kind: 'buildHarvester'; at: Coord; building: 'sawmill' | 'farmstead' | 'brickworks' | 'mine' }
   | { kind: 'buildTower'; at: Coord }
   | { kind: 'buildMonument'; at: Coord }
@@ -381,6 +381,15 @@ export function chooseAction(
   const barter = barterAction ? chooseBarter(state, me, archetype, barterAction) : null;
   const trade = (): ActionChoice | null =>
     barter ? { kind: 'barter', spend: barter.spend, gain: barter.gain } : null;
+
+  /**
+   * A free Barter costs nothing but the conversion itself, so a Leader takes it
+   * before anything else whenever it moves them toward their plan — the turn
+   * stays open for the real action afterwards.
+   */
+  if (barterAction?.free && barter) {
+    return { kind: 'barter', spend: barter.spend, gain: barter.gain };
+  }
 
   const order: (ActionChoice | null)[] = [];
   const canMuster = (cap: number) => muster && leader.army < cap;
@@ -476,7 +485,7 @@ export function chooseAction(
 
   switch (archetype) {
     case 'architect':
-      if (babel) order.push({ kind: 'buildBabel' });
+      if (babel) order.push({ kind: 'buildBabel', pieces: babel?.pieces ?? 1 });
       order.push(monumentAt());
       order.push(trade());
       order.push(towerAt());
@@ -497,7 +506,7 @@ export function chooseAction(
          need, so fund the Army when there is nothing to shoot at. */
       if (leader.army < 4) order.push(trade());
       if (state.hosts.length > 0) order.push(wall());
-      if (babel) order.push({ kind: 'buildBabel' });
+      if (babel) order.push({ kind: 'buildBabel', pieces: babel?.pieces ?? 1 });
       order.push(monumentAt());
       if (harvest) order.push(harvesterFor(harvest, seeking, rand));
       break;
@@ -506,7 +515,7 @@ export function chooseAction(
       if (harvest) order.push(harvesterFor(harvest, seeking, rand));
       order.push(monumentAt());
       order.push(towerAt());
-      if (babel) order.push({ kind: 'buildBabel' });
+      if (babel) order.push({ kind: 'buildBabel', pieces: babel?.pieces ?? 1 });
       order.push(trade());
       if (canMuster(3) && state.hosts.length > 0) order.push({ kind: 'muster' });
       order.push(swing());
@@ -525,7 +534,7 @@ export function chooseAction(
       order.push(trade());
       if (harvest) order.push(harvesterFor(harvest, seeking, rand));
       order.push(swing());
-      if (babel) order.push({ kind: 'buildBabel' });
+      if (babel) order.push({ kind: 'buildBabel', pieces: babel?.pieces ?? 1 });
       if (canMuster(3) && state.hosts.length > 0) order.push({ kind: 'muster' });
       break;
 
@@ -536,7 +545,7 @@ export function chooseAction(
          what `besieged` above has already covered. */
       order.push(monumentAt());
       if (scheme && canPay(state, me, SCHEME_COST)) order.push({ kind: 'buyScheme' });
-      if (babel) order.push({ kind: 'buildBabel' });
+      if (babel) order.push({ kind: 'buildBabel', pieces: babel?.pieces ?? 1 });
       order.push(trade());
       if (harvest) order.push(harvesterFor(harvest, seeking, rand));
       order.push(swing());

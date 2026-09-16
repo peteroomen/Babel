@@ -175,8 +175,40 @@ function drawFor(
  * round is over and the Heaven Phase follows, which the table resolves
  * explicitly rather than it happening invisibly.
  */
-function endTurn(state: GameState): { state: GameState; events: GameEvent[] } {
-  const events: GameEvent[] = [{ type: 'turnEnded', player: currentPlayer(state) }];
+/**
+ * Discard anything a Leader holds over the cap.
+ *
+ * Deliberately at the end of the *turn* rather than the round, so the Leader
+ * has just had their action and cannot claim they were never given a chance to
+ * spend it.
+ */
+function spoil(state: GameState, player: PlayerId): { state: GameState; events: GameEvent[] } {
+  const cap = state.rules.resourceCap;
+  const leader = state.leaders[player];
+  if (cap === null || !leader) return { state, events: [] };
+
+  const resources = { ...leader.resources };
+  const lost: Partial<Record<ResourceType, number>> = {};
+  for (const resource of RESOURCE_TYPES) {
+    if (resources[resource] > cap) {
+      lost[resource] = resources[resource] - cap;
+      resources[resource] = cap;
+    }
+  }
+  if (Object.keys(lost).length === 0) return { state, events: [] };
+  return {
+    state: { ...state, leaders: { ...state.leaders, [player]: { ...leader, resources } } },
+    events: [{ type: 'resourcesSpoiled', player, lost }],
+  };
+}
+
+function endTurn(base: GameState): { state: GameState; events: GameEvent[] } {
+  const spoiled = spoil(base, currentPlayer(base));
+  const state = spoiled.state;
+  const events: GameEvent[] = [
+    ...spoiled.events,
+    { type: 'turnEnded', player: currentPlayer(state) },
+  ];
   const nextIndex = (state.currentPlayerIndex + 1) % state.order.length;
 
   if (nextIndex === state.firstPlayerIndex) {
@@ -202,6 +234,7 @@ function endTurn(state: GameState): { state: GameState; events: GameEvent[] } {
       turnStep: 'place',
       drawnTile: drawn.draw,
       reserve: drawn.reserve,
+      freeBarterUsed: false,
       rng: drawn.rng,
     },
     events,
@@ -248,6 +281,7 @@ function advanceRound(state: GameState): { state: GameState; events: GameEvent[]
       turnStep: 'place',
       drawnTile: drawn.draw,
       reserve: drawn.reserve,
+      freeBarterUsed: false,
       rng: drawn.rng,
       confusion: { card: reveal.card, cancelledBy: null },
       confusionDeck: reveal.deck,
@@ -567,64 +601,81 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       if (isFoundationOccupied(state.hosts)) {
         throw new Error('the Foundation is occupied');
       }
-      const leader = leaderOf(state, command.player);
-      if (!canBuildBabel(leader, state.stage, state.rules)) {
+      if (!canBuildBabel(leaderOf(state, command.player), state.stage, state.rules)) {
         throw new Error('cannot afford a Babel piece');
       }
 
-      const prestige = piecePrestige(state.stage);
-      const babel = { stack: [...state.babel.stack, command.player] };
+      /**
+       * One action may add several pieces where the rules allow it.
+       *
+       * Each piece is paid for at the Stage in force when it goes on, so a run
+       * that crosses a Stage boundary pays the cheaper price for the pieces
+       * below it and the dearer one above — building does not let a Leader
+       * outrun the escalation they are causing.
+       */
+      const wanted = Math.max(1, command.pieces ?? state.rules.babelPiecesPerAction);
+      let next: GameState = state;
+      let placed = 0;
 
-      events.push({
-        type: 'babelPieceBuilt',
-        player: command.player,
-        stage: state.stage,
-        pieces: babel.stack.length,
-      });
-      events.push({
-        type: 'prestigeGained',
-        player: command.player,
-        amount: prestige,
-        source: 'babel',
-      });
+      while (placed < wanted) {
+        const leader = leaderOf(next, command.player);
+        if (!canBuildBabel(leader, next.stage, next.rules)) break;
 
-      let next: GameState = {
-        ...state,
-        babel,
-        leaders: {
-          ...state.leaders,
-          [command.player]: {
-            ...leader,
-            resources: paySpecific(leader, pieceCost(state.stage, state.rules)),
-            prestige: leader.prestige + prestige,
-          },
-        },
-      };
+        const prestige = piecePrestige(next.stage);
+        const babel = { stack: [...next.babel.stack, command.player] };
 
-      /* GDD §12: permanent escalation at the end of Stage I and Stage II. */
-      const stage = stageAfterPiece(babel, state.stage, state.order.length);
-      if (stage !== state.stage) {
-        events.push({ type: 'stageEscalated', from: state.stage, to: stage });
-        /* GDD §19: the new cards are shuffled into what remains of the deck. */
-        const grown = addStageConfusion(next.confusionDeck, stage, next.rng);
-        if (grown.added.length > 0) {
-          events.push({ type: 'confusionAdded', cards: grown.added });
-        }
-        next = { ...next, stage, confusionDeck: grown.deck, rng: grown.rng };
-      }
-
-      /* GDD §2: completing the final piece wins the game for humanity. */
-      if (isBabelComplete(babel, state.order.length)) {
-        const best = Math.max(...Object.values(next.leaders).map((l) => l.prestige));
-        const topPrestige = next.order.filter((id) => next.leaders[id]!.prestige === best);
-        events.push({ type: 'humanityWins', topPrestige });
-        return commit({
-          ...next,
-          phase: 'gameOver',
-          turnStep: 'action',
-          drawnTile: null,
-          winner: topPrestige.length === 1 ? (topPrestige[0] as PlayerId) : null,
+        events.push({
+          type: 'babelPieceBuilt',
+          player: command.player,
+          stage: next.stage,
+          pieces: babel.stack.length,
         });
+        events.push({
+          type: 'prestigeGained',
+          player: command.player,
+          amount: prestige,
+          source: 'babel',
+        });
+
+        next = {
+          ...next,
+          babel,
+          leaders: {
+            ...next.leaders,
+            [command.player]: {
+              ...leader,
+              resources: paySpecific(leader, pieceCost(next.stage, next.rules)),
+              prestige: leader.prestige + prestige,
+            },
+          },
+        };
+        placed += 1;
+
+        /* GDD §12: permanent escalation at the end of Stage I and Stage II. */
+        const stage = stageAfterPiece(babel, next.stage, next.order.length);
+        if (stage !== next.stage) {
+          events.push({ type: 'stageEscalated', from: next.stage, to: stage });
+          /* GDD §19: the new cards are shuffled into what remains of the deck. */
+          const grown = addStageConfusion(next.confusionDeck, stage, next.rng);
+          if (grown.added.length > 0) {
+            events.push({ type: 'confusionAdded', cards: grown.added });
+          }
+          next = { ...next, stage, confusionDeck: grown.deck, rng: grown.rng };
+        }
+
+        /* GDD §2: completing the final piece wins the game for humanity. */
+        if (isBabelComplete(babel, next.order.length)) {
+          const best = Math.max(...Object.values(next.leaders).map((l) => l.prestige));
+          const topPrestige = next.order.filter((id) => next.leaders[id]!.prestige === best);
+          events.push({ type: 'humanityWins', topPrestige });
+          return commit({
+            ...next,
+            phase: 'gameOver',
+            turnStep: 'action',
+            drawnTile: null,
+            winner: topPrestige.length === 1 ? (topPrestige[0] as PlayerId) : null,
+          });
+        }
       }
 
       const finished = finishAction(next, 'babel');
@@ -640,6 +691,9 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
 
     case 'barter': {
       requireActionPhase(state, command.player, 'barter');
+      if (state.rules.barterIsFree && state.freeBarterUsed) {
+        throw new Error('you have already taken your free Barter this turn');
+      }
       /* GDD §8: discard any 3 resource cards to gain 1 of your choice. */
       if (command.spend.length !== state.rules.barterCost) {
         throw new Error(`Barter discards exactly ${state.rules.barterCost} resources`);
@@ -670,10 +724,25 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         gained: command.gain,
       });
 
-      return finishAction(
-        { ...state, leaders: { ...state.leaders, [command.player]: { ...leader, resources } } },
-        'barter',
-      );
+      const traded: GameState = {
+        ...state,
+        leaders: { ...state.leaders, [command.player]: { ...leader, resources } },
+      };
+
+      /**
+       * A free Barter does not consume the action, so the turn stays open. One
+       * per turn: the trade is a net loss of cards, but an unlimited loop would
+       * still let a Leader grind a whole hand into a single resource in one go,
+       * which is a different game from "you may convert once".
+       */
+      if (state.rules.barterIsFree) {
+        return commit({
+          ...traded,
+          freeBarterUsed: true,
+          actionsThisRound: { ...traded.actionsThisRound, barter: command.player },
+        });
+      }
+      return finishAction(traded, 'barter');
     }
 
     case 'buildTower': {
