@@ -1,5 +1,4 @@
 import {
-  BARTER_COST,
   BUILDING_PRESTIGE,
   COMBAT_DIE_BONUS,
   COMBAT_PRESTIGE,
@@ -30,6 +29,7 @@ import {
   isActionBlockedByConfusion,
 } from '../cards/index.js';
 import { applyHit, rollAttack, validateAssignments } from '../combat/index.js';
+import { affordableDice } from '../actions/legal.js';
 import { getLegalBeaconSites, hostDefence } from '../heaven/beacons.js';
 import { isPassableAt } from '../heaven/path.js';
 import { beaconsOwed, openBeaconDecision, resolveHeavenPhase } from '../heaven/phase.js';
@@ -640,8 +640,8 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
     case 'barter': {
       requireActionPhase(state, command.player, 'barter');
       /* GDD §8: discard any 3 resource cards to gain 1 of your choice. */
-      if (command.spend.length !== BARTER_COST) {
-        throw new Error(`Barter discards exactly ${BARTER_COST} resources`);
+      if (command.spend.length !== state.rules.barterCost) {
+        throw new Error(`Barter discards exactly ${state.rules.barterCost} resources`);
       }
       if (!RESOURCE_TYPES.includes(command.gain)) throw new Error('unknown resource');
       /* Milestone 6 candidate: three of the *same* resource, so Barter stays an
@@ -868,7 +868,30 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       }
 
       const leader = leaders[command.player] as GameState['leaders'][string];
-      const { result, rng: afterArmy } = rollAttack(rng, leader.army, defence);
+
+      /**
+       * Where the rules price Army dice, a Leader rolls as many as their Food
+       * covers, up to their Army, and pays for exactly those.
+       *
+       * Tower support above is unaffected: GDD §16 makes it a property of the
+       * ground, not of the attacker's Army. The legality check keeps a Leader
+       * who can afford no dice at all from Attacking purely to set Towers off.
+       */
+      const price = state.rules.attackDieCost;
+      const most = affordableDice(leader, price);
+      if (most <= 0) {
+        throw new Error(`not enough ${price?.resource ?? 'resources'} to roll a single Army die`);
+      }
+
+      /* Committing fewer dice is a real decision once they cost something:
+         holding Food back for Babel is often worth more than another 1-in-3. */
+      const dice = command.dice ?? most;
+      if (dice < 1 || dice > most) {
+        throw new Error(`roll between 1 and ${most} Army dice, not ${dice}`);
+      }
+      const paid = price ? (price.flat ? price.amount : dice * price.amount) : 0;
+
+      const { result, rng: afterArmy } = rollAttack(rng, dice, defence);
       rng = afterArmy;
 
       events.push({
@@ -877,6 +900,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         rolls: result.rolls,
         defence,
         successes: result.successes,
+        paid: price ? { resource: price.resource, amount: paid } : null,
       });
 
       if (combatPrestige > 0) {
@@ -894,7 +918,13 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         hosts,
         leaders: {
           ...leaders,
-          [command.player]: { ...leader, prestige: leader.prestige + combatPrestige },
+          [command.player]: {
+            ...leader,
+            prestige: leader.prestige + combatPrestige,
+            resources: price
+              ? { ...leader.resources, [price.resource]: leader.resources[price.resource] - paid }
+              : leader.resources,
+          },
         },
       };
 

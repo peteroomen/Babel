@@ -2,13 +2,14 @@ import { RESOURCE_TYPES, type Stage } from '@babel-game/game-data';
 import { CLASSIC_TABLE, ARCHETYPE_LABEL } from '@babel-game/game-ai';
 import { playGame } from './play.js';
 import { summarise, type Summary } from './metrics.js';
-import { LAKE_VARIANTS, VARIANTS, type Variant } from './variants.js';
+import { LAKE_VARIANTS, LEVER_VARIANTS, VARIANTS, type Variant } from './variants.js';
 
 /**
  * Run the Milestone 6 comparison and print it.
  *
  *   npm run model                 -- the four Barter/Reserve variants
  *   npm run model -- --games 400  -- more seeds per variant
+ *   npm run model -- --levers     -- Attack cost and Barter cost instead
  *   npm run model -- --lake       -- the terrain-weight question instead
  *   npm run model -- --json       -- machine-readable, for diffing runs
  */
@@ -22,7 +23,11 @@ const option = (name: string, fallback: number): number => {
 };
 
 const games = option('games', 200);
-const variants: readonly Variant[] = flag('lake') ? LAKE_VARIANTS : VARIANTS;
+const variants: readonly Variant[] = flag('lake')
+  ? LAKE_VARIANTS
+  : flag('levers')
+    ? LEVER_VARIANTS
+    : VARIANTS;
 
 const pct = (value: number): string => `${(value * 100).toFixed(1)}%`;
 const num = (value: number | null, places = 1): string =>

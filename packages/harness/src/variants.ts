@@ -36,6 +36,37 @@ export const VARIANTS: readonly Variant[] = [
 ];
 
 /**
+ * Second round of candidates, run against the same control.
+ *
+ * Each moves one lever, so a difference can be attributed. `attack-food` is the
+ * answer to the structural observation in the first baseline — Attack is free
+ * while Metal gates every way of investing — and `barter-4` is the cheaper lever
+ * on Barter frequency than changing what Barter accepts.
+ */
+export const LEVER_VARIANTS: readonly Variant[] = [
+  withRules('control', 'Control', 'Canon v0.1', {}),
+  withRules('attack-food', 'Attack: 1 Food/die', 'Dice cost Babel\'s own resource', {
+    attackDieCost: { resource: 'food', amount: 1 },
+  }),
+  withRules('attack-wood', 'Attack: 1 Wood/die', 'Dice cost the surplus resource', {
+    attackDieCost: { resource: 'wood', amount: 1 },
+  }),
+  withRules('attack-flat', 'Attack: 1 Food flat', 'Once per Attack, any Army size', {
+    attackDieCost: { resource: 'food', amount: 1, flat: true },
+  }),
+  withRules('barter-4', 'Barter costs 4', 'Any 4 cards, not 3', { barterCost: 4 }),
+  withRules('same-kind-4', 'Same-kind, 4 cards', 'Four of one resource', {
+    barterMode: 'sameKind',
+    barterCost: 4,
+  }),
+  withRules('combined', 'Flat Food + same-kind 4', 'Both levers, calibrated', {
+    attackDieCost: { resource: 'food', amount: 1, flat: true },
+    barterMode: 'sameKind',
+    barterCost: 4,
+  }),
+];
+
+/**
  * Lake candidates for the §22 open question, run separately: they move the
  * terrain distribution itself, so mixing them into the Barter/Reserve
  * comparison would confound two changes at once.

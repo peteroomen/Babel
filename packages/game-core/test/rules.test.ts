@@ -203,3 +203,153 @@ describe('terrain weights are part of the ruleset', () => {
     expect(wet.log.some((e) => e.type === 'tileDrawn' && e.terrain === 'lake')).toBe(true);
   });
 });
+
+describe('Barter cost is tuneable', () => {
+  it('takes four cards when the rules say four', () => {
+    const state = withHand(atAction(setupGame(['Ada', 'Peter'], 'four', rules({ barterCost: 4 }))), {
+      wood: 4,
+    });
+    const me = currentPlayer(state);
+    expect(() =>
+      applyMove(state, { type: 'barter', player: me, spend: ['wood', 'wood', 'wood'], gain: 'brick' }),
+    ).toThrow(/exactly 4/);
+
+    const after = applyMove(state, {
+      type: 'barter',
+      player: me,
+      spend: ['wood', 'wood', 'wood', 'wood'],
+      gain: 'brick',
+    }).state;
+    expect(after.leaders[me]!.resources).toMatchObject({ wood: 0, brick: 1 });
+  });
+
+  it('is not offered to a Leader three cards deep', () => {
+    const state = withHand(atAction(setupGame(['Ada', 'Peter'], 'four', rules({ barterCost: 4 }))), {
+      wood: 2,
+      food: 1,
+    });
+    expect(
+      getLegalActions(state, currentPlayer(state)).find((a) => a.type === 'barter'),
+    ).toBeUndefined();
+  });
+});
+
+describe('Attack can cost Food per die', () => {
+  /** A state with a Host on the board and a known hand, ready to Attack. */
+  function readyToAttack(hand: Partial<Record<ResourceType, number>>, ruleSet = CANON_RULES) {
+    const base = atAction(setupGame(['Ada', 'Peter'], 'attack', ruleSet));
+    const me = currentPlayer(base);
+    return withHand(
+      {
+        ...base,
+        hosts: [{ id: 'h1', kind: 'ophanim', at: { x: 0, y: -1 }, shieldUp: false }],
+        leaders: { ...base.leaders, [me]: { ...base.leaders[me]!, army: 3 } },
+      },
+      hand,
+    );
+  }
+
+  it('is free and rolls the whole Army under canon', () => {
+    const state = readyToAttack({ food: 0 });
+    const me = currentPlayer(state);
+    const attack = getLegalActions(state, me).find((a) => a.type === 'attack');
+    expect(attack).toMatchObject({ dice: 3, cost: null });
+
+    const after = applyMove(state, { type: 'attack', player: me }).state;
+    const rolled = after.log.find((e) => e.type === 'attackRolled');
+    expect(rolled).toMatchObject({ paid: null });
+    expect(after.leaders[me]!.resources.food).toBe(0);
+  });
+
+  it('rolls and pays for the whole Army when the Food is there', () => {
+    const state = readyToAttack({ food: 5 }, rules({ attackDieCost: { resource: 'food', amount: 1 } }));
+    const me = currentPlayer(state);
+    expect(getLegalActions(state, me).find((a) => a.type === 'attack')).toMatchObject({
+      dice: 3,
+      cost: { resource: 'food', amount: 3 },
+    });
+
+    const after = applyMove(state, { type: 'attack', player: me }).state;
+    expect(after.leaders[me]!.resources.food).toBe(2);
+    const rolled = after.log.find((e) => e.type === 'attackRolled');
+    expect(rolled?.type === 'attackRolled' && rolled.rolls.length).toBe(3);
+  });
+
+  it('rolls only what the Food covers', () => {
+    const state = readyToAttack({ food: 2 }, rules({ attackDieCost: { resource: 'food', amount: 1 } }));
+    const me = currentPlayer(state);
+    expect(getLegalActions(state, me).find((a) => a.type === 'attack')).toMatchObject({
+      dice: 2,
+      cost: { resource: 'food', amount: 2 },
+    });
+    const after = applyMove(state, { type: 'attack', player: me }).state;
+    expect(after.leaders[me]!.resources.food).toBe(0);
+  });
+
+  it('cannot Attack at all with nothing to pay', () => {
+    /* Otherwise a penniless Leader Attacks for zero dice purely to set the
+       Towers off, which is not an Attack. */
+    const state = readyToAttack({ food: 0 }, rules({ attackDieCost: { resource: 'food', amount: 1 } }));
+    const me = currentPlayer(state);
+    expect(getLegalActions(state, me).find((a) => a.type === 'attack')).toBeUndefined();
+    expect(() => applyMove(state, { type: 'attack', player: me })).toThrow(/not enough food/);
+  });
+});
+
+describe('committing fewer Army dice', () => {
+  function ready(hand: Partial<Record<ResourceType, number>>, ruleSet = CANON_RULES) {
+    const base = atAction(setupGame(['Ada', 'Peter'], 'dice', ruleSet));
+    const me = currentPlayer(base);
+    return withHand(
+      {
+        ...base,
+        hosts: [{ id: 'h1', kind: 'ophanim', at: { x: 0, y: -1 }, shieldUp: false }],
+        leaders: { ...base.leaders, [me]: { ...base.leaders[me]!, army: 4 } },
+      },
+      hand,
+    );
+  }
+
+  it('rolls and pays for only the dice asked for', () => {
+    const state = ready({ food: 6 }, rules({ attackDieCost: { resource: 'food', amount: 1 } }));
+    const me = currentPlayer(state);
+    const after = applyMove(state, { type: 'attack', player: me, dice: 2 }).state;
+    expect(after.leaders[me]!.resources.food).toBe(4);
+    const rolled = after.log.find((e) => e.type === 'attackRolled');
+    expect(rolled?.type === 'attackRolled' && rolled.rolls.length).toBe(2);
+    expect(rolled).toMatchObject({ paid: { resource: 'food', amount: 2 } });
+  });
+
+  it('refuses more dice than the Army or the Food allows', () => {
+    const me = currentPlayer(ready({ food: 6 }));
+    expect(() =>
+      applyMove(ready({ food: 6 }, rules({ attackDieCost: { resource: 'food', amount: 1 } })), {
+        type: 'attack',
+        player: me,
+        dice: 5,
+      }),
+    ).toThrow(/between 1 and 4/);
+    expect(() =>
+      applyMove(ready({ food: 2 }, rules({ attackDieCost: { resource: 'food', amount: 1 } })), {
+        type: 'attack',
+        player: me,
+        dice: 3,
+      }),
+    ).toThrow(/between 1 and 2/);
+    expect(() =>
+      applyMove(ready({ food: 6 }, rules({ attackDieCost: { resource: 'food', amount: 1 } })), {
+        type: 'attack',
+        player: me,
+        dice: 0,
+      }),
+    ).toThrow(/between 1 and 4/);
+  });
+
+  it('still rolls the whole Army by default under canon', () => {
+    const state = ready({ food: 0 });
+    const me = currentPlayer(state);
+    const after = applyMove(state, { type: 'attack', player: me }).state;
+    const rolled = after.log.find((e) => e.type === 'attackRolled');
+    expect(rolled?.type === 'attackRolled' && rolled.rolls.length).toBe(4);
+  });
+});

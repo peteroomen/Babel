@@ -151,3 +151,112 @@ executed.
 - Anything about 2-Leader or 4-Leader tables. Beacon counts, Host Defence and
   pieces-per-Stage all scale with the player count, and only 3 was run.
 - Anything about how any of it feels.
+
+---
+
+# Second round — Attack cost and Barter cost
+
+**Run:** `npm run model -- --levers --games 25`, same table and cap.
+25 games gives a standard error of about 10 points on a win rate, so read
+anything under 20 points apart as "no difference".
+
+## Why Barter stayed high
+
+The first round cut Barter from 16.4% to 13.4% and that felt like a small
+return. Counting what was actually traded says why:
+
+| | Control | Same-kind |
+|---|---|---|
+| Barters gaining **Brick** | 76% | 78% |
+| Barters by the **Architect** | 66% | 63% |
+
+**Three quarters of every Barter in the game is a Leader converting Wood and
+Food into Brick to build Babel.** It is not a general-purpose precision engine;
+it is a workaround for one specific shortage. Babel costs 2, 4 and 6 Brick by
+Stage, and Brick comes only from Hills at weight 22.
+
+That reframes the lever. Changing *what* Barter accepts barely touches it,
+because a Leader stockpiling for Babel easily accumulates three of one thing.
+Changing *what it costs* hits it directly:
+
+| | Barter share | Resources from Barter |
+|---|---|---|
+| Control (any 3) | 16.4% | 4.6% |
+| Same-kind (3 of one) | 13.4% | 3.6% |
+| **Any 4** | **11.8%** | 3.3% |
+| **Same-kind, 4 of one** | 14.0% | 3.7% |
+
+The real question underneath is whether Babel should be that Brick-heavy. If
+Barter is mostly a Brick workaround, the direct fix is Babel's cost curve, not
+Barter's rules.
+
+## Attack costing resources: the direction is right, every calibration fails
+
+| | Win rate | Mean rounds | Babel pieces | Attack | Pass |
+|---|---|---|---|---|---|
+| Control (free) | **60.0%** | 69.9 | 9.5 | 40.9% | 1.9% |
+| 1 Food per die | 0.0% | 29.2 | 0.0 | 24.4% | 12.1% |
+| 1 Wood per die | 0.0% | 23.8 | 0.2 | 19.1% | 21.4% |
+| 1 Food flat per Attack | 32.0% | 44.6 | 5.1 | 35.1% | 5.7% |
+
+**Per die is catastrophic.** Attack is taken on two turns in five with two to
+four dice, so a per-die price roughly doubles what a Leader spends across a
+whole game. The table starves: Pass climbs to 12–21% — Leaders with literally
+nothing they can afford to do — and Babel never leaves the ground.
+
+I guessed Wood would work, on the grounds that Leaders end the control games
+sitting on 33 unspent Wood each. **That was wrong, and it was worse than Food.**
+The surplus is an end-state number: it accumulates late, and the deaths happen
+early when nobody has any. Charging Attack in Wood also crowds out Walls, which
+collapse from 5.7% to 0.7% — the cheapest defence in the game, gone.
+
+**Flat is survivable but still expensive**: 32% against 60%. And that is the
+actual finding —
+
+> Attack is load-bearing. At 3 Leaders the table's kill rate barely matches
+> Heaven's spawn rate already (3 attacks a round against 3 Hosts arriving in
+> Stage III), so there is no slack to tax. Any price on Attack comes straight
+> out of survival.
+
+If you want Leaders to invest rather than swing, the lever is the other side:
+make Muster and Towers cheaper or Metal more available, rather than making
+Attack cost more. Pricing Attack *and* easing Host pressure together would be
+the pair to test, not either alone.
+
+## The one clear improvement: same-kind Barter at four cards
+
+| | Control | Same-kind, 4 cards |
+|---|---|---|
+| Shared win rate | 60.0% | **76.0%** |
+| Mean rounds | 69.9 | **55.0** |
+| Babel pieces standing | 9.5 | **11.4** |
+| Barter share | 16.4% | 14.0% |
+| Build share | 5.4% | 8.9% |
+| Surplus per Leader | 113.2 | 89.1 |
+
+Better on every axis that was flagged as a concern: fewer Barters, more
+building, less hoarding, and games fifteen rounds shorter — which addresses the
+"69 rounds is a long game" worry from the first baseline. It is the best result
+of anything tested.
+
+Treat the win rate with care: +16 points at n=25 is under two standard errors.
+The direction is consistent across every other metric, which is what makes it
+worth taking seriously, but it wants a longer run before it becomes canon.
+
+**Recommendation: `barterMode: 'sameKind'` with `barterCost: 4` for v0.2**,
+confirmed by a longer run and human play. Leave Attack free.
+
+## Two tiles in the Reserve
+
+Already covered by `reserveSlots: 2` in the first round, and the caveat is
+unchanged: the agents swap on 2.0% of turns with two slots against 0.9% with
+one, so both arms remain effectively the control. Two slots is not untested
+because it is uninteresting — it is untested because the bot cannot use it. It
+needs a human.
+
+## Everything above is still bots
+
+The action mix says these agents attack on two turns in five and barter on one
+in six. If your own play looks nothing like that, the numbers are describing a
+different game from the one you are playing — which is exactly why the
+playtest matters more than another run.

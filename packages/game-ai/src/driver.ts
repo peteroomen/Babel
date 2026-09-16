@@ -99,7 +99,7 @@ export function nextCommand(
     case 'muster':
       return { type: 'muster', player: me };
     case 'attack':
-      return { type: 'attack', player: me };
+      return { type: 'attack', player: me, dice: choice.dice };
     case 'buyScheme':
       return { type: 'buyScheme', player: me };
     case 'barter':

@@ -1,5 +1,4 @@
 import {
-  BARTER_COST,
   SCHEME_COST,
   MAX_ARMY,
   MUSTER_COST,
@@ -23,6 +22,20 @@ import { isFoundationOccupied } from '../heaven/hosts.js';
 import type { Coord } from '../map/edges.js';
 import type { GameState, PlayerId } from '../state/types.js';
 
+/**
+ * How many Army dice a Leader can pay for. With no price — canon — the whole
+ * Army rolls, which is the rule a die price generalises.
+ */
+export function affordableDice(
+  leader: { readonly army: number; readonly resources: Readonly<Record<ResourceType, number>> },
+  price: GameState['rules']['attackDieCost'],
+): number {
+  if (!price || price.amount <= 0) return leader.army;
+  const held = leader.resources[price.resource];
+  if (price.flat) return held >= price.amount ? leader.army : 0;
+  return Math.min(leader.army, Math.floor(held / price.amount));
+}
+
 export type LegalAction =
   | { readonly type: 'pass' }
   | { readonly type: 'buildBabel'; readonly cost: Partial<Record<ResourceType, number>> }
@@ -34,6 +47,8 @@ export type LegalAction =
       readonly type: 'barter';
       /** Resources this Leader currently holds enough of to spend. */
       readonly spendable: readonly ResourceType[];
+      /** How many cards this Barter discards, under the rules in force. */
+      readonly cost: number;
     }
   | { readonly type: 'buildTower'; readonly sites: readonly Coord[] }
   | {
@@ -44,7 +59,14 @@ export type LegalAction =
     }
   | { readonly type: 'muster'; readonly army: number }
   | { readonly type: 'buyScheme' }
-  | { readonly type: 'attack'; readonly dice: number; readonly defence: number };
+  | {
+      readonly type: 'attack';
+      /** Dice this Leader can actually roll: their Army, capped by the Food. */
+      readonly dice: number;
+      readonly defence: number;
+      /** What this Attack will cost. Null under canon rules, where it is free. */
+      readonly cost: { readonly resource: ResourceType; readonly amount: number } | null;
+    };
 
 /**
  * What this Leader may legally do right now.
@@ -96,13 +118,27 @@ export function getLegalActions(state: GameState, playerId: PlayerId): LegalActi
     actions.push({ type: 'buildBabel', cost: pieceCost(state.stage) });
   }
 
-  /* GDD §15: Attack is pointless with nothing on the board to shoot at. */
+  /**
+   * GDD §15: Attack is pointless with nothing on the board to shoot at.
+   *
+   * Where the rules put a price on Army dice, a Leader rolls as many as they
+   * can pay for and cannot Attack at all with nothing to pay — otherwise a
+   * penniless Leader could still Attack for zero dice purely to set the
+   * Towers off, which is not an Attack.
+   */
   if (!blocked('attack') && state.hosts.length > 0) {
-    actions.push({
-      type: 'attack',
-      dice: leader.army,
-      defence: hostDefence(state.order.length, state.stage),
-    });
+    const price = state.rules.attackDieCost;
+    const dice = affordableDice(leader, price);
+    if (dice > 0) {
+      actions.push({
+        type: 'attack',
+        dice,
+        defence: hostDefence(state.order.length, state.stage),
+        cost: price
+          ? { resource: price.resource, amount: price.flat ? price.amount : dice * price.amount }
+          : null,
+      });
+    }
   }
 
   if (!blocked('muster') && leader.army < MAX_ARMY && canAfford(leader, MUSTER_COST)) {
@@ -127,13 +163,15 @@ export function getLegalActions(state: GameState, playerId: PlayerId): LegalActi
    * rather than discovered when the command is rejected.
    */
   if (!blocked('barter')) {
+    const cost = state.rules.barterCost;
     const spendable =
       state.rules.barterMode === 'sameKind'
-        ? RESOURCE_TYPES.filter((r) => leader.resources[r] >= BARTER_COST)
+        ? RESOURCE_TYPES.filter((r) => leader.resources[r] >= cost)
         : RESOURCE_TYPES.filter((r) => leader.resources[r] > 0);
     const held = RESOURCE_TYPES.reduce((sum, r) => sum + leader.resources[r], 0);
-    const enough = state.rules.barterMode === 'sameKind' ? spendable.length > 0 : held >= BARTER_COST;
-    if (enough) actions.push({ type: 'barter', spendable });
+    const enough =
+      state.rules.barterMode === 'sameKind' ? spendable.length > 0 : held >= cost;
+    if (enough) actions.push({ type: 'barter', spendable, cost });
   }
 
   return actions;

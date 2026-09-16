@@ -232,7 +232,9 @@ export function describe(event: GameEvent, state: GameState): string {
     case 'attackRolled':
       return `${who(event.player)} rolls ${event.rolls.join(', ')} vs ${event.defence} — ${
         event.successes
-      } hit${event.successes === 1 ? '' : 's'}`;
+      } hit${event.successes === 1 ? '' : 's'}${
+        event.paid ? ` (${event.paid.amount} ${event.paid.resource})` : ''
+      }`;
     case 'hostHit':
       return event.shieldBroken
         ? `${who(event.player)} shatters a Seraph's shield`

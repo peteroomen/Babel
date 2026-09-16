@@ -389,6 +389,34 @@ export function App() {
                     }
                   />
                   <Choice
+                    label="Barter cost"
+                    hint="How many cards a Barter discards. Three quarters of all Barters in the model are a Leader converting into Brick for Babel; a fourth card taxes that directly."
+                    options={[3, 4].map((n) => ({ value: n, label: String(n) }))}
+                    value={table.rules.barterCost}
+                    onChange={(barterCost) => restart({ rules: { ...table.rules, barterCost } })}
+                  />
+                  <Choice
+                    label="Attack costs"
+                    hint="What each Army die costs to roll. Canon Attack is free, which is why a Leader can rationally never invest. Food is what Babel is built from, so charging dice in Food makes survival and winning fight over the same resource; Wood is the one everyone ends up drowning in."
+                    options={[
+                      { value: 'free', label: 'Free' },
+                      { value: 'wood', label: 'Wood' },
+                      { value: 'food', label: 'Food' },
+                    ]}
+                    value={table.rules.attackDieCost?.resource ?? 'free'}
+                    onChange={(choice) =>
+                      restart({
+                        rules: {
+                          ...table.rules,
+                          attackDieCost:
+                            choice === 'free'
+                              ? null
+                              : { resource: choice as ResourceType, amount: 1 },
+                        },
+                      })
+                    }
+                  />
+                  <Choice
                     label="Reserve slots"
                     hint="Face-up tiles beside the bag. Swapping your draw for one is free and is not your action — but the Reserve is shared, so you leave your cast-off for the next Leader."
                     options={[0, 1, 2].map((n) => ({ value: n, label: String(n) }))}
@@ -724,11 +752,11 @@ export function App() {
             </Bar>
           ) : mode.kind === 'barter' && leader ? (
             <Bar
-              title={`Barter · ${spend.length}/3`}
+              title={`Barter · ${spend.length}/${state.rules.barterCost}`}
               hint={
                 sameKind
-                  ? 'Discard three of the same resource for one of your choice.'
-                  : 'Discard any three cards for one of your choice.'
+                  ? `Discard ${state.rules.barterCost} of the same resource for one of your choice.`
+                  : `Discard any ${state.rules.barterCost} cards for one of your choice.`
               }
             >
               {RESOURCE_TYPES.map((resource) => {
@@ -740,7 +768,7 @@ export function App() {
                   <Act
                     key={resource}
                     label={`${RESOURCE_LABEL[resource]} ${held}`}
-                    disabled={held <= 0 || spend.length >= 3 || offKind}
+                    disabled={held <= 0 || spend.length >= state.rules.barterCost || offKind}
                     hint={
                       offKind
                         ? `These rules need three of the same resource — you have picked ${RESOURCE_LABEL[spend[0]!]}.`
@@ -750,7 +778,7 @@ export function App() {
                   />
                 );
               })}
-              {spend.length === 3 && (
+              {spend.length === state.rules.barterCost && (
                 <>
                   <span className="text-muted-foreground text-sm">Gain:</span>
                   {RESOURCE_TYPES.map((resource) => (

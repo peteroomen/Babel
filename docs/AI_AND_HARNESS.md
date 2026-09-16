@@ -66,6 +66,7 @@ the moment it is listed.
 ```
 npm run model                  # the four Milestone 6 variants, 200 games each
 npm run model -- --games 400   # more seeds
+npm run model -- --levers      # Attack cost and Barter cost instead
 npm run model -- --lake        # the terrain-weight question instead
 npm run model -- --json        # machine-readable, for diffing runs
 ```

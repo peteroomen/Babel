@@ -130,8 +130,10 @@ export function ActionButtons({
         onClick={onAttack}
         hint={
           attack
-            ? `Roll ${attack.dice} d6 + 2 against Defence ${attack.defence}, then assign the hits. +1 Prestige per kill.`
-            : 'No Hosts on the board, or Confusion forbids it.'
+            ? `Roll ${attack.dice} d6 + 2 against Defence ${attack.defence}, then assign the hits. +1 Prestige per kill.${
+                attack.cost ? ` Costs ${attack.cost.amount} ${attack.cost.resource}.` : ''
+              }`
+            : 'No Hosts on the board, Confusion forbids it, or you cannot pay for a single die.'
         }
       />
       <Act

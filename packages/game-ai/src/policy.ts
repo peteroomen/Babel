@@ -1,6 +1,5 @@
 import {
   BABEL_PIECE_COST,
-  BARTER_COST,
   BUILDINGS,
   MAX_ARMY,
   MUSTER_COST,
@@ -269,6 +268,7 @@ export function chooseBarter(
   if (!seeking) return null;
   const held = state.leaders[me]!.resources;
   const needed = goal(state, me, archetype);
+  const cost = state.rules.barterCost;
 
   if (state.rules.barterMode === 'sameKind') {
     const from = action.spendable
@@ -276,7 +276,7 @@ export function chooseBarter(
       /* Spend down the deepest stack the plan has least use for. */
       .sort((a, b) => held[b] - (needed[b] ?? 0) - (held[a] - (needed[a] ?? 0)))[0];
     if (!from) return null;
-    return { spend: [from, from, from], gain: seeking };
+    return { spend: Array<ResourceType>(cost).fill(from), gain: seeking };
   }
 
   /* Mixed: spend the units the plan has no use for, deepest stacks first. */
@@ -287,8 +287,8 @@ export function chooseBarter(
     const spare = resource === seeking ? Math.max(0, held[resource] - 1) : held[resource];
     for (let i = 0; i < spare; i++) pool.push(resource);
   }
-  if (pool.length < BARTER_COST) return null;
-  return { spend: pool.slice(0, BARTER_COST), gain: seeking };
+  if (pool.length < cost) return null;
+  return { spend: pool.slice(0, cost), gain: seeking };
 }
 
 export type ActionChoice =
@@ -298,7 +298,7 @@ export type ActionChoice =
   | { kind: 'buildTower'; at: Coord }
   | { kind: 'buildWalls'; edges: readonly { a: Coord; b: Coord }[] }
   | { kind: 'muster' }
-  | { kind: 'attack' }
+  | { kind: 'attack'; dice: number }
   | { kind: 'buyScheme' }
   | { kind: 'barter'; spend: ResourceType[]; gain: ResourceType };
 
@@ -397,10 +397,47 @@ export function chooseAction(
   const besieged =
     threatDistance(state) <= 1 ||
     state.hosts.length >= 3 * Math.max(1, state.beacons.length);
+
+  /**
+   * Where Army dice cost Food, attacking competes with the rest of the plan for
+   * the same resource. Outside a siege a Leader keeps enough Food back to stay
+   * solvent rather than swinging itself dry — otherwise the price changes what
+   * Attack costs without changing how often anyone takes it, which would make
+   * the variant untestable.
+   */
+  /**
+   * How many Army dice to commit.
+   *
+   * Free dice are always worth rolling, so canon rolls the lot. Priced, a die
+   * is a Food that Babel and Muster also want, so the Leader buys only as many
+   * as the board needs — two hits per Seraph, one per Ophanim, allowing for the
+   * roughly one-in-two to one-in-three that land — and never digs into what its
+   * own plan is saving for unless the table is under siege.
+   */
+  const attackDice = ((): number => {
+    if (!attack) return 0;
+    const price = state.rules.attackDieCost;
+    if (!price) return attack.dice;
+
+    const hitsNeeded = state.hosts.reduce(
+      (sum, host) => sum + (host.kind === 'seraph' && host.shieldUp ? 2 : 1),
+      0,
+    );
+    const worthRolling = Math.min(attack.dice, Math.max(1, hitsNeeded * 2));
+    const held = leader.resources[price.resource];
+    const spare = besieged ? held : held - (goal(state, me, archetype)[price.resource] ?? 0);
+    /* A flat price buys the whole Army, so there is nothing to ration: either
+       the Leader can pay it or it cannot Attack. */
+    if (price.flat) return spare >= price.amount ? worthRolling : 0;
+    return Math.max(0, Math.min(worthRolling, Math.floor(spare / price.amount)));
+  })();
+  const attackAffordable = attack !== undefined && attackDice > 0;
+  const swing = (): ActionChoice | null =>
+    attackAffordable ? { kind: 'attack', dice: attackDice } : null;
   const defend = (armyCap: number): (ActionChoice | null)[] => [
     towerAt(),
     canMuster(armyCap) ? { kind: 'muster' } : null,
-    attack ? { kind: 'attack' } : null,
+    swing(),
     state.hosts.length > 0 ? wall() : null,
   ];
   const towerAt = (): ActionChoice | null =>
@@ -435,7 +472,7 @@ export function chooseAction(
       order.push(towerAt());
       if (harvest) order.push(harvesterFor(harvest, seeking, rand));
       if (canMuster(3) && state.hosts.length > 0) order.push({ kind: 'muster' });
-      if (attack) order.push({ kind: 'attack' });
+      order.push(swing());
       if (state.hosts.length > 0) order.push(wall());
       break;
 
@@ -445,7 +482,7 @@ export function chooseAction(
          permanent, communal, and adds a die to every Leader's Attack. */
       order.push(towerAt());
       if (canMuster(4)) order.push({ kind: 'muster' });
-      if (attack) order.push({ kind: 'attack' });
+      order.push(swing());
       /* No amount of attacking produces the Metal that Muster and Towers both
          need, so fund the Army when there is nothing to shoot at. */
       if (leader.army < 4) order.push(trade());
@@ -460,7 +497,7 @@ export function chooseAction(
       if (babel) order.push({ kind: 'buildBabel' });
       order.push(trade());
       if (canMuster(3) && state.hosts.length > 0) order.push({ kind: 'muster' });
-      if (attack) order.push({ kind: 'attack' });
+      order.push(swing());
       if (state.hosts.length > 0) order.push(wall());
       if (scheme && canPay(state, me, SCHEME_COST) && leader.army < MAX_ARMY) {
         order.push({ kind: 'buyScheme' });
@@ -475,7 +512,7 @@ export function chooseAction(
       if (state.hosts.length > 0) order.push(wall());
       order.push(trade());
       if (harvest) order.push(harvesterFor(harvest, seeking, rand));
-      if (attack) order.push({ kind: 'attack' });
+      order.push(swing());
       if (babel) order.push({ kind: 'buildBabel' });
       if (canMuster(3) && state.hosts.length > 0) order.push({ kind: 'muster' });
       break;
@@ -489,7 +526,7 @@ export function chooseAction(
       if (babel) order.push({ kind: 'buildBabel' });
       order.push(trade());
       if (harvest) order.push(harvesterFor(harvest, seeking, rand));
-      if (attack) order.push({ kind: 'attack' });
+      order.push(swing());
       if (state.hosts.length > 0) order.push(wall());
       break;
   }

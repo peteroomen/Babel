@@ -260,6 +260,8 @@ export type GameEvent =
       readonly rolls: readonly number[];
       readonly defence: number;
       readonly successes: number;
+      /** What was paid for the dice. Null under canon rules, where it is free. */
+      readonly paid: { readonly resource: ResourceType; readonly amount: number } | null;
     }
   | {
       readonly type: 'hostHit';
@@ -362,7 +364,16 @@ export type Command =
       readonly gain: ResourceType;
     }
   | { readonly type: 'muster'; readonly player: PlayerId }
-  | { readonly type: 'attack'; readonly player: PlayerId }
+  | {
+      readonly type: 'attack';
+      readonly player: PlayerId;
+      /**
+       * How many Army dice to roll. Defaults to as many as the Leader can pay
+       * for. Only meaningful where the rules price dice: under canon the whole
+       * Army rolls for nothing, so there is no decision to make.
+       */
+      readonly dice?: number;
+    }
   /** Assign successful dice among Hosts after rolling. GDD §15. */
   | {
       readonly type: 'assignHits';

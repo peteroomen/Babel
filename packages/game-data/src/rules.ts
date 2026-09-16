@@ -1,4 +1,4 @@
-import { TERRAIN_WEIGHTS, type TerrainType } from './terrain.js';
+import { TERRAIN_WEIGHTS, type ResourceType, type TerrainType } from './terrain.js';
 
 /**
  * Rules that are under experiment rather than settled.
@@ -26,6 +26,45 @@ export type BarterMode = 'mixed' | 'sameKind';
 export type RuleSet = {
   readonly barterMode: BarterMode;
   /**
+   * How many resource cards a Barter discards. GDD §8 says three.
+   *
+   * The cheaper lever on Barter frequency than changing what it accepts: the
+   * model shows three quarters of all Barters are a Leader converting into
+   * Brick for Babel, and a fourth card taxes that directly.
+   */
+  readonly barterCost: number;
+  /**
+   * What each Army die costs to roll. `null` in canon, where Attack is free.
+   *
+   * Free Attack is the reason a Leader can rationally never invest: Muster,
+   * Towers and Schemes all need Metal, the scarcest resource on the board,
+   * while swinging costs nothing. A price per die makes the Army something you
+   * feed rather than something you simply have.
+   *
+   * Which resource matters more than the amount. Food is what Babel is built
+   * from, so charging dice in Food puts survival and the win condition in
+   * direct competition for the same scarce thing — and in the moment survival
+   * always wins, so the Tower never goes up. Wood is the resource every Leader
+   * ends the game drowning in.
+   *
+   * A Leader chooses how many dice to commit, up to their Army and their purse,
+   * and cannot Attack at all without enough for one.
+   */
+  readonly attackDieCost: {
+    readonly resource: ResourceType;
+    readonly amount: number;
+    /**
+     * Charge once per Attack rather than once per die.
+     *
+     * A per-die price turns out to be the wrong shape whatever resource it is
+     * charged in: Attack is taken on roughly two turns in five with two to four
+     * dice, so per-die roughly doubles what a Leader spends across the game and
+     * the table starves. A flat price still makes Attack cost something without
+     * scaling with the Army a Leader has been encouraged to build.
+     */
+    readonly flat?: boolean;
+  } | null;
+  /**
    * Face-up communal tiles beside the bag that a Leader may swap their blind
    * draw for, free and outside their action. 0 disables the Reserve entirely.
    */
@@ -38,9 +77,11 @@ export type RuleSet = {
   readonly terrainWeights: Readonly<Record<TerrainType, number>>;
 };
 
-/** Canon v0.1: mixed Barter, no Reserve, Lake at weight 0. */
+/** Canon v0.1: mixed Barter at three cards, free Attack, no Reserve, no Lake. */
 export const CANON_RULES: RuleSet = {
   barterMode: 'mixed',
+  barterCost: 3,
+  attackDieCost: null,
   reserveSlots: 0,
   terrainWeights: TERRAIN_WEIGHTS,
 };
