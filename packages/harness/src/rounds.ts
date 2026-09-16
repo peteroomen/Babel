@@ -1,7 +1,7 @@
 import {
   CANON_RULES,
-  DEEP_BEACONS,
   MUNITIONS_RULE,
+  ROLLED_HEAVEN,
   TIERED_BEACONS,
   type RuleSet,
 } from '@babel-game/game-data';
@@ -83,31 +83,23 @@ export const HEAVEN_VARIANTS: readonly Variant[] = [
  * four nastier arrivals do the work of twelve ordinary ones.
  */
 export const ROSTER_VARIANTS: readonly Variant[] = [
-  on('uniform', 'Uniform', 'v0.2: an Ophanim per Beacon per round', FREE),
-  on('deep-1', 'Deep roster, 1/round', 'Herald, Colossus, Swarm, Warded', {
+  on('uniform', 'One per Beacon', 'v0.2: GDD §13 as written', FREE),
+  on('rolled', 'Rolled, 1/2/2 by Stage', 'd6 table, arrivals by Stage', {
     ...FREE,
-    beaconTiers: DEEP_BEACONS,
-    beaconIncome: 1,
+    heavenSpawn: ROLLED_HEAVEN,
   }),
-  on('deep-2', 'Deep roster, 2/round', 'Twice the threat budget', {
+  on('rolled-3', 'Rolled, 1/2/3', 'One more at Stage III', {
     ...FREE,
-    beaconTiers: DEEP_BEACONS,
-    beaconIncome: 2,
+    heavenSpawn: { ...ROLLED_HEAVEN!, arrivals: [1, 2, 3] },
   }),
-  on('deep-half', 'Deep roster, 1 per 2 rounds', 'Half the budget again', {
+  on('rolled-flat2', 'Rolled, 2 every Stage', 'Flat rate', {
     ...FREE,
-    beaconTiers: DEEP_BEACONS,
-    beaconIncome: 0.5,
+    heavenSpawn: { ...ROLLED_HEAVEN!, arrivals: [2, 2, 2] },
   }),
-  on('deep-1-munitions', 'Deep roster + Munitions', 'Can the table buy an answer?', {
+  on('rolled-munitions', 'Rolled 1/2/3 + Munitions', 'Can the table buy an answer?', {
     ...FREE,
-    beaconTiers: DEEP_BEACONS,
-    beaconIncome: 1,
+    heavenSpawn: ROLLED_HEAVEN,
     munitions: MUNITIONS_RULE,
-  }),
-  on('thin-ophanim', 'Ophanim only, 1 point/round', 'Same budget, no variety', {
-    ...FREE,
-    beaconIncome: 1,
   }),
 ];
 

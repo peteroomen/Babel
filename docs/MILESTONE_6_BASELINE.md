@@ -836,3 +836,81 @@ Beacon count to appear at all.
 - Whether Munitions is the right answer to a Warded Host, or whether the table
   should have to Muster — the point of the kind was to force an Army, and
   buying dice may be letting it off.
+
+---
+
+# Round eight — a spawn table a person can actually roll
+
+The threat-budget mechanism from round seven was wrong for a physical game.
+Accumulating points per Beacon is bookkeeping nobody wants at a table, and
+hanging Host kinds off Beacon *identity* breaks on the GDD's own scaling: a
+2-Leader table opens 1/1/2 Beacons and a 4-Leader one opens 1/3/4, so a kind
+assigned to "the third gate" never appears at some player counts. Replaced.
+
+## What it is now
+
+**Roll what, then roll where.** Two rolls a person can make:
+
+| Stage | d6 | | | | | |
+|---|---|---|---|---|---|---|
+| **I** | Ophanim | Ophanim | Ophanim | Ophanim | Ophanim | Ophanim |
+| **II** | Ophanim | Ophanim | Ophanim | Ophanim | Warded | Warded |
+| **III** | Ophanim | Ophanim | Warded | Herald | Colossus | Swarm |
+
+Weights sum to six at every Stage, so it is one die and one printed row.
+
+**How many arrive is a number per Stage — 1, 2, 2 — not one per Beacon.** That
+is what decouples the amount of Heaven from the player count. Location still
+comes from the Beacons, which players site; that part of §13 is the interesting
+decision and stays.
+
+Driving it from **Stage** rather than Beacon identity also means escalation
+rides the clock the game already has, and it is legible on the board: the Tower's
+height tells you what is coming.
+
+## It lands
+
+| | win | rounds | Hosts/round | pieces standing | surplus |
+|---|---|---|---|---|---|
+| One per Beacon, Ophanim spam (today) | 92% | 46 | 2.03 | 13.8 | — |
+| **Rolled, arrivals 1/2/2** | **67%** | 41 | **1.61** | 10.0 | 58 |
+| + Defence +1 through Stage II | 70% | 40 | 1.57 | 10.5 | 48 |
+| + Munitions | 83% | 45 | 1.65 | 12.5 | 47 |
+| Rolled, arrivals 1/2/3 | 8% | 53 | 2.11 | 1.2 | — |
+
+**67% at 21% fewer Hosts per round**, with Colossi razing buildings and Wardeds
+that Towers cannot answer. That is the trade asked for: less on the board, and a
+game you can lose.
+
+At roughly equal volume the varied roster is worth about **84 points** of
+difficulty (1/2/3 at 2.11 a round is 8%, against 92% for spam at 2.03). Variety
+buys difficulty at a very favourable exchange rate against volume — which is the
+whole case for fewer, nastier Hosts.
+
+Munitions is worth +16 points, so the table can buy an answer, but not a free one.
+
+## A bug the sweep caught: unkillable Hosts
+
+Every arrival rate above 1/1/1 read as 0–12% until this was found. Stage III
+Defence is 7; a Colossus or Warded adds 2; **d6 + 2 caps at 8.** Those Hosts
+could not be killed by any roll. A Host no die can touch is not a hard Host, it
+is a bug, and the win rate going to zero was the symptom.
+
+Fixed with the convention a person at a table would assume anyway: **a natural 6
+always hits.** It puts a floor of one in six under every Defence, which keeps the
+kind bonuses meaningful without making them absolute.
+
+## On five Stages with two pieces each
+
+Worth doing, and not costed here. `Stage` is `1 | 2 | 3` throughout — the
+scaling table's three-element rows, the piece costs, the Prestige values, the
+Confusion unlocks and the spawn table above all key on it. Generalising to N
+Stages is a real refactor rather than a number change.
+
+It is the right shape though, for a reason this round demonstrates: the arrival
+rate has almost no usable resolution at three Stages. 1/2/2 is 67% and 1/2/3 is
+8%. Every knob in this milestone has had the same problem — Attack cost, Army
+upkeep, Beacon count, Babel height — because three Stages give three places to
+put a number, so each step is enormous. **Five Stages of two pieces would give
+five smaller steps**, and a new kind unlocking at each is a much gentler ramp
+than dumping four kinds into Stage III at once.

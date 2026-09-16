@@ -72,9 +72,13 @@ describe('rolling an Attack (GDD §15)', () => {
     expect(result.successes).toBe(result.rolls.filter((r) => r + 2 >= 5).length);
   });
 
-  it('cannot succeed against a Defence beyond d6 + 2', () => {
-    const { result } = rollAttack(createRng('a'), 20, 9);
-    expect(result.successes).toBe(0);
+  it('always leaves a natural 6 hitting, however high the Defence', () => {
+    /* A Defence of 9 is out of d6 + 2's reach by arithmetic, and a Host that no
+       roll can touch is a bug rather than a hard Host — Stage III plus a kind's
+       +2 gets there. A natural 6 is the floor. */
+    const { result } = rollAttack(createRng('a'), 60, 99);
+    expect(result.successes).toBe(result.rolls.filter((r) => r === 6).length);
+    expect(result.successes).toBeGreaterThan(0);
   });
 
   it('is reproducible from its seed', () => {

@@ -3,7 +3,7 @@ import { confusionIs } from '../cards/index.js';
 import { isPassableAt } from './path.js';
 import { coordKey, type Coord } from '../map/edges.js';
 import { hasWallBetween, removeWallBetween, canonicalWall } from '../walls/index.js';
-import { nextInt } from '../rng/index.js';
+import { nextInt, weightedPick } from '../rng/index.js';
 import { stepOptions } from './path.js';
 import { BABEL_COORD } from '../state/babel.js';
 import type { GameEvent, GameState, Host } from '../state/types.js';
@@ -199,41 +199,53 @@ export function resolveHeavenPhase(
    */
   let hostSeq = state.hostSeq;
   const spawned: Host[] = [];
-  const charge = [...state.beaconCharge];
-  const income = state.rules.beaconIncome;
+  const spawn = state.rules.heavenSpawn;
 
-  state.beacons.forEach((beacon, index) => {
-    const tier = beaconTier(index, state.rules);
+  if (spawn && state.beacons.length > 0) {
+    /**
+     * Roll what, then roll where.
+     *
+     * Two rolls a person can actually make at a table: a d6 on the Stage's
+     * spawn table for the kind, and a die among the open Beacons for where it
+     * lands. How *many* arrive is a printed number per Stage rather than one
+     * per Beacon, so the amount of Heaven stops being a side effect of how many
+     * people are playing.
+     */
+    const arrivals = spawn.arrivals[state.stage - 1] ?? 1;
+    const weights = Object.fromEntries(
+      (spawn.table[state.stage] ?? []).map((entry) => [entry.kind, entry.weight]),
+    ) as Record<HostKind, number>;
 
-    /* Pick what this gate sends before working out whether it can afford it. */
-    let kind: HostKind;
-    if (tier) {
-      kind = tier.kind;
-    } else {
-      const [rolled, next] = rollHostKind(rng, state.stage);
-      rng = next;
-      kind = rolled;
+    for (let i = 0; i < arrivals; i++) {
+      const [kind, afterKind] = weightedPick(rng, weights);
+      const [where, afterWhere] = nextInt(afterKind, state.beacons.length);
+      rng = afterWhere;
+      const at = state.beacons[where] as Coord;
+      hostSeq += 1;
+      const host = newHost(`h${hostSeq}`, kind, at);
+      spawned.push(host);
+      events.push({ type: 'hostSpawned', id: host.id, kind, at });
     }
-
-    if (income === null) {
-      /* GDD §13 as written: one Host per Beacon per round, subject to the
-         gate's own cadence where the rules give it one. */
+  } else {
+    /* GDD §13 as written: one Host per Beacon per round, subject to the gate's
+       own cadence where the rules give it one. */
+    state.beacons.forEach((beacon, index) => {
       if (!beaconSpawnsThisRound(index, state.round, state.rules)) return;
-    } else {
-      /* Paced by threat points instead: the gate saves its income until it can
-         afford what it sends, so an expensive kind is rare without needing a
-         cadence, and one number thins the whole board. */
-      charge[index] = (charge[index] ?? 0) + income;
-      const price = HOSTS[kind].cost;
-      if (charge[index]! < price) return;
-      charge[index] = charge[index]! - price;
-    }
-
-    hostSeq += 1;
-    const host = newHost(`h${hostSeq}`, kind, beacon);
-    spawned.push(host);
-    events.push({ type: 'hostSpawned', id: host.id, kind, at: beacon });
-  });
+      const tier = beaconTier(index, state.rules);
+      let kind: HostKind;
+      if (tier) {
+        kind = tier.kind;
+      } else {
+        const [rolled, next] = rollHostKind(rng, state.stage);
+        rng = next;
+        kind = rolled;
+      }
+      hostSeq += 1;
+      const host = newHost(`h${hostSeq}`, kind, beacon);
+      spawned.push(host);
+      events.push({ type: 'hostSpawned', id: host.id, kind, at: beacon });
+    });
+  }
 
   /**
    * Army upkeep, where the rules charge it.
@@ -273,7 +285,6 @@ export function resolveHeavenPhase(
       walls,
       hostSeq,
       leaders,
-      beaconCharge: charge,
       buildings: standing,
       babel: { stack },
       hosts: [...survivors, ...spawned],

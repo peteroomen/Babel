@@ -11,6 +11,18 @@ export type AttackRoll = {
  * Roll an Army. GDD §15: each die is resolved independently as d6 + 2 against
  * the Host Defence, and each success deals exactly one hit.
  */
+/**
+ * Whether one die beats a Defence.
+ *
+ * A natural 6 always hits. Without that rule a Defence of 9 — Stage III's 7
+ * plus a kind's +2 — is unreachable by d6+2 at all, and a Host that cannot be
+ * killed by any roll is not a hard Host, it is a bug. The sweep found exactly
+ * that: Colossus and Warded were unkillable at Stage III and the win rate went
+ * to zero. It is also the convention a person at a table would assume.
+ */
+export const dieHits = (roll: number, defence: number, bonus: number): boolean =>
+  roll === 6 || roll + bonus >= defence;
+
 export function rollAttack(
   rng: RngState,
   dice: number,
@@ -24,7 +36,7 @@ export function rollAttack(
     state = next;
     rolls.push(roll);
   }
-  const successes = rolls.filter((roll) => roll + bonus >= defence).length;
+  const successes = rolls.filter((roll) => dieHits(roll, defence, bonus)).length;
   return { result: { rolls, successes }, rng: state };
 }
 
@@ -59,7 +71,7 @@ export const rollsBeating = (
   rolls: readonly number[],
   defence: number,
   bonus: number,
-): number => rolls.filter((roll) => roll + bonus >= defence).length;
+): number => rolls.filter((roll) => dieHits(roll, defence, bonus)).length;
 
 /**
  * Whether an assignment of dice to Hosts is spendable as described.

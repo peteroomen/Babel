@@ -30,7 +30,7 @@ import {
   drawCard,
   isActionBlockedByConfusion,
 } from '../cards/index.js';
-import { applyHit, rollAttack, validateAssignments } from '../combat/index.js';
+import { applyHit, dieHits, rollAttack, validateAssignments } from '../combat/index.js';
 import { affordableDice } from '../actions/legal.js';
 import { getLegalBeaconSites, hostDefence } from '../heaven/beacons.js';
 import { isPassableAt } from '../heaven/path.js';
@@ -973,7 +973,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
            bonus and the target's own Defence. Reading the constant here meant
            a variant that changed the bonus silently left Towers behind, which
            made two settings that should be identical disagree by 35 points. */
-        const hit = roll + bonus >= defenceOf(target);
+        const hit = dieHits(roll, defenceOf(target), bonus);
 
         events.push({
           type: 'towerSupport',

@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ARRIVALS_BY_STAGE,
   CANON_RULES,
   DEEP_BEACONS,
   HOSTS,
+  ROLLED_HEAVEN,
+  SPAWN_TABLE,
   LEGACY_V01_RULES,
   TIERED_BEACONS,
   type ResourceType,
@@ -740,44 +743,75 @@ describe('the harder Heaven roster', () => {
   });
 });
 
-describe('Heaven paced by a threat budget', () => {
+describe('Heaven rolled from a table', () => {
   const at = (x: number, y: number) => ({ x, y });
 
-  it('sends an expensive Host as rarely as its price says', () => {
-    /* A gate earning one point a round affords a Colossus every fourth. */
-    expect(HOSTS.colossus.cost).toBe(4);
-    expect(HOSTS.ophanim.cost).toBe(1);
-
-    const budgeted = rules({ beaconIncome: 1, beaconTiers: DEEP_BEACONS });
-    let state: GameState = {
-      ...setupGame(['Ada', 'Peter'], 'budget', budgeted),
-      beacons: [at(0, -3), at(1, -3), at(2, -3)],
-      beaconCharge: [0, 0, 0],
-      board: {
-        '0,-1': { terrain: 'farmland', river: 'straight', rotation: 0 },
-        '0,-3': { terrain: 'forest', river: 'none', rotation: 0 },
-        '1,-3': { terrain: 'forest', river: 'none', rotation: 0 },
-        '2,-3': { terrain: 'forest', river: 'none', rotation: 0 },
-      },
-    };
-
-    const spawns: Record<string, number> = {};
-    for (let round = 0; round < 8; round++) {
-      const { state: next, events } = resolveHeavenPhase({ ...state, hosts: [] });
-      for (const e of events) {
-        if (e.type === 'hostSpawned') spawns[e.kind] = (spawns[e.kind] ?? 0) + 1;
-      }
-      state = { ...next, round: state.round + 1 };
+  it('is one d6: every Stage\'s weights sum to six', () => {
+    /* A physical table needs one die and one printed row, not arithmetic. */
+    for (const stage of [1, 2, 3] as const) {
+      const total = SPAWN_TABLE[stage].reduce((sum, entry) => sum + entry.weight, 0);
+      expect(total).toBe(6);
     }
-
-    /* Gate 0 sends an Ophanim (1) every round; gate 1 a Colossus (4) every
-       fourth; gate 2 a Warded (3) every third. */
-    expect(spawns.ophanim).toBe(8);
-    expect(spawns.colossus).toBe(2);
-    expect(spawns.warded).toBe(2);
   });
 
-  it('still sends one per Beacon per round when no budget is set', () => {
-    expect(CANON_RULES.beaconIncome).toBeNull();
+  it('opens a new kind at each Stage and never un-opens one', () => {
+    const kindsAt = (stage: 1 | 2 | 3) => new Set(SPAWN_TABLE[stage].map((e) => e.kind));
+    expect(kindsAt(1)).toEqual(new Set(['ophanim']));
+    expect([...kindsAt(1)].every((k) => kindsAt(2).has(k))).toBe(true);
+    expect([...kindsAt(2)].every((k) => kindsAt(3).has(k))).toBe(true);
+    expect(kindsAt(3).size).toBeGreaterThan(kindsAt(2).size);
+  });
+
+  it('sends the Stage\'s number of Hosts however many Beacons are open', () => {
+    /* The point of the change: how much Heaven arrives is a printed number per
+       Stage, not a side effect of the player-count Beacon table. */
+    const rolled = rules({ heavenSpawn: ROLLED_HEAVEN });
+    for (const beacons of [1, 2, 3, 4]) {
+      const base = setupGame(['Ada', 'Peter'], `spawn${beacons}`, rolled);
+      const board: Record<string, { terrain: 'forest'; river: 'none'; rotation: 0 }> = {};
+      const sites = Array.from({ length: beacons }, (_, i) => at(i, -3));
+      for (const site of sites) board[coordKey(site)] = { terrain: 'forest', river: 'none', rotation: 0 };
+
+      const state: GameState = {
+        ...base,
+        stage: 2,
+        beacons: sites,
+        beaconCharge: sites.map(() => 0),
+        hosts: [],
+        board: { ...base.board, ...board },
+      };
+      const { events } = resolveHeavenPhase(state);
+      const spawned = events.filter((e) => e.type === 'hostSpawned');
+      expect(spawned).toHaveLength(ARRIVALS_BY_STAGE[1]);
+      /* And every one of them landed on a Beacon. */
+      for (const e of spawned) {
+        if (e.type !== 'hostSpawned') continue;
+        expect(sites.some((site) => coordKey(site) === coordKey(e.at))).toBe(true);
+      }
+    }
+  });
+
+  it('only sends what the Stage has unlocked', () => {
+    const rolled = rules({ heavenSpawn: ROLLED_HEAVEN });
+    const base = setupGame(['Ada', 'Peter'], 'unlock', rolled);
+    let state: GameState = {
+      ...base,
+      stage: 1,
+      beacons: [at(0, -3)],
+      beaconCharge: [0],
+      board: { ...base.board, '0,-3': { terrain: 'forest', river: 'none', rotation: 0 } },
+    };
+    const seen = new Set<string>();
+    for (let round = 0; round < 25; round++) {
+      const { state: next, events } = resolveHeavenPhase({ ...state, hosts: [] });
+      for (const e of events) if (e.type === 'hostSpawned') seen.add(e.kind);
+      state = { ...next, round: state.round + 1 };
+    }
+    /* Stage I is Ophanim only, whatever the dice say. */
+    expect(seen).toEqual(new Set(['ophanim']));
+  });
+
+  it('still spawns one per Beacon when no table is set', () => {
+    expect(CANON_RULES.heavenSpawn).toBeNull();
   });
 });

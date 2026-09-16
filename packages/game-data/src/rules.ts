@@ -2,10 +2,13 @@ import { TERRAIN_WEIGHTS, type ResourceType, type TerrainType } from './terrain.
 import { BABEL_PIECE_COST, type Stage } from './babel.js';
 import { MONUMENT_COST, MONUMENT_PRESTIGE } from './buildings.js';
 import {
+  ARRIVALS_BY_STAGE,
   BEACON_TIERS,
   COMBAT_DIE_BONUS,
   DEEP_BEACON_TIERS,
+  SPAWN_TABLE,
   type BeaconTier,
+  type SpawnEntry,
 } from './heaven.js';
 import { RIVER_WEIGHTS, type RiverShape } from './rivers.js';
 
@@ -160,14 +163,17 @@ export type RuleSet = {
    */
   readonly beaconTiers: readonly BeaconTier[] | null;
   /**
-   * Threat points each Beacon earns per Heaven Phase, or null to spawn one Host
-   * per Beacon per round as the GDD describes.
+   * What Heaven sends and how much of it, or null for GDD §13's one Host per
+   * Beacon per round.
    *
-   * The lever on how crowded the board gets. A gate saves its income until it
-   * can afford its kind, so lowering this number thins every gate at once, and
-   * an expensive Host stays rare without needing a cadence of its own.
+   * `table` is rolled once per arrival and `arrivals` says how many arrive,
+   * both keyed on Babel's Stage. Location still comes from the Beacons, which
+   * players site — that part of §13 is the interesting decision and stays.
    */
-  readonly beaconIncome: number | null;
+  readonly heavenSpawn: {
+    readonly table: Record<Stage, readonly SpawnEntry[]>;
+    readonly arrivals: readonly [number, number, number];
+  } | null;
   /**
    * Added to every Host's Defence, by Stage.
    *
@@ -262,7 +268,7 @@ export const LEGACY_V01_RULES: RuleSet = {
   impassableTerrain: ['lake'],
   riverMustExtend: false,
   beaconTiers: null,
-  beaconIncome: null,
+  heavenSpawn: null,
   hostDefenceBonus: [0, 0, 0],
   beaconBonus: 0,
   combatDieBonus: COMBAT_DIE_BONUS,
@@ -329,6 +335,12 @@ export const TIERED_BEACONS = BEACON_TIERS;
 
 /** Heaven with the harder roster: Herald, Colossus, Swarm, Warded. */
 export const DEEP_BEACONS = DEEP_BEACON_TIERS;
+
+/** The d6 spawn table, at the default arrival rate. */
+export const ROLLED_HEAVEN: RuleSet['heavenSpawn'] = {
+  table: SPAWN_TABLE,
+  arrivals: ARRIVALS_BY_STAGE,
+};
 
 /** Two of one resource buys one more Attack die, up to three. */
 export const MUNITIONS_RULE: RuleSet['munitions'] = {
