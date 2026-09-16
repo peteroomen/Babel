@@ -30,7 +30,11 @@ export type LegalAction =
       readonly type: 'buildHarvester';
       readonly sites: readonly { at: Coord; type: BuildingType }[];
     }
-  | { readonly type: 'barter' }
+  | {
+      readonly type: 'barter';
+      /** Resources this Leader currently holds enough of to spend. */
+      readonly spendable: readonly ResourceType[];
+    }
   | { readonly type: 'buildTower'; readonly sites: readonly Coord[] }
   | {
       readonly type: 'buildWalls';
@@ -115,9 +119,22 @@ export function getLegalActions(state: GameState, playerId: PlayerId): LegalActi
     actions.push({ type: 'buyScheme' });
   }
 
-  /* GDD §8: Barter needs any three resource cards in any combination. */
-  const held = RESOURCE_TYPES.reduce((sum, r) => sum + leader.resources[r], 0);
-  if (!blocked('barter') && held >= BARTER_COST) actions.push({ type: 'barter' });
+  /**
+   * GDD §8: Barter needs any three resource cards in any combination. Under the
+   * Milestone 6 `sameKind` candidate it needs three of one resource instead, so
+   * a Leader spread thin across four types can no longer convert at all — which
+   * is the point of the candidate, and why the shortfall must be visible here
+   * rather than discovered when the command is rejected.
+   */
+  if (!blocked('barter')) {
+    const spendable =
+      state.rules.barterMode === 'sameKind'
+        ? RESOURCE_TYPES.filter((r) => leader.resources[r] >= BARTER_COST)
+        : RESOURCE_TYPES.filter((r) => leader.resources[r] > 0);
+    const held = RESOURCE_TYPES.reduce((sum, r) => sum + leader.resources[r], 0);
+    const enough = state.rules.barterMode === 'sameKind' ? spendable.length > 0 : held >= BARTER_COST;
+    if (enough) actions.push({ type: 'barter', spendable });
+  }
 
   return actions;
 }

@@ -14,7 +14,8 @@
     "typecheck": "tsc -b --pretty false && tsc -p apps/web --noEmit --pretty false && tsc -p spike/boardgame-io --noEmit --pretty false",
     "dev": "npm run dev -w @babel-game/web",
     "build": "npm run build -w @babel-game/web",
-    "verify": "npm run typecheck && npm test"
+    "verify": "npm run typecheck && npm test",
+    "model": "vite-node packages/harness/src/cli.ts"
   },
   "devDependencies": {
     "typescript": "^5.7.0",

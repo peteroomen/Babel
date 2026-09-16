@@ -1,9 +1,12 @@
 import {
+  CANON_RULES,
+  MAX_RESERVE_SLOTS,
   RIVER_WEIGHTS,
   SCHEME_DECK,
-  TERRAIN_WEIGHTS,
   confusionCardsForStage,
   type ConfusionId,
+  type RuleSet,
+  type TerrainType,
 } from '@babel-game/game-data';
 import { coordKey } from '../map/edges.js';
 import { hasAnyLegalPlacement, type Board } from '../map/placement.js';
@@ -27,8 +30,11 @@ function newLeader(id: PlayerId, name: string): LeaderState {
 }
 
 /** GDD §6 / §22: blind draw from the bag, with replacement per RD-003. */
-export function drawTile(rng: RngState): [TileDraw, RngState] {
-  const [terrain, afterTerrain] = weightedPick(rng, TERRAIN_WEIGHTS);
+export function drawTile(
+  rng: RngState,
+  weights: Readonly<Record<TerrainType, number>> = CANON_RULES.terrainWeights,
+): [TileDraw, RngState] {
+  const [terrain, afterTerrain] = weightedPick(rng, weights);
   const [river, afterRiver] = weightedPick(afterTerrain, RIVER_WEIGHTS[terrain]);
   return [{ terrain, river }, afterRiver];
 }
@@ -42,12 +48,13 @@ export function drawTile(rng: RngState): [TileDraw, RngState] {
 export function drawPlaceableTile(
   board: Board,
   rng: RngState,
+  weights: Readonly<Record<TerrainType, number>> = CANON_RULES.terrainWeights,
 ): { draw: TileDraw; rng: RngState; discarded: TileDraw[] } {
   const discarded: TileDraw[] = [];
   let state = rng;
 
   for (let attempt = 0; attempt < MAX_REDRAWS; attempt++) {
-    const [draw, next] = drawTile(state);
+    const [draw, next] = drawTile(state, weights);
     state = next;
     if (hasAnyLegalPlacement(board, draw)) return { draw, rng: state, discarded };
     discarded.push(draw);
@@ -58,9 +65,16 @@ export function drawPlaceableTile(
   );
 }
 
-export function setupGame(names: readonly string[], seed: string): GameState {
+export function setupGame(
+  names: readonly string[],
+  seed: string,
+  rules: RuleSet = CANON_RULES,
+): GameState {
   if (names.length < 2 || names.length > 4) {
     throw new Error(`BABEL supports 2-4 Leaders, got ${names.length}`);
+  }
+  if (rules.reserveSlots < 0 || rules.reserveSlots > MAX_RESERVE_SLOTS) {
+    throw new Error(`reserveSlots must be 0-${MAX_RESERVE_SLOTS}, got ${rules.reserveSlots}`);
   }
 
   const order = names.map((_, i) => `p${i}`);
@@ -84,8 +98,16 @@ export function setupGame(names: readonly string[], seed: string): GameState {
   const [schemeDeck, afterSchemeShuffle] = shuffle(afterConfusionShuffle, SCHEME_DECK);
   const [revealed, ...remainingConfusion] = confusionDeck as ConfusionId[];
 
-  const { draw, rng, discarded } = drawPlaceableTile(board, afterSchemeShuffle);
+  const { draw, rng, discarded } = drawPlaceableTile(
+    board,
+    afterSchemeShuffle,
+    rules.terrainWeights,
+  );
   const opener = order[first] as PlayerId;
+
+  /* The Reserve starts full, so the first Leader already has the choice the
+     variant is meant to give them. */
+  const opening = fillReserve(board, [], rules, rng);
 
   return {
     round: 1,
@@ -115,8 +137,10 @@ export function setupGame(names: readonly string[], seed: string): GameState {
     pendingBeacon: null,
     pendingAttack: null,
     drawnTile: draw,
+    reserve: opening.reserve,
     pendingVote: null,
-    rng,
+    rules,
+    rng: opening.rng,
     log: [
       { type: 'roundStarted', round: 1 },
       ...(revealed ? [{ type: 'confusionRevealed', card: revealed } as const] : []),
@@ -131,8 +155,44 @@ export function setupGame(names: readonly string[], seed: string): GameState {
           }) as const,
       ),
       { type: 'tileDrawn', player: opener, terrain: draw.terrain, river: draw.river },
+      ...(opening.reserve.length > 0
+        ? [{ type: 'reserveRefreshed', tiles: opening.reserve, reason: 'filled' } as const]
+        : []),
     ],
     winner: null,
     lossReason: null,
   };
+}
+
+/**
+ * Top the Reserve up to its configured size, dropping any tile that has become
+ * unplaceable.
+ *
+ * Milestone 6: "if a Reserve tile has no legal placement anywhere at the start
+ * of a turn, discard/refill it rather than allowing a permanently dead slot".
+ * A tile can go dead as the map closes up around it — rivers in particular —
+ * and a dead slot would quietly shrink the variant back towards no Reserve.
+ */
+export function fillReserve(
+  board: Board,
+  current: readonly TileDraw[],
+  rules: RuleSet,
+  rng: RngState,
+): { reserve: readonly TileDraw[]; dropped: TileDraw[]; added: TileDraw[]; rng: RngState } {
+  const kept = current.filter((tile) => hasAnyLegalPlacement(board, tile));
+  const dropped = current.filter((tile) => !hasAnyLegalPlacement(board, tile));
+  const reserve = [...kept];
+  const added: TileDraw[] = [];
+  let state = rng;
+
+  while (reserve.length < rules.reserveSlots) {
+    const next = drawPlaceableTile(board, state, rules.terrainWeights);
+    state = next.rng;
+    reserve.push(next.draw);
+    added.push(next.draw);
+  }
+
+  /* Shrinking the Reserve mid-game is not a supported move, but trimming
+     rather than throwing keeps a hand-built state usable. */
+  return { reserve: reserve.slice(0, rules.reserveSlots), dropped, added, rng: state };
 }

@@ -261,6 +261,12 @@ export function describe(event: GameEvent, state: GameState): string {
       return `${who(event.player)} plays ${SCHEMES[event.scheme].label}`;
     case 'schemeDeckEmpty':
       return `No Schemes remain`;
+    case 'reserveSwapped':
+      return `${who(event.player)} takes ${TERRAIN_LABEL[event.took.terrain]} from the Reserve, leaving ${TERRAIN_LABEL[event.gave.terrain]}`;
+    case 'reserveRefreshed':
+      return event.reason === 'dead'
+        ? `A Reserve tile had nowhere left to go — replaced`
+        : `The Reserve is laid out`;
     case 'voteOpened':
       return `Vote: ${event.question}`;
     case 'voteCast':

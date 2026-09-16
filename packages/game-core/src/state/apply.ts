@@ -60,7 +60,7 @@ import { placementPayout } from '../economy/payout.js';
 import { coordKey, neighbours } from '../map/edges.js';
 import { isLegalPlacement, type Board } from '../map/placement.js';
 import { nextInt } from '../rng/index.js';
-import { drawPlaceableTile } from './setup.js';
+import { drawPlaceableTile, fillReserve } from './setup.js';
 import type {
   ApplyResult,
   Command,
@@ -131,13 +131,29 @@ function resolveVote(
   };
 }
 
-/** Draw the next Leader's tile, discarding any that cannot be placed (RD-002). */
+/**
+ * Draw the next Leader's tile, discarding any that cannot be placed (RD-002),
+ * and refresh the Reserve against the board as it now stands.
+ *
+ * Milestone 6 puts the Reserve check "at the start of a turn", which is here:
+ * the tiles a Leader is offered are all checked against the same board, so a
+ * Leader is never shown a slot they could not take.
+ */
 function drawFor(
   state: GameState,
   player: PlayerId,
-): { draw: GameState['drawnTile']; rng: GameState['rng']; events: GameEvent[] } {
+): {
+  draw: GameState['drawnTile'];
+  reserve: GameState['reserve'];
+  rng: GameState['rng'];
+  events: GameEvent[];
+} {
   const events: GameEvent[] = [];
-  const { draw, rng, discarded } = drawPlaceableTile(state.board, state.rng);
+  const { draw, rng, discarded } = drawPlaceableTile(
+    state.board,
+    state.rng,
+    state.rules.terrainWeights,
+  );
   for (const tile of discarded) {
     events.push({
       type: 'tileDiscarded',
@@ -148,7 +164,12 @@ function drawFor(
     });
   }
   events.push({ type: 'tileDrawn', player, terrain: draw.terrain, river: draw.river });
-  return { draw, rng, events };
+
+  const refreshed = fillReserve(state.board, state.reserve, state.rules, rng);
+  if (refreshed.dropped.length > 0) {
+    events.push({ type: 'reserveRefreshed', tiles: refreshed.added, reason: 'dead' });
+  }
+  return { draw, reserve: refreshed.reserve, rng: refreshed.rng, events };
 }
 
 /**
@@ -182,6 +203,7 @@ function endTurn(state: GameState): { state: GameState; events: GameEvent[] } {
       currentPlayerIndex: nextIndex,
       turnStep: 'place',
       drawnTile: drawn.draw,
+      reserve: drawn.reserve,
       rng: drawn.rng,
     },
     events,
@@ -227,6 +249,7 @@ function advanceRound(state: GameState): { state: GameState; events: GameEvent[]
       phase: someoneCanCancel ? 'confusion' : 'turns',
       turnStep: 'place',
       drawnTile: drawn.draw,
+      reserve: drawn.reserve,
       rng: drawn.rng,
       confusion: { card: reveal.card, cancelledBy: null },
       confusionDeck: reveal.deck,
@@ -352,6 +375,31 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       const resolved = resolveVote(state, { ...vote, votes });
       events.push(...resolved.events);
       return commit(resolved.state);
+    }
+
+    /**
+     * Milestone 6: trade the blind draw for a face-up Reserve tile.
+     *
+     * Free and outside the action, so it neither calls requireActionPhase nor
+     * touches actionsThisRound. The unwanted draw takes the slot, which is what
+     * makes the Reserve communal: the next Leader inherits what you rejected.
+     */
+    case 'swapReserve': {
+      if (state.phase === 'gameOver') throw new Error('the game is over');
+      if (state.phase !== 'turns') throw new Error('it is not a Leader\'s turn');
+      if (currentPlayer(state) !== command.player) throw new Error('not your turn');
+      if (state.turnStep !== 'place') throw new Error('the tile is already placed');
+      if (state.rules.reserveSlots === 0) throw new Error('these rules have no Reserve');
+
+      const took = state.reserve[command.slot];
+      if (!took) throw new Error(`no Reserve tile in slot ${command.slot}`);
+      const gave = state.drawnTile;
+      if (!gave) throw new Error('nothing drawn to swap');
+
+      const reserve = state.reserve.map((tile, i) => (i === command.slot ? gave : tile));
+      events.push({ type: 'reserveSwapped', player: command.player, took, gave });
+
+      return commit({ ...state, drawnTile: took, reserve });
     }
 
     case 'placeTile': {
@@ -596,6 +644,14 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         throw new Error(`Barter discards exactly ${BARTER_COST} resources`);
       }
       if (!RESOURCE_TYPES.includes(command.gain)) throw new Error('unknown resource');
+      /* Milestone 6 candidate: three of the *same* resource, so Barter stays an
+         escape valve for a surplus stack rather than a precision converter. */
+      if (
+        state.rules.barterMode === 'sameKind' &&
+        new Set(command.spend).size !== 1
+      ) {
+        throw new Error('these rules require three of the same resource to Barter');
+      }
 
       const leader = leaderOf(state, command.player);
       const resources = { ...leader.resources };

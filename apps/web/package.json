@@ -27,7 +27,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^3.7.0",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "@babel-game/game-ai": "*"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

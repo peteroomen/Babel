@@ -6,6 +6,7 @@ import type {
   StructureType,
   ResourceType,
   RiverShape,
+  RuleSet,
   Stage,
   TerrainType,
 } from '@babel-game/game-data';
@@ -131,7 +132,18 @@ export type GameState = {
   readonly hostSeq: number;
   /** The tile drawn at the start of the current turn, awaiting placement. */
   readonly drawnTile: TileDraw | null;
+  /**
+   * Face-up communal tiles the current Leader may swap their draw for, free
+   * and outside their action. Empty under canon rules. Milestone 6.
+   */
+  readonly reserve: readonly TileDraw[];
   readonly pendingVote: PendingVote | null;
+  /**
+   * The rules this game is being played under, fixed at setup. Carried in the
+   * state so a replay reproduces the variant it was recorded under, and so a
+   * harness can compare variants without forking the core.
+   */
+  readonly rules: RuleSet;
   readonly rng: RngState;
   readonly log: readonly GameEvent[];
   readonly winner: PlayerId | null;
@@ -271,6 +283,22 @@ export type GameEvent =
       readonly scheme: SchemeId;
     }
   | { readonly type: 'schemeDeckEmpty' }
+  /** Milestone 6: the Leader traded their blind draw for a Reserve tile. */
+  | {
+      readonly type: 'reserveSwapped';
+      readonly player: PlayerId;
+      readonly took: TileDraw;
+      readonly gave: TileDraw;
+    }
+  /**
+   * The Reserve was topped up: `filled` on the opening deal or after a swap,
+   * `dead` when a tile that could no longer be placed anywhere was discarded.
+   */
+  | {
+      readonly type: 'reserveRefreshed';
+      readonly tiles: readonly TileDraw[];
+      readonly reason: 'filled' | 'dead';
+    }
   | {
       readonly type: 'wallsBuilt';
       readonly player: PlayerId;
@@ -308,6 +336,11 @@ export type Command =
       readonly at: Coord;
       readonly rotation: Rotation;
     }
+  /**
+   * Milestone 6: trade the blind draw for a face-up Reserve tile. Free, before
+   * placing, and not the turn's action.
+   */
+  | { readonly type: 'swapReserve'; readonly player: PlayerId; readonly slot: number }
   /** GDD §11: exactly one of these per turn, after the tile is placed. */
   | {
       readonly type: 'buildHarvester';

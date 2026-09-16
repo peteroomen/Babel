@@ -1,4 +1,5 @@
 export * from './terrain.js';
+export * from './rules.js';
 export * from './rivers.js';
 export * from './buildings.js';
 export * from './babel.js';

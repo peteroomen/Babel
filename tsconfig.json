@@ -1,7 +1,17 @@
 {
   "files": [],
   "references": [
-    { "path": "./packages/game-data" },
-    { "path": "./packages/game-core" }
+    {
+      "path": "./packages/game-data"
+    },
+    {
+      "path": "./packages/game-core"
+    },
+    {
+      "path": "./packages/game-ai"
+    },
+    {
+      "path": "./packages/harness"
+    }
   ]
 }

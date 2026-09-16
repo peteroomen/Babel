@@ -2,6 +2,16 @@
 
 The headless model was used to catch structural balance failures before implementation. Treat the numbers below as directional, not proof of balance: the agents are heuristic and human play now matters more than further bot tuning.
 
+> **Superseded in part.** This document records the pre-implementation model.
+> A model that runs against the *implemented* rules now lives in
+> `packages/harness` — see `docs/AI_AND_HARNESS.md` to run it and
+> `docs/MILESTONE_6_BASELINE.md` for the first results. Where the two disagree,
+> the harness wins: it plays the real rules with the same agent a person meets
+> in the browser. The final 3-Leader shape below is broadly confirmed — 56.7%
+> shared wins against the 50-65% recorded here — with two corrections: Towers
+> are far more central than the old action mix suggested (11.3% of actions),
+> and Schemes are effectively unused at 0.4%.
+
 ## What the modelling established
 
 - **Host Defence 5 / 6 / 7** is the current 3–4 Leader baseline. 4/5/6 was too soft; 6/7/8 too punishing.

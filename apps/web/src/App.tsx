@@ -7,11 +7,13 @@
  */
 import { useMemo, useState } from 'react';
 import {
+  CANON_RULES,
   CONFUSION,
   RESOURCE_TYPES,
   SCHEMES,
   type BuildingType,
   type ResourceType,
+  type RuleSet,
 } from '@babel-game/game-data';
 import {
   applyMove,
@@ -29,7 +31,7 @@ import {
   type GameState,
   type Rotation,
 } from '@babel-game/game-core';
-import { BookOpenIcon, PanelRightIcon, RotateCcwIcon, ScrollTextIcon } from 'lucide-react';
+import { BookOpenIcon, PanelRightIcon, RotateCcwIcon, ScrollTextIcon, UsersIcon } from 'lucide-react';
 import { Board } from './Board';
 import { PaperFx } from './PaperFx';
 import { BabelCard, ConfusionCard, LeaderRow, LogCard, LogList } from './Panels';
@@ -48,6 +50,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HOST_LABEL, RESOURCE_LABEL, TERRAIN_LABEL } from './theme';
+import { ARCHETYPE_BLURB, ARCHETYPE_LABEL } from '@babel-game/game-ai';
+import { aiSeatsFor, useAiTurns } from './useAi';
 
 const NAMES = ['Ada', 'Peter', 'Rook', 'Vex'];
 
@@ -59,9 +63,60 @@ type Mode =
   | { kind: 'barter' }
   | { kind: 'prophet'; hostId: string | null };
 
+/** A labelled row of mutually exclusive choices. */
+function Choice<T extends string | number>({
+  label,
+  hint,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  hint: string;
+  options: readonly { value: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between gap-3">
+        <span className="font-medium">{label}</span>
+        <div className="paper penned flex shrink-0 overflow-hidden rounded-md border">
+          {options.map((option) => (
+            <button
+              key={String(option.value)}
+              onClick={() => onChange(option.value)}
+              className={`h-8 min-w-9 px-2 text-xs tabular-nums transition-colors ${
+                option.value === value
+                  ? 'bg-primary text-primary-foreground'
+                  : 'hover:bg-secondary'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="text-muted-foreground text-xs">{hint}</p>
+    </div>
+  );
+}
+
+/** A table: how many Leaders, how many of them are bots, and under which rules. */
+type Table = {
+  readonly leaders: number;
+  readonly ai: number;
+  readonly rules: RuleSet;
+};
+
+const OPENING: Table = { leaders: 2, ai: 1, rules: CANON_RULES };
+
 export function App() {
-  const [leaderCount, setLeaderCount] = useState(2);
-  const [state, setState] = useState<GameState>(() => setupGame(NAMES.slice(0, 2), 'babel-1'));
+  const [table, setTable] = useState<Table>(OPENING);
+  const [seed, setSeed] = useState('babel-1');
+  const [state, setState] = useState<GameState>(() =>
+    setupGame(NAMES.slice(0, OPENING.leaders), 'babel-1', OPENING.rules),
+  );
   const [selected, setSelected] = useState<Coord | null>(null);
   const [rotationIndex, setRotationIndex] = useState(0);
   const [mode, setMode] = useState<Mode>({ kind: 'idle' });
@@ -105,11 +160,26 @@ export function App() {
     setState(applyMove(state, command).state);
     reset();
   };
-  const restart = (count: number) => {
-    setLeaderCount(count);
-    setState(setupGame(NAMES.slice(0, count), `babel-${Date.now()}`));
+  const restart = (next: Partial<Table> = {}) => {
+    const merged = { ...table, ...next };
+    /* Never more bots than there are seats. */
+    const settings: Table = { ...merged, ai: Math.min(merged.ai, merged.leaders) };
+    const fresh = `babel-${Date.now()}`;
+    setTable(settings);
+    setSeed(fresh);
+    setState(setupGame(NAMES.slice(0, settings.leaders), fresh, settings.rules));
     reset();
   };
+
+  /* Which seats the machine plays, and letting it play them. */
+  const aiSeats = useMemo(
+    () => aiSeatsFor(state.order, table.ai),
+    [state.order, table.ai],
+  );
+  useAiTurns(state, aiSeats, seed, setState);
+
+  const isBot = Boolean(aiSeats[active]);
+  const sameKind = state.rules.barterMode === 'sameKind';
 
   const assigned = Object.values(hits).reduce((sum, n) => sum + n, 0);
   const successes = state.pendingAttack?.successes ?? 0;
@@ -261,31 +331,97 @@ export function App() {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="New game" onClick={() => restart(leaderCount)}>
+                <Button variant="ghost" size="icon" aria-label="New game" onClick={() => restart()}>
                   <RotateCcwIcon />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>New game</TooltipContent>
             </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex overflow-hidden rounded-md border">
-                  {[2, 3, 4].map((n) => (
-                    <button
-                      key={n}
-                      onClick={() => restart(n)}
-                      className={`h-8 w-7 text-xs tabular-nums transition-colors ${
-                        n === leaderCount ? 'bg-primary text-primary-foreground' : 'hover:bg-secondary'
-                      }`}
-                    >
-                      {n}
-                    </button>
-                  ))}
+            <Dialog>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" aria-label="Table settings">
+                      <UsersIcon />
+                    </Button>
+                  </DialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {table.leaders} Leaders, {table.ai} played by the machine
+                </TooltipContent>
+              </Tooltip>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>The table</DialogTitle>
+                  <DialogDescription>
+                    Every change starts a new game.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 text-sm">
+                  <Choice
+                    label="Leaders"
+                    hint="How many seats. Heaven scales with the count."
+                    options={[2, 3, 4].map((n) => ({ value: n, label: String(n) }))}
+                    value={table.leaders}
+                    onChange={(leaders) => restart({ leaders })}
+                  />
+                  <Choice
+                    label="Played by the machine"
+                    hint="Bots take the last seats, so you are always the first Leader. Set it to one below the Leader count to play solo."
+                    options={Array.from({ length: table.leaders + 1 }, (_, n) => ({
+                      value: n,
+                      label: String(n),
+                    }))}
+                    value={table.ai}
+                    onChange={(ai) => restart({ ai })}
+                  />
+                  <Choice
+                    label="Barter"
+                    hint="Canon takes any three resources. The experiment takes three of the same, so Barter stops being a precision converter."
+                    options={[
+                      { value: 'mixed', label: 'Any 3' },
+                      { value: 'sameKind', label: 'Same 3' },
+                    ]}
+                    value={table.rules.barterMode}
+                    onChange={(barterMode) =>
+                      restart({ rules: { ...table.rules, barterMode } })
+                    }
+                  />
+                  <Choice
+                    label="Reserve slots"
+                    hint="Face-up tiles beside the bag. Swapping your draw for one is free and is not your action — but the Reserve is shared, so you leave your cast-off for the next Leader."
+                    options={[0, 1, 2].map((n) => ({ value: n, label: String(n) }))}
+                    value={table.rules.reserveSlots}
+                    onChange={(reserveSlots) =>
+                      restart({ rules: { ...table.rules, reserveSlots } })
+                    }
+                  />
+                  {table.ai > 0 && (
+                    <div className="space-y-1 border-t pt-3">
+                      {state.order
+                        .filter((id) => aiSeats[id])
+                        .map((id) => (
+                          <p key={id} className="text-xs">
+                            <span className="font-medium">{state.leaders[id]!.name}</span> the{' '}
+                            {ARCHETYPE_LABEL[aiSeats[id]!]}{' '}
+                            <span className="text-muted-foreground">
+                              — {ARCHETYPE_BLURB[aiSeats[id]!]}
+                            </span>
+                          </p>
+                        ))}
+                    </div>
+                  )}
+                  {table.ai > 0 && (
+                    <p className="text-muted-foreground text-xs">
+                      Machine Leaders:{' '}
+                      Beacons, the Heaven Phase and the Confusion window stay yours — those
+                      are the table's decisions, not any one Leader's.
+                    </p>
+                  )}
                 </div>
-              </TooltipTrigger>
-              <TooltipContent>Leaders — starts a new game</TooltipContent>
-            </Tooltip>
+              </DialogContent>
+            </Dialog>
           </div>
         </header>
 
@@ -357,7 +493,19 @@ export function App() {
 
         {/* ── Action bar ─────────────────────────────────────────── */}
         <footer className="bg-papyrus-light/70 min-h-14 shrink-0 border-t px-3 py-2">
-          {state.phase === 'gameOver' ? (
+          {isBot && state.phase !== 'gameOver' && state.phase !== 'heaven' && !state.pendingBeacon ? (
+            <Bar
+              title={
+                <>
+                  <span className="font-semibold">{leader?.name}</span> the{' '}
+                  {ARCHETYPE_LABEL[aiSeats[active]!]}
+                </>
+              }
+              hint="Machine Leaders take their own turns. Beacons and the Heaven Phase still come to you."
+            >
+              <span className="text-muted-foreground text-sm">thinking…</span>
+            </Bar>
+          ) : state.phase === 'gameOver' ? (
             <div className="flex items-center gap-3">
               <span className="font-semibold">
                 {state.lossReason
@@ -371,7 +519,7 @@ export function App() {
                     ? `${state.leaders[state.winner]?.name} is remembered as its greatest hero.`
                     : 'Prestige is tied.'}
               </span>
-              <Button size="sm" className="ml-auto" onClick={() => restart(leaderCount)}>
+              <Button size="sm" className="ml-auto" onClick={() => restart()}>
                 New game
               </Button>
             </div>
@@ -507,6 +655,19 @@ export function App() {
                   Click a highlighted square · {options.length} legal
                 </span>
               )}
+              {/* Milestone 6: the swap is free and is not your action. */}
+              {state.reserve.map((tile, slot) => (
+                <Act
+                  key={`reserve-${slot}`}
+                  label={`Take ${TERRAIN_LABEL[tile.terrain]}${
+                    tile.river === 'none' ? '' : ' ~'
+                  }`}
+                  hint={`Swap your draw for this Reserve tile. Free, and not your action — but your ${
+                    TERRAIN_LABEL[state.drawnTile!.terrain]
+                  } goes into the slot for whoever is next.`}
+                  onClick={() => dispatch({ type: 'swapReserve', player: active, slot })}
+                />
+              ))}
               {selectedOption && (
                 <>
                   <Badge variant={preview ? 'default' : 'muted'}>
@@ -562,15 +723,29 @@ export function App() {
               <Act label="Cancel" variant="ghost" hint="Back to your actions." onClick={reset} />
             </Bar>
           ) : mode.kind === 'barter' && leader ? (
-            <Bar title={`Barter · ${spend.length}/3`} hint="Discard any three cards for one of your choice.">
+            <Bar
+              title={`Barter · ${spend.length}/3`}
+              hint={
+                sameKind
+                  ? 'Discard three of the same resource for one of your choice.'
+                  : 'Discard any three cards for one of your choice.'
+              }
+            >
               {RESOURCE_TYPES.map((resource) => {
                 const held = leader.resources[resource] - spend.filter((s) => s === resource).length;
+                /* Under same-kind Barter every card spent must match the first
+                   one picked, so the rest go dead as soon as one is chosen. */
+                const offKind = sameKind && spend.length > 0 && spend[0] !== resource;
                 return (
                   <Act
                     key={resource}
                     label={`${RESOURCE_LABEL[resource]} ${held}`}
-                    disabled={held <= 0 || spend.length >= 3}
-                    hint={`Discard one ${RESOURCE_LABEL[resource]}.`}
+                    disabled={held <= 0 || spend.length >= 3 || offKind}
+                    hint={
+                      offKind
+                        ? `These rules need three of the same resource — you have picked ${RESOURCE_LABEL[spend[0]!]}.`
+                        : `Discard one ${RESOURCE_LABEL[resource]}.`
+                    }
                     onClick={() => setSpend((s) => [...s, resource])}
                   />
                 );

@@ -82,6 +82,16 @@ Exit: full canon v0.1 rules playable locally.
 
 ## Milestone 6 — resource agency experiment
 
+**Status: harness and candidates built; baseline established.** See
+`docs/AI_AND_HARNESS.md` for how to run the model and
+`docs/MILESTONE_6_BASELINE.md` for the first results.
+
+Both candidates are implemented as a `RuleSet` carried by the game state rather
+than a fork of the rules, so the browser can offer the same switches the model
+ran. The agent policy that plays them lives in `@babel-game/game-ai` and is the
+same policy a person meets when they add machine Leaders to their table.
+
+
 Goal: reduce the feeling that resource access is dominated by blind terrain luck and repeated Barter actions, without making the map deterministic or adding a large new subsystem.
 
 Treat these as **experimental v0.2 candidates**, not canon until the harness and human playtest support them.
