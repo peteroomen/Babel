@@ -1,6 +1,8 @@
 import {
   BROAD_PIECE_COST,
   CANON_RULES,
+  MONUMENT_RULE,
+  TERMINATOR_RIVER_WEIGHTS,
   TERRAIN_WEIGHTS,
   type RuleSet,
 } from '@babel-game/game-data';
@@ -142,6 +144,49 @@ export const STACK_VARIANTS: readonly Variant[] = [
     barterMode: 'sameKind',
     barterCost: 4,
     babelPieceCost: BROAD_PIECE_COST,
+  }),
+];
+
+/**
+ * Round four: geography, and somewhere to spend.
+ *
+ * Terminators are treated as settled rather than as a candidate — 37% of rivers
+ * came out one tile long and 22% of frontier squares were locked to a tile type
+ * only 14% of draws supply, which is a defect, not a balance question. So every
+ * variant past `control` carries them, and `terminators` measures what fixing
+ * that alone is worth.
+ */
+const withTerminators = (
+  id: string,
+  label: string,
+  note: string,
+  rules: Partial<RuleSet>,
+): Variant =>
+  withRules(id, label, note, { riverWeights: TERMINATOR_RIVER_WEIGHTS, ...rules });
+
+export const GEO_VARIANTS: readonly Variant[] = [
+  withRules('control', 'Control', 'Canon v0.1', {}),
+  withTerminators('terminators', 'Terminators', 'River ends can be capped', {}),
+  withTerminators('desert-wall', 'Desert blocks', 'Hosts cannot cross Desert', {
+    impassableTerrain: ['lake', 'desert'],
+  }),
+  withTerminators('desert-half', 'Desert halved', 'Desert 7%, no rule change', {
+    terrainWeights: { ...TERRAIN_WEIGHTS, desert: 7, farmland: 27, forest: 27 },
+  }),
+  withTerminators('river-extend', 'Rivers must extend', 'A river tile must join water', {
+    riverMustExtend: true,
+  }),
+];
+
+/** Round four, part two: the personal Prestige sink. */
+export const SINK_VARIANTS: readonly Variant[] = [
+  withTerminators('terminators', 'Terminators only', 'The new baseline', {}),
+  withTerminators('monument', 'Monument', '2 of each resource for 3 Prestige', {
+    monument: MONUMENT_RULE,
+  }),
+  withTerminators('monument-desert', 'Monument + Desert blocks', 'Both round-four keepers', {
+    monument: MONUMENT_RULE,
+    impassableTerrain: ['lake', 'desert'],
   }),
 ];
 

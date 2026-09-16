@@ -13,8 +13,19 @@ export type BuildingType = (typeof BUILDING_TYPES)[number];
 export const TOWER = 'tower' as const;
 export type TowerType = typeof TOWER;
 
+/**
+ * A Monument: Prestige for its owner and nothing else.
+ *
+ * The counterweight to Babel. Babel is shared — it is how humanity survives —
+ * and a Monument is purely yours. It costs a broad bundle rather than a deep
+ * one, so the whole economy feeds it, which is what gives a mature Leader
+ * something to want other than the one resource Babel happens to need.
+ */
+export const MONUMENT = 'monument' as const;
+export type MonumentType = typeof MONUMENT;
+
 /** Anything a player can own on a tile. One structure per land tile (GDD §3). */
-export type StructureType = BuildingType | TowerType;
+export type StructureType = BuildingType | TowerType | MonumentType;
 
 export type BuildingSpec = {
   readonly terrain: TerrainType;
@@ -62,17 +73,25 @@ export const BUILDING_PRESTIGE = 1;
 export const TOWER_COST = { wood: 2, metal: 1 } as const;
 export const TOWER_PRESTIGE = 1;
 
+/**
+ * Milestone 6: a personal Prestige sink, one per connected feature like a
+ * Tower, so the number a Leader can build scales with the map rather than
+ * running out. TUNEABLE.
+ */
+export const MONUMENT_COST = { food: 2, wood: 2, brick: 2, metal: 2 } as const;
+export const MONUMENT_PRESTIGE = 3;
+
 /** GDD §17: one Build action spends 1 Wood and places two Wall segments. */
 export const WALL_COST = { wood: 1 } as const;
 export const WALL_SEGMENTS = 2;
 export const WALL_PRESTIGE = 1;
 
-/** Narrow a structure to a harvesting building. Towers never harvest. */
+/** Narrow a structure to a harvesting building. Towers and Monuments never harvest. */
 export const isHarvester = (type: StructureType): type is BuildingType =>
-  type !== TOWER;
+  type !== TOWER && type !== MONUMENT;
 
-/** What a structure costs to build. GDD §9 and §16. */
+/** What a structure costs to build. GDD §9, §16, and the Monument candidate. */
 export const structureCost = (
   type: StructureType,
 ): Partial<Record<ResourceType, number>> =>
-  type === TOWER ? TOWER_COST : BUILDINGS[type].cost;
+  type === TOWER ? TOWER_COST : type === MONUMENT ? MONUMENT_COST : BUILDINGS[type].cost;

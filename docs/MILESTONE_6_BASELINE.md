@@ -376,3 +376,139 @@ rate without a matching gain.
 
 Both are in the browser's table settings. This is now a question about which
 game is more fun, which no amount of further running will answer.
+
+---
+
+# Round four — a factorial sweep of five levers
+
+Rather than more authored head-to-heads, this round runs **every combination**
+of five levers: 32 cells, 12 games each, 384 games. A lever's *main effect* is
+then measured across every setting of the other four (192 games either side,
+standard error about 5 points) instead of against one arbitrary baseline — and
+interactions become visible, which is what the earlier rounds kept tripping on.
+
+`npm run sweep -- --cells 0-15 --games 12 --out a.json` (and 16-31), then
+`npm run sweep -- --report a.json b.json`.
+
+| Lever | Δ win rate | Δ Barter | Δ rounds | Δ Babel pieces | Δ surplus |
+|---|---|---|---|---|---|
+| **P** Babel: broad cost curve | **+21.9%** | +0.6% | +2.8 | +3.3 | +11 |
+| **B** Barter: four of one kind | +9.4% | **−3.7%** | −5.4 | +0.8 | +5 |
+| **R** Rivers: terminators | +6.2% | +0.7% | −2.4 | +0.6 | −5 |
+| **D** Desert blocks Hosts | −12.5% | −1.1% | −5.6 | −1.9 | −3 |
+| **M** Monument (Prestige sink) | **−24.0%** | −0.5% | +14.8 | −2.7 | +9 |
+
+Best cells: `PR` and `BPR` at 91.7%, `P` and `BP` at 83.3%.
+Worst: every cell containing `M` bar one, plus `PDM` at 25.0%.
+
+## The Monument was a bad idea, and why is the useful part
+
+It is the worst lever tested: −24 points, games fifteen rounds longer, three
+fewer Babel pieces standing — and **surplus went *up* by 9**. A sink that fails
+to drain the thing it was built to drain is telling you the diagnosis was wrong.
+
+It was. The late game is not short of things to buy. **It is short of
+actions.** A Leader gets one action per turn and earns resources every turn
+regardless, so the pile grows whatever is on the menu. Adding another thing to
+spend an action on cannot drain it — it can only crowd out Babel and defence,
+which is exactly what the numbers show.
+
+That reframes the original complaint. "Resources feel useless" is really *"I
+can never spend what I earn, because I only act once a turn."* Things that
+could actually address it:
+
+- spend resources as part of an action you were taking anyway, rather than as a
+  competing action (placement costs, or paying to improve a placement);
+- let one action consume much more (build several Babel pieces at once);
+- more actions per turn late on;
+- or simply earn less — cut payouts rather than add sinks.
+
+None of those are what I proposed, and the sweep is what caught it.
+
+## Desert blocking Hosts backfires, for a non-obvious reason
+
+−12.5 points. Measured directly across 20 games:
+
+| | Terminators | + Desert blocks |
+|---|---|---|
+| Mean Beacon distance from Babel when sited | 4.40 | **3.54** |
+| Hosts spawned per game | 174.9 | 123.0 |
+| Host moves per game | 192.9 | 105.5 |
+| Arrivals at Babel | 21.7 | 19.1 |
+
+Making terrain impassable shrinks the region connected to Babel — and a Beacon
+must have a land route to Babel to be legal (GDD §13). So Beacons are forced
+into that shrunken region, **closer to the Foundation**. Spawns fall 30% and
+Hosts move far less, but arrivals fall only 12%, because every Host that does
+spawn starts a shorter walk.
+
+You trade a longer journey for a nearer start, and the nearer start wins. This
+is not an argument against the idea — it is an argument that Beacon siting has
+to compensate, for example by requiring a minimum distance from Babel.
+
+## Terminators do not fix rivers — my error
+
+I proposed raising the share of one-edge river shapes to cap floating ends. The
+win rate said +6.2 points, which looked like success. The geometry says
+otherwise:
+
+| | Canon | Terminators (first attempt) | Terminators (corrected) |
+|---|---|---|---|
+| Mean river chain | 2.73 tiles | **2.24** | **1.94** |
+| Single-tile rivers | 45% | 38% | 44% |
+| Frontier squares locked to a river tile | 20% | 21% | **14%** |
+
+The first attempt raised the *total* river share as well as the source share,
+which made rivers more numerous and shorter. Correcting that — holding rivers at
+canon's 23% and shifting only the mix — genuinely cut the locked squares from
+20% to 14%, but made chains shorter still.
+
+**The two goals are in tension.** One-edge caps reduce blocking and shorten
+rivers; the straights, bends and tees that make long rivers are exactly what
+creates the blocking. Source weight cannot buy both.
+
+## Forcing rivers to extend does fix it
+
+The other idea — a river tile must join water already on the board — is the one
+that works, and it is not close:
+
+| | Canon | Rivers must extend |
+|---|---|---|
+| Mean river chain | 2.73 tiles | **9.40** (longest seen: 33) |
+| River ends pointing at empty ground | 35% | **7%** |
+| Frontier squares locked to a river tile | 20% | **0%** |
+| River tiles as a share of board | 14.0% | 5.7% |
+
+Long rivers, essentially no floating ends, and the placement blocking gone
+entirely.
+
+**It is not free.** Rivers are impassable, so cutting river tiles from 14% of
+the board to 5.7% removes most of the terrain that was quietly defending Babel:
+
+| | win | Barter | rounds | pieces |
+|---|---|---|---|---|
+| canon | 60% | 13.8% | 66 | 9.5 |
+| **B + P** | **80%** | 13.9% | 48 | 12.0 |
+| B + P + must extend | 72% | **9.8%** | 52 | 10.8 |
+| canon + must extend | 36% | 13.7% | 56 | 5.9 |
+
+Must-extend costs about 8 points on top of B+P and 24 on canon. That is a
+difficulty knob — Host Defence or Beacon counts can pay it back — not a reason
+to reject the rule. It also drops Barter to 9.8%, the lowest figure recorded
+anywhere in this milestone, presumably because a less blocked frontier means
+Leaders can place for the resource they actually want.
+
+## Where this leaves it
+
+**Take: broad Babel cost (P) and same-kind Barter at four (B).** 80% shared
+wins against canon's 60%, games 48 rounds instead of 66, twelve Babel pieces
+standing instead of nine and a half.
+
+**Take, with compensation: rivers must extend.** It is the only thing that fixes
+the map, and the map was the complaint. Budget a difficulty adjustment for it.
+
+**Reject: the Monument**, and with it the theory that the late game needs more
+sinks rather than more actions.
+
+**Hold: Desert blocking Hosts** until Beacon siting stops rewarding it with
+closer spawns.

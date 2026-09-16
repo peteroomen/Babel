@@ -101,7 +101,7 @@ const canPay = (state: GameState, me: PlayerId, cost: Cost): boolean =>
 /** How close Heaven has got to Babel. Infinity when nothing is on the board. */
 export function threatDistance(state: GameState): number {
   if (state.hosts.length === 0) return Infinity;
-  const distance = distancesToBabel(state.board);
+  const distance = distancesToBabel(state.board, state.rules.impassableTerrain);
   return Math.min(
     ...state.hosts.map((host) => distance[coordKey(host.at)] ?? Infinity),
   );
@@ -172,7 +172,7 @@ export function bestPlacement(
   const seeking = want(state, me, archetype);
   let best: Placement | null = null;
 
-  for (const option of getLegalTilePlacements(state.board, draw)) {
+  for (const option of getLegalTilePlacements(state.board, draw, state.rules)) {
     /**
      * Score the square, not the square-and-rotation.
      *
@@ -295,6 +295,7 @@ export type ActionChoice =
   | { kind: 'buildBabel' }
   | { kind: 'buildHarvester'; at: Coord; building: 'sawmill' | 'farmstead' | 'brickworks' | 'mine' }
   | { kind: 'buildTower'; at: Coord }
+  | { kind: 'buildMonument'; at: Coord }
   | { kind: 'buildWalls'; edges: readonly { a: Coord; b: Coord }[] }
   | { kind: 'muster' }
   | { kind: 'attack'; dice: number }
@@ -317,7 +318,7 @@ export function bestWalls(
   state: GameState,
   action: Extract<LegalAction, { type: 'buildWalls' }>,
 ): readonly { a: Coord; b: Coord }[] {
-  const distance = distancesToBabel(state.board);
+  const distance = distancesToBabel(state.board, state.rules.impassableTerrain);
   const at = (c: Coord) => distance[coordKey(c)] ?? Infinity;
 
   const scored = action.edges
@@ -439,6 +440,15 @@ export function chooseAction(
     swing(),
     state.hosts.length > 0 ? wall() : null,
   ];
+  /**
+   * Prestige for its owner and nothing for humanity, so an agent only reaches
+   * for it once its own plan is funded. The Merchant, which plays for Prestige
+   * wherever it is cheapest, wants it first.
+   */
+  const monumentAt = (): ActionChoice | null => {
+    const m = find(legal, 'buildMonument');
+    return m ? { kind: 'buildMonument', at: m.sites[Math.floor(rand() * m.sites.length)]! } : null;
+  };
   const towerAt = (): ActionChoice | null =>
     tower && state.hosts.length > 0
       ? { kind: 'buildTower', at: tower.sites[Math.floor(rand() * tower.sites.length)]! }
@@ -467,6 +477,7 @@ export function chooseAction(
   switch (archetype) {
     case 'architect':
       if (babel) order.push({ kind: 'buildBabel' });
+      order.push(monumentAt());
       order.push(trade());
       order.push(towerAt());
       if (harvest) order.push(harvesterFor(harvest, seeking, rand));
@@ -487,11 +498,13 @@ export function chooseAction(
       if (leader.army < 4) order.push(trade());
       if (state.hosts.length > 0) order.push(wall());
       if (babel) order.push({ kind: 'buildBabel' });
+      order.push(monumentAt());
       if (harvest) order.push(harvesterFor(harvest, seeking, rand));
       break;
 
     case 'industrialist':
       if (harvest) order.push(harvesterFor(harvest, seeking, rand));
+      order.push(monumentAt());
       order.push(towerAt());
       if (babel) order.push({ kind: 'buildBabel' });
       order.push(trade());
@@ -521,6 +534,7 @@ export function chooseAction(
          that can be worth a whole action, and Babel pays 2-4 Prestige flat.
          Contributes to defence only once the table is visibly losing, which is
          what `besieged` above has already covered. */
+      order.push(monumentAt());
       if (scheme && canPay(state, me, SCHEME_COST)) order.push({ kind: 'buyScheme' });
       if (babel) order.push({ kind: 'buildBabel' });
       order.push(trade());

@@ -61,6 +61,7 @@ export const BUILDING_GLYPH = {
   brickworks: 'B',
   mine: 'M',
   tower: 'T',
+  monument: 'M',
 } as const;
 
 export const BUILDING_LABEL = {
@@ -69,6 +70,7 @@ export const BUILDING_LABEL = {
   brickworks: 'Brickworks',
   mine: 'Mine',
   tower: 'Tower',
+  monument: 'Monument',
 } as const;
 
 /** ART_DIRECTION.md: Walls look temporary — a palisade, not castle masonry. */

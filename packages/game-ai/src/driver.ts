@@ -94,6 +94,8 @@ export function nextCommand(
       return { type: 'buildHarvester', player: me, at: choice.at, building: choice.building };
     case 'buildTower':
       return { type: 'buildTower', player: me, at: choice.at };
+    case 'buildMonument':
+      return { type: 'buildMonument', player: me, at: choice.at };
     case 'buildWalls':
       return { type: 'buildWalls', player: me, edges: choice.edges };
     case 'muster':

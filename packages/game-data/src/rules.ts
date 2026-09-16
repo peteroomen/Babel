@@ -1,5 +1,7 @@
 import { TERRAIN_WEIGHTS, type ResourceType, type TerrainType } from './terrain.js';
 import { BABEL_PIECE_COST, type Stage } from './babel.js';
+import { MONUMENT_COST, MONUMENT_PRESTIGE } from './buildings.js';
+import { RIVER_WEIGHTS, type RiverShape } from './rivers.js';
 
 /**
  * Rules that are under experiment rather than settled.
@@ -80,6 +82,37 @@ export type RuleSet = {
    */
   readonly babelPieceCost: Record<Stage, Partial<Record<ResourceType, number>>>;
   /**
+   * River geometry frequency, per terrain.
+   *
+   * The lever on a measured failure: 37% of rivers end up a single tile and 35%
+   * of river edges point at empty ground, because a placed river tile has about
+   * two river edges and each one *demands* another river tile at a square that
+   * only 14% of draws can fill. Raising the share of one-edge shapes — sources,
+   * which cap an end as readily as they start one — lets those squares close.
+   */
+  readonly riverWeights: Record<string, Record<RiverShape, number>>;
+  /**
+   * Terrain a Heavenly Host cannot cross. GDD §7 gives Lake; a river on a tile
+   * blocks it regardless of terrain.
+   *
+   * Adding Desert here turns 14% of the board from a tile that does nothing
+   * into a defensive choice — and gives the Reserve swap something to be for,
+   * since swapping in a Desert stops being a non-move.
+   */
+  readonly impassableTerrain: readonly string[];
+  /**
+   * A river tile must connect to river already on the board.
+   *
+   * Eliminates the isolated single-tile river outright. Costs discards: a river
+   * tile with nowhere to connect is redrawn under RD-002.
+   */
+  readonly riverMustExtend: boolean;
+  /** The personal Prestige sink, or null for canon where none exists. */
+  readonly monument: {
+    readonly cost: Partial<Record<ResourceType, number>>;
+    readonly prestige: number;
+  } | null;
+  /**
    * Terrain draw weights. Carried here rather than read from the module so the
    * Lake question (§22: "Lake frequency has not yet been modelled") can be
    * harnessed as explicit, comparable numbers across variants.
@@ -93,6 +126,10 @@ export const CANON_RULES: RuleSet = {
   barterCost: 3,
   attackDieCost: null,
   babelPieceCost: BABEL_PIECE_COST,
+  riverWeights: RIVER_WEIGHTS,
+  impassableTerrain: ['lake'],
+  riverMustExtend: false,
+  monument: null,
   reserveSlots: 0,
   terrainWeights: TERRAIN_WEIGHTS,
 };
@@ -112,4 +149,35 @@ export const BROAD_PIECE_COST: RuleSet['babelPieceCost'] = {
   1: { brick: 1, wood: 1, food: 1 },
   2: { brick: 2, wood: 2, metal: 1 },
   3: { brick: 3, wood: 2, metal: 2, food: 1 },
+};
+
+/**
+ * River weights with enough one-edge shapes to cap a river end.
+ *
+ * `source` touches a single edge, so it works as a mouth as readily as a
+ * spring: placed against a floating end it closes the river instead of
+ * extending the demand. Canon has sources only on Mountain at 10%, which is far
+ * too few to close the ends that straights, bends and tees keep opening.
+ */
+export const TERMINATOR_RIVER_WEIGHTS: RuleSet['riverWeights'] = {
+  /* The total share of tiles carrying river is held at canon's 23%. Only the
+     *mix* moves: roughly half the river tiles are now one-edge caps.
+
+     Getting this wrong the first time is instructive. Raising the source share
+     while also raising the total river share (77 -> 70 none) made rivers more
+     numerous and *shorter* — mean chain fell from 2.73 to 2.24 — because two
+     sources facing each other is a two-tile puddle, not a river, and the extra
+     straights and bends opened as many demands as the caps closed. */
+  farmland: { none: 77, straight: 5, bend: 5, tee: 2, source: 11 },
+  forest: { none: 77, straight: 5, bend: 5, tee: 2, source: 11 },
+  hills: { none: 100, straight: 0, bend: 0, tee: 0, source: 0 },
+  mountain: { none: 90, straight: 0, bend: 0, tee: 0, source: 10 },
+  desert: { none: 100, straight: 0, bend: 0, tee: 0, source: 0 },
+  lake: { none: 100, straight: 0, bend: 0, tee: 0, source: 0 },
+};
+
+/** The Monument as modelled: a broad bundle for 3 Prestige. */
+export const MONUMENT_RULE: RuleSet['monument'] = {
+  cost: MONUMENT_COST,
+  prestige: MONUMENT_PRESTIGE,
 };

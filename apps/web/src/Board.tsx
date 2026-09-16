@@ -252,7 +252,7 @@ export function Board({
   selectedHosts = {},
 }: Props) {
   const options = state.drawnTile
-    ? getLegalTilePlacements(state.board, state.drawnTile)
+    ? getLegalTilePlacements(state.board, state.drawnTile, state.rules)
     : [];
 
   /* GDD §10: a Host anywhere in a feature shuts the whole feature down, so the

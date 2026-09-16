@@ -6,7 +6,6 @@ import {
   confusionCardsForStage,
   type ConfusionId,
   type RuleSet,
-  type TerrainType,
 } from '@babel-game/game-data';
 import { coordKey } from '../map/edges.js';
 import { hasAnyLegalPlacement, type Board } from '../map/placement.js';
@@ -32,10 +31,13 @@ function newLeader(id: PlayerId, name: string): LeaderState {
 /** GDD §6 / §22: blind draw from the bag, with replacement per RD-003. */
 export function drawTile(
   rng: RngState,
-  weights: Readonly<Record<TerrainType, number>> = CANON_RULES.terrainWeights,
+  rules: RuleSet = CANON_RULES,
 ): [TileDraw, RngState] {
-  const [terrain, afterTerrain] = weightedPick(rng, weights);
-  const [river, afterRiver] = weightedPick(afterTerrain, RIVER_WEIGHTS[terrain]);
+  const [terrain, afterTerrain] = weightedPick(rng, rules.terrainWeights);
+  const [river, afterRiver] = weightedPick(
+    afterTerrain,
+    rules.riverWeights[terrain] ?? RIVER_WEIGHTS[terrain],
+  );
   return [{ terrain, river }, afterRiver];
 }
 
@@ -48,15 +50,15 @@ export function drawTile(
 export function drawPlaceableTile(
   board: Board,
   rng: RngState,
-  weights: Readonly<Record<TerrainType, number>> = CANON_RULES.terrainWeights,
+  rules: RuleSet = CANON_RULES,
 ): { draw: TileDraw; rng: RngState; discarded: TileDraw[] } {
   const discarded: TileDraw[] = [];
   let state = rng;
 
   for (let attempt = 0; attempt < MAX_REDRAWS; attempt++) {
-    const [draw, next] = drawTile(state, weights);
+    const [draw, next] = drawTile(state, rules);
     state = next;
-    if (hasAnyLegalPlacement(board, draw)) return { draw, rng: state, discarded };
+    if (hasAnyLegalPlacement(board, draw, rules)) return { draw, rng: state, discarded };
     discarded.push(draw);
   }
 
@@ -98,11 +100,7 @@ export function setupGame(
   const [schemeDeck, afterSchemeShuffle] = shuffle(afterConfusionShuffle, SCHEME_DECK);
   const [revealed, ...remainingConfusion] = confusionDeck as ConfusionId[];
 
-  const { draw, rng, discarded } = drawPlaceableTile(
-    board,
-    afterSchemeShuffle,
-    rules.terrainWeights,
-  );
+  const { draw, rng, discarded } = drawPlaceableTile(board, afterSchemeShuffle, rules);
   const opener = order[first] as PlayerId;
 
   /* The Reserve starts full, so the first Leader already has the choice the
@@ -179,14 +177,14 @@ export function fillReserve(
   rules: RuleSet,
   rng: RngState,
 ): { reserve: readonly TileDraw[]; dropped: TileDraw[]; added: TileDraw[]; rng: RngState } {
-  const kept = current.filter((tile) => hasAnyLegalPlacement(board, tile));
-  const dropped = current.filter((tile) => !hasAnyLegalPlacement(board, tile));
+  const kept = current.filter((tile) => hasAnyLegalPlacement(board, tile, rules));
+  const dropped = current.filter((tile) => !hasAnyLegalPlacement(board, tile, rules));
   const reserve = [...kept];
   const added: TileDraw[] = [];
   let state = rng;
 
   while (reserve.length < rules.reserveSlots) {
-    const next = drawPlaceableTile(board, state, rules.terrainWeights);
+    const next = drawPlaceableTile(board, state, rules);
     state = next.rng;
     reserve.push(next.draw);
     added.push(next.draw);

@@ -60,6 +60,7 @@ type Mode =
   | { kind: 'idle' }
   | { kind: 'build' }
   | { kind: 'tower' }
+  | { kind: 'monument' }
   | { kind: 'walls' }
   | { kind: 'barter' }
   | { kind: 'prophet'; hostId: string | null };
@@ -128,7 +129,7 @@ export function App() {
   );
 
   const options = useMemo(
-    () => (state.drawnTile ? getLegalTilePlacements(state.board, state.drawnTile) : []),
+    () => (state.drawnTile ? getLegalTilePlacements(state.board, state.drawnTile, state.rules) : []),
     [state.board, state.drawnTile],
   );
   const active = currentPlayer(state);
@@ -147,6 +148,7 @@ export function App() {
 
   const buildAction = legal.find((a) => a.type === 'buildHarvester');
   const towerAction = legal.find((a) => a.type === 'buildTower');
+  const monumentAction = legal.find((a) => a.type === 'buildMonument');
   const wallsAction = legal.find((a) => a.type === 'buildWalls');
 
   const reset = () => {
@@ -493,11 +495,17 @@ export function App() {
                   ? buildAction.sites.map((s) => s.at)
                   : mode.kind === 'tower' && towerAction
                     ? towerAction.sites
-                    : []
+                    : mode.kind === 'monument' && monumentAction
+                      ? monumentAction.sites
+                      : []
               }
               onBuildSite={(at) => {
                 if (mode.kind === 'tower') {
                   dispatch({ type: 'buildTower', player: active, at });
+                  return;
+                }
+                if (mode.kind === 'monument') {
+                  dispatch({ type: 'buildMonument', player: active, at });
                   return;
                 }
                 const site = buildAction?.sites.find((s) => coordKey(s.at) === coordKey(at));
@@ -752,9 +760,15 @@ export function App() {
                 </>
               )}
             </Bar>
-          ) : mode.kind === 'build' || mode.kind === 'tower' ? (
+          ) : mode.kind === 'build' || mode.kind === 'tower' || mode.kind === 'monument' ? (
             <Bar
-              title={mode.kind === 'tower' ? 'Choose a Tower site' : 'Choose a building site'}
+              title={
+                mode.kind === 'tower'
+                  ? 'Choose a Tower site'
+                  : mode.kind === 'monument'
+                    ? 'Choose a Monument site'
+                    : 'Choose a building site'
+              }
               hint="Highlighted tiles on the board are legal."
             >
               <Act label="Cancel" variant="ghost" hint="Back to your actions." onClick={reset} />
@@ -832,6 +846,7 @@ export function App() {
                 legal={legal}
                 onBuild={() => setMode({ kind: 'build' })}
                 onTower={() => setMode({ kind: 'tower' })}
+                onMonument={() => setMode({ kind: 'monument' })}
                 onWalls={() => setMode({ kind: 'walls' })}
                 onBabel={() => dispatch({ type: 'buildBabel', player: active })}
                 onAttack={() => dispatch({ type: 'attack', player: active })}

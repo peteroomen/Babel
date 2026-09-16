@@ -49,7 +49,7 @@ export function resolveHeavenPhase(
      */
     if (state.falseProphet?.hostId === host.id) {
       const to = state.falseProphet.to;
-      if (isPassableAt(state.board, to)) {
+      if (isPassableAt(state.board, to, state.rules.impassableTerrain)) {
         events.push({
           type: 'hostMoved',
           id: host.id,
@@ -65,7 +65,12 @@ export function resolveHeavenPhase(
     }
 
     for (let point = 0; point < HOSTS[host.kind].movement + marching; point++) {
-      const options = stepOptions(state.board, current.at);
+      const options = stepOptions(
+        state.board,
+        current.at,
+        undefined,
+        state.rules.impassableTerrain,
+      );
       if (options.length === 0) break;
 
       /* Take the next square the players asked for, if it is a legal step. */
@@ -205,7 +210,7 @@ export function openBeaconDecision(state: GameState): {
   const owed = beaconsOwed(state);
   if (owed <= 0) return { state: { ...state, pendingBeacon: null }, events: [] };
 
-  const sites = getLegalBeaconSites(state.board, state.beacons);
+  const sites = getLegalBeaconSites(state.board, state.beacons, state.rules.impassableTerrain);
   if (sites.length === 0) {
     return {
       state: { ...state, pendingBeacon: null },

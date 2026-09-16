@@ -4,6 +4,8 @@ import { playGame } from './play.js';
 import { summarise, type Summary } from './metrics.js';
 import {
   BABEL_VARIANTS,
+  GEO_VARIANTS,
+  SINK_VARIANTS,
   STACK_VARIANTS,
   CONFIRM_VARIANTS,
   LAKE_VARIANTS,
@@ -21,6 +23,8 @@ import {
  *   npm run model -- --babel      -- Babel cost curves instead
  *   npm run model -- --confirm    -- control vs the leading candidate only
  *   npm run model -- --stack      -- the leading candidates alone and together
+ *   npm run model -- --geo        -- rivers, Desert and the map
+ *   npm run model -- --sink       -- the Monument
  *   npm run model -- --lake       -- the terrain-weight question instead
  *   npm run model -- --json       -- machine-readable, for diffing runs
  */
@@ -40,6 +44,8 @@ const SETS: readonly { flag: string; variants: readonly Variant[] }[] = [
   { flag: 'babel', variants: BABEL_VARIANTS },
   { flag: 'confirm', variants: CONFIRM_VARIANTS },
   { flag: 'stack', variants: STACK_VARIANTS },
+  { flag: 'geo', variants: GEO_VARIANTS },
+  { flag: 'sink', variants: SINK_VARIANTS },
 ];
 const variants: readonly Variant[] = SETS.find((set) => flag(set.flag))?.variants ?? VARIANTS;
 

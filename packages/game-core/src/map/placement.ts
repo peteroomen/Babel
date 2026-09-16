@@ -1,3 +1,4 @@
+import { CANON_RULES, type RuleSet } from '@babel-game/game-data';
 import { BABEL_COORD } from '../state/babel.js';
 import type { PlacedTile, TileDraw } from '../state/types.js';
 import {
@@ -54,22 +55,54 @@ export function riversMatch(
   });
 }
 
-export function isLegalPlacement(
+/**
+ * Does this placement join its river to river already on the board?
+ *
+ * Under `riverMustExtend` a river tile has to connect to the existing water
+ * rather than starting a new puddle somewhere else on the frontier. It is the
+ * blunt cure for the isolated single-tile river: a third of all rivers end up
+ * one tile long, and each one leaves edges demanding neighbours that the bag
+ * rarely supplies.
+ */
+export function extendsRiver(
   board: Board,
   at: Coord,
   draw: TileDraw,
   rotation: Rotation,
 ): boolean {
+  return EDGES.some((edge) => {
+    if (!hasRiverOn(draw.river, rotation, edge)) return false;
+    const other = tileAt(board, neighbour(at, edge));
+    return other !== undefined && hasRiverOn(other.river, other.rotation, OPPOSITE[edge]);
+  });
+}
+
+export function isLegalPlacement(
+  board: Board,
+  at: Coord,
+  draw: TileDraw,
+  rotation: Rotation,
+  rules: RuleSet = CANON_RULES,
+): boolean {
   if (tileAt(board, at) || isBabel(at)) return false;
   if (!isAdjacentToBoard(board, at)) return false;
-  return riversMatch(board, at, draw, rotation);
+  if (!riversMatch(board, at, draw, rotation)) return false;
+  if (rules.riverMustExtend && draw.river !== 'none') {
+    return extendsRiver(board, at, draw, rotation);
+  }
+  return true;
 }
 
 /** Which rotations of this tile would be legal at this square. */
-export function legalRotations(board: Board, at: Coord, draw: TileDraw): Rotation[] {
+export function legalRotations(
+  board: Board,
+  at: Coord,
+  draw: TileDraw,
+  rules: RuleSet = CANON_RULES,
+): Rotation[] {
   if (tileAt(board, at) || isBabel(at)) return [];
   if (!isAdjacentToBoard(board, at)) return [];
-  const legal = ROTATIONS.filter((r) => riversMatch(board, at, draw, r));
+  const legal = ROTATIONS.filter((r) => isLegalPlacement(board, at, draw, r, rules));
   /* A riverless tile is identical in all four rotations; offer it once. */
   return draw.river === 'none' ? legal.slice(0, 1) : legal;
 }
@@ -98,15 +131,23 @@ export type PlacementOption = { readonly at: Coord; readonly rotations: Rotation
  * The single source of truth for placement legality. GDD §6 / TECH_ARCHITECTURE:
  * the UI renders from this rather than reimplementing adjacency and river rules.
  */
-export function getLegalTilePlacements(board: Board, draw: TileDraw): PlacementOption[] {
+export function getLegalTilePlacements(
+  board: Board,
+  draw: TileDraw,
+  rules: RuleSet = CANON_RULES,
+): PlacementOption[] {
   return frontier(board)
-    .map((at) => ({ at, rotations: legalRotations(board, at, draw) }))
+    .map((at) => ({ at, rotations: legalRotations(board, at, draw, rules) }))
     .filter((option) => option.rotations.length > 0);
 }
 
 /** RD-002: a tile with nowhere legal to go is discarded and redrawn. */
-export function hasAnyLegalPlacement(board: Board, draw: TileDraw): boolean {
-  return frontier(board).some((at) => legalRotations(board, at, draw).length > 0);
+export function hasAnyLegalPlacement(
+  board: Board,
+  draw: TileDraw,
+  rules: RuleSet = CANON_RULES,
+): boolean {
+  return frontier(board).some((at) => legalRotations(board, at, draw, rules).length > 0);
 }
 
 export type { Coord, Edge, Rotation };

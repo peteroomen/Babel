@@ -70,6 +70,11 @@ npm run model -- --levers      # Attack cost and Barter cost instead
 npm run model -- --babel       # Babel cost curves instead
 npm run model -- --confirm     # control vs the leading candidate, more seeds
 npm run model -- --stack       # the leading candidates alone and together
+
+# The factorial sweep: every combination of five levers, in blocks.
+npm run sweep -- --cells 0-15 --games 12 --out a.json
+npm run sweep -- --cells 16-31 --games 12 --out b.json
+npm run sweep -- --report a.json b.json
 npm run model -- --lake        # the terrain-weight question instead
 npm run model -- --json        # machine-readable, for diffing runs
 ```
@@ -106,6 +111,13 @@ Most are counted straight off the event log. Two need defining:
 variants comparable to each other. `docs/MODEL_NOTES.md` puts it correctly: do
 not overfit them. If a rule change only looks good because of how a bot
 happens to prioritise, it is not a result.
+
+**Prefer the sweep to authored variants.** A head-to-head measures a lever
+against one arbitrary baseline; the sweep measures it across every setting of
+the others and shows interactions. Round three ranked two changes as winners
+that turned out to cancel each other, and round four caught a proposed sink
+that made the game 24 points worse. Both were visible in the factorial and
+invisible in the head-to-heads.
 
 **A bot defect looks exactly like a balance finding.** Every early run of this
 harness reported a 0% win rate, which read as a brutally hard game. It was

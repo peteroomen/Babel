@@ -48,6 +48,7 @@ export function ActionButtons({
   legal,
   onBuild,
   onTower,
+  onMonument,
   onWalls,
   onBabel,
   onAttack,
@@ -60,6 +61,7 @@ export function ActionButtons({
   legal: readonly LegalAction[];
   onBuild: () => void;
   onTower: () => void;
+  onMonument: () => void;
   onWalls: () => void;
   onBabel: () => void;
   onAttack: () => void;
@@ -73,6 +75,7 @@ export function ActionButtons({
 
   const build = find('buildHarvester');
   const tower = find('buildTower');
+  const monument = find('buildMonument');
   const walls = find('buildWalls');
   const babel = find('buildBabel');
   const attack = find('attack');
@@ -102,6 +105,13 @@ export function ActionButtons({
             : 'Cannot afford it, or every feature is already defended.'
         }
       />
+      {monument && (
+        <Act
+          label="Monument"
+          onClick={onMonument}
+          hint={`Costs ${cost(monument.cost)}. +${monument.prestige} Prestige and nothing else — it does not help humanity survive. Babel is shared; this is yours. One per feature.`}
+        />
+      )}
       <Act
         label="Walls"
         disabled={!walls}

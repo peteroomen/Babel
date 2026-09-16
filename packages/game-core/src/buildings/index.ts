@@ -1,6 +1,7 @@
 import {
   BUILDINGS,
   BUILDING_FOR_TERRAIN,
+  MONUMENT,
   TOWER,
   TOWER_COST,
   type BuildingType,
@@ -140,5 +141,48 @@ export function getLegalTowerSites(
     .filter((at) => canBuildTower(board, buildings, leader, at) === null);
 }
 
-export { BUILDINGS, BUILDING_FOR_TERRAIN, TOWER };
+/**
+ * Whether a Leader may raise a Monument here.
+ *
+ * One per connected feature, like a Tower, so the number a Leader can build
+ * scales with the map rather than running out — which is the whole point, since
+ * a Monument exists to give a mature economy somewhere to spend. Unlike a
+ * Tower, a Monument of a *different* owner does not block yours: two rivals may
+ * each raise one in the same feature and compete on Prestige there.
+ */
+export function canBuildMonument(
+  board: Board,
+  buildings: Buildings,
+  leader: LeaderState,
+  at: Coord,
+  cost: Partial<Record<ResourceType, number>>,
+): BuildRejection | 'featureAlreadyMonumented' | null {
+  if (!tileAt(board, at)) return 'noTile';
+  if (buildingAt(buildings, at)) return 'tileOccupiedByBuilding';
+
+  const mine = buildingsInFeature(board, buildings, at).some(
+    ({ building }) => building.type === MONUMENT && building.owner === leader.id,
+  );
+  if (mine) return 'featureAlreadyMonumented';
+
+  if (!canAfford(leader, cost)) return 'cannotAfford';
+  return null;
+}
+
+/** Every square where this Leader could raise a Monument right now. */
+export function getLegalMonumentSites(
+  board: Board,
+  buildings: Buildings,
+  leader: LeaderState,
+  cost: Partial<Record<ResourceType, number>>,
+): Coord[] {
+  return Object.keys(board)
+    .map((key) => {
+      const [x, y] = key.split(',').map(Number) as [number, number];
+      return { x, y };
+    })
+    .filter((at) => canBuildMonument(board, buildings, leader, at, cost) === null);
+}
+
+export { BUILDINGS, BUILDING_FOR_TERRAIN, MONUMENT, TOWER };
 export type { BuildingType };

@@ -5,6 +5,7 @@ import {
   MAX_ARMY,
   MUSTER_COST,
   RESOURCE_TYPES,
+  MONUMENT,
   TOWER,
   TOWER_COST,
   TOWER_PRESTIGE,
@@ -44,6 +45,7 @@ import {
 import {
   canAfford,
   canBuildHarvester,
+  canBuildMonument,
   canBuildTower,
   paySpecific,
 } from '../buildings/index.js';
@@ -149,11 +151,7 @@ function drawFor(
   events: GameEvent[];
 } {
   const events: GameEvent[] = [];
-  const { draw, rng, discarded } = drawPlaceableTile(
-    state.board,
-    state.rng,
-    state.rules.terrainWeights,
-  );
+  const { draw, rng, discarded } = drawPlaceableTile(state.board, state.rng, state.rules);
   for (const tile of discarded) {
     events.push({
       type: 'tileDiscarded',
@@ -269,6 +267,7 @@ function categoryOf(type: Command['type']): ActionCategory | null {
   switch (type) {
     case 'buildHarvester':
     case 'buildTower':
+    case 'buildMonument':
     case 'buildWalls':
       return 'build';
     case 'buildBabel':
@@ -412,7 +411,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
 
       const draw = state.drawnTile;
       if (!draw) throw new Error('no tile drawn');
-      if (!isLegalPlacement(state.board, command.at, draw, command.rotation)) {
+      if (!isLegalPlacement(state.board, command.at, draw, command.rotation, state.rules)) {
         throw new Error('illegal placement');
       }
 
@@ -714,6 +713,59 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
           },
         },
         'tower',
+      );
+    }
+
+    /**
+     * A Monument: Prestige for its owner, nothing for humanity.
+     *
+     * It costs a Leader the same scarce thing Babel does — the one action they
+     * get this turn — which is what makes it a decision rather than a bonus.
+     */
+    case 'buildMonument': {
+      requireActionPhase(state, command.player, 'build');
+      const monument = state.rules.monument;
+      if (!monument) throw new Error('these rules have no Monument');
+      const leader = leaderOf(state, command.player);
+      const rejection = canBuildMonument(
+        state.board,
+        state.buildings,
+        leader,
+        command.at,
+        monument.cost,
+      );
+      if (rejection) throw new Error(`cannot build a Monument: ${rejection}`);
+
+      events.push({
+        type: 'buildingConstructed',
+        player: command.player,
+        at: command.at,
+        building: MONUMENT,
+      });
+      events.push({
+        type: 'prestigeGained',
+        player: command.player,
+        amount: monument.prestige,
+        source: 'monument',
+      });
+
+      return finishAction(
+        {
+          ...state,
+          buildings: {
+            ...state.buildings,
+            [coordKey(command.at)]: { type: MONUMENT, owner: command.player },
+          },
+          leaders: {
+            ...state.leaders,
+            [command.player]: {
+              ...leader,
+              resources: paySpecific(leader, monument.cost),
+              prestige: leader.prestige + monument.prestige,
+            },
+          },
+        },
+        'monument',
       );
     }
 
@@ -1111,7 +1163,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
           const legal = neighbours(host.at).some(
             (candidate) =>
               coordKey(candidate) === coordKey(command.to as GameState['hosts'][number]['at']) &&
-              isPassableAt(state.board, candidate),
+              isPassableAt(state.board, candidate, state.rules.impassableTerrain),
           );
           if (!legal) throw new Error('that is not an adjacent legal tile');
 

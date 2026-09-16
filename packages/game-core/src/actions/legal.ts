@@ -12,6 +12,7 @@ import { canBuildBabel, pieceCost } from '../babel/index.js';
 import {
   canAfford,
   getLegalBuildSites,
+  getLegalMonumentSites,
   getLegalTowerSites,
   type BuildingType,
 } from '../buildings/index.js';
@@ -51,6 +52,12 @@ export type LegalAction =
       readonly cost: number;
     }
   | { readonly type: 'buildTower'; readonly sites: readonly Coord[] }
+  | {
+      readonly type: 'buildMonument';
+      readonly sites: readonly Coord[];
+      readonly cost: Partial<Record<ResourceType, number>>;
+      readonly prestige: number;
+    }
   | {
       readonly type: 'buildWalls';
       readonly edges: readonly WallEdge[];
@@ -100,6 +107,26 @@ export function getLegalActions(state: GameState, playerId: PlayerId): LegalActi
   if (canBuild && canAfford(leader, TOWER_COST)) {
     const towerSites = getLegalTowerSites(state.board, state.buildings, leader);
     if (towerSites.length > 0) actions.push({ type: 'buildTower', sites: towerSites });
+  }
+
+  /**
+   * A Monument: Prestige for its owner and nothing for humanity.
+   *
+   * Deliberately competing with Babel for the same action, which is GDD §1's
+   * second pillar made into a turn-by-turn choice — cooperate to survive,
+   * compete to be remembered.
+   */
+  const monument = state.rules.monument;
+  if (canBuild && monument && canAfford(leader, monument.cost)) {
+    const sites = getLegalMonumentSites(state.board, state.buildings, leader, monument.cost);
+    if (sites.length > 0) {
+      actions.push({
+        type: 'buildMonument',
+        sites,
+        cost: monument.cost,
+        prestige: monument.prestige,
+      });
+    }
   }
 
   /* GDD §17: 1 Wood places two Wall segments on edges between land tiles. */

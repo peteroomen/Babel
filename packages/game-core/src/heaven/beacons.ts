@@ -1,4 +1,4 @@
-import { SCALING, type LeaderCount, type Stage } from '@babel-game/game-data';
+import { CANON_RULES, SCALING, type LeaderCount, type Stage } from '@babel-game/game-data';
 import { BABEL_COORD } from '../state/babel.js';
 import { coordKey, neighbours, type Coord } from '../map/edges.js';
 import { isBabel, tileAt, type Board } from '../map/placement.js';
@@ -23,8 +23,12 @@ export function isFrontierTile(board: Board, at: Coord): boolean {
  * frontier land tile, not river or Lake, with at least one legal land route to
  * Babel. A square already holding a Beacon is excluded.
  */
-export function getLegalBeaconSites(board: Board, beacons: readonly Coord[]): Coord[] {
-  const distance = distancesToBabel(board);
+export function getLegalBeaconSites(
+  board: Board,
+  beacons: readonly Coord[],
+  impassable: readonly string[] = CANON_RULES.impassableTerrain,
+): Coord[] {
+  const distance = distancesToBabel(board, impassable);
   const taken = new Set(beacons.map(coordKey));
 
   return Object.keys(board)
@@ -35,7 +39,7 @@ export function getLegalBeaconSites(board: Board, beacons: readonly Coord[]): Co
     .filter((at) => {
       if (taken.has(coordKey(at))) return false;
       /* Not a river or Lake tile, and reachable overland. */
-      if (!isPassableAt(board, at)) return false;
+      if (!isPassableAt(board, at, impassable)) return false;
       if (!(coordKey(at) in distance)) return false;
       return isFrontierTile(board, at);
     })

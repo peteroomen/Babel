@@ -223,7 +223,7 @@ export type GameEvent =
       readonly type: 'prestigeGained';
       readonly player: PlayerId;
       readonly amount: number;
-      readonly source: 'babel' | 'building' | 'combat' | 'tower' | 'walls';
+      readonly source: 'babel' | 'building' | 'combat' | 'tower' | 'walls' | 'monument';
     }
   /** GDD §2: humanity completes Babel; highest Prestige wins individually. */
   | { readonly type: 'humanityWins'; readonly topPrestige: readonly PlayerId[] }
@@ -351,6 +351,7 @@ export type Command =
       readonly building: StructureType;
     }
   | { readonly type: 'buildTower'; readonly player: PlayerId; readonly at: Coord }
+  | { readonly type: 'buildMonument'; readonly player: PlayerId; readonly at: Coord }
   | {
       readonly type: 'buildWalls';
       readonly player: PlayerId;
