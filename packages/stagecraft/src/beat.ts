@@ -54,6 +54,16 @@ export type Beat = {
   readonly frame: GameState;
   readonly spot: Spotlight | null;
   readonly hold: number;
+  /**
+   * Where the camera should be, which is not the same as what the beat is
+   * about.
+   *
+   * A beat with nowhere of its own to point — a die landing, a card turning
+   * over — inherits the last place that did, so the map holds still through
+   * it rather than snapping back out and in again. A sequence should be one
+   * continuous move over the board, not a series of lurches.
+   */
+  readonly focus: readonly Coord[];
 };
 
 export type Script = {

@@ -99,9 +99,12 @@ export function direct(
   after: GameState,
   tempo: Tempo = STILL,
 ): Script {
-  const cut: Beat = { frame: after, spot: null, hold: 0 };
+  const cut: Beat = { frame: after, spot: null, hold: 0, focus: [] };
   let reel = reelFrom(before);
   const beats: Beat[] = [];
+  /* Carried forward, so a beat with nowhere of its own to point keeps the
+     camera where the last one left it. */
+  let focus: readonly Coord[] = [];
 
   for (const event of events) {
     const spot = spotFor(event, reel);
@@ -109,7 +112,13 @@ export function direct(
     if (!spot) continue;
     const hold = tempo[spot.kind];
     if (hold <= 0) continue;
-    beats.push({ frame: frameOf(after, reel.scene), spot: { ...spot, cause: event }, hold });
+    if (spot.at.length > 0) focus = spot.at;
+    beats.push({
+      frame: frameOf(after, reel.scene),
+      spot: { ...spot, cause: event },
+      hold,
+      focus,
+    });
   }
 
   const drift = sceneDiff(reel.scene, sceneOf(after));

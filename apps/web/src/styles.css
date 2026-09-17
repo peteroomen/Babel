@@ -183,6 +183,19 @@
   }
 
   /*
+   * The camera over the board.
+   *
+   * Slower than the beats it follows, and eased at both ends, because a camera
+   * that snaps is worse than no camera at all. It is always behind the action
+   * by design: the move starts when the beat does and is still settling as the
+   * next one begins, which is what makes a sequence read as one continuous
+   * sweep rather than a series of cuts.
+   */
+  .camera {
+    transition: transform calc(620ms * var(--pace, 1)) cubic-bezier(0.32, 0.72, 0.22, 1);
+  }
+
+  /*
    * A die, as an actual cube.
    *
    * Six faces carrying their own pips, so what you see edge-on while it turns
@@ -271,7 +284,8 @@
   .spotlit,
   .descending,
   .turning,
-  .tumbling {
+  .tumbling,
+  .camera {
     transition: none;
     animation: none;
   }

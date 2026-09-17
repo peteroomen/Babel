@@ -225,3 +225,36 @@ describe('pace', () => {
     }
   });
 });
+
+describe('the camera', () => {
+  it('carries its focus forward through beats that point nowhere', () => {
+    const at = { x: 2, y: 0 };
+    const state = setupGame(['Ada', 'Peter'], 'stagecraft-5');
+    const host = newHost('h7', 'ophanim', at);
+    const before: GameState = { ...state, hosts: [host], beacons: [at] };
+
+    const events: GameEvent[] = [
+      { type: 'heavenPhase', round: 1 },
+      { type: 'hostMoved', id: 'h7', from: at, to: { x: 1, y: 0 }, hadChoice: false },
+      /* Nowhere of its own to look: the map should hold where it is rather
+         than snap back out and in again. */
+      { type: 'confusionRevealed', card: 'lost-ledgers' },
+      { type: 'hostMoved', id: 'h7', from: { x: 1, y: 0 }, to: { x: 0, y: 0 }, hadChoice: false },
+    ];
+    const after: GameState = {
+      ...before,
+      hosts: [{ ...host, at: { x: 0, y: 0 } }],
+    };
+
+    const beats = direct(before, events, after, NATURAL).beats.slice(0, -1);
+    const focus = beats.map((beat) => beat.focus.map((c) => `${c.x},${c.y}`).join(' '));
+
+    expect(beats.map((b) => b.spot!.kind)).toEqual(['heaven', 'march', 'confusion', 'march']);
+    /* The phase opening has nothing to look at yet, so it stays wide. */
+    expect(focus[0]).toBe('');
+    expect(focus[1]).toBe('2,0 1,0');
+    /* The card inherits the march's ground rather than clearing it. */
+    expect(focus[2]).toBe('2,0 1,0');
+    expect(focus[3]).toBe('1,0 0,0');
+  });
+});

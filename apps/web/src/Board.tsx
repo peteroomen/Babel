@@ -301,12 +301,15 @@ function Cartouche({
   w,
   h,
   stage,
+  papery,
 }: {
   cx: number;
   cy: number;
   w: number;
   h: number;
   stage: string;
+  /** False while the camera is moving; see `papery` in `Board`. */
+  papery: boolean;
 }) {
   const hw = w / 2;
   const hh = h / 2;
@@ -318,7 +321,12 @@ function Cartouche({
 
   return (
     <g transform={`translate(${cx} ${cy})`} aria-hidden>
-      <path d={tablet} fill="var(--papyrus-sheet)" opacity={0.55} filter="url(#deckle-fine)" />
+      <path
+        d={tablet}
+        fill="var(--papyrus-sheet)"
+        opacity={0.55}
+        filter={papery ? 'url(#deckle-fine)' : undefined}
+      />
       <path d={tablet} fill="none" stroke={INK} strokeWidth={1.2} opacity={0.42} />
       <path
         d={tablet}
@@ -384,7 +392,58 @@ type Props = {
   spot?: Spotlight | null;
   /** How long that moment is being held, so nothing outlives it. */
   hold?: number;
+  /** Squares the camera should move to. Empty frames the whole board. */
+  focus?: readonly Coord[];
 };
+
+/**
+ * How many squares across the close shot should be.
+ *
+ * Expressed in squares rather than as a zoom factor so a tile is about the
+ * same size on screen whatever the map has grown to: on a small board this
+ * works out at no zoom at all, and the camera simply stays wide.
+ */
+const CLOSE_SPAN = 6;
+const MAX_ZOOM = 2.2;
+
+/** Where the camera sits, in the board's own coordinates. */
+type Shot = { readonly x: number; readonly y: number; readonly zoom: number };
+
+/**
+ * Frame the squares a beat is pointing at, without leaving the board.
+ *
+ * Panning past the edge would show desk and then nothing, which reads as the
+ * map coming loose rather than as a camera, so the centre is clamped to keep
+ * the visible window inside the frame.
+ */
+function shotFor(
+  focus: readonly { x: number; y: number }[],
+  frame: { readonly width: number; readonly height: number },
+): Shot {
+  if (focus.length === 0) {
+    return { x: frame.width / 2, y: frame.height / 2, zoom: 1 };
+  }
+
+  const zoom = Math.min(
+    MAX_ZOOM,
+    Math.max(1, Math.min(frame.width, frame.height) / (CLOSE_SPAN * CELL)),
+  );
+  const mid = (values: number[]) => (Math.min(...values) + Math.max(...values)) / 2 + CELL / 2;
+  const seenX = mid(focus.map((at) => at.x));
+  const seenY = mid(focus.map((at) => at.y));
+
+  /* Half the window, in board units: how close the centre may get to an edge. */
+  const halfX = frame.width / (2 * zoom);
+  const halfY = frame.height / (2 * zoom);
+  const clamp = (value: number, half: number, span: number) =>
+    half * 2 >= span ? span / 2 : Math.min(Math.max(value, half), span - half);
+
+  return {
+    x: clamp(seenX, halfX, frame.width),
+    y: clamp(seenY, halfY, frame.height),
+    zoom,
+  };
+}
 
 /** Half-edge segments, drawn from the tile centre out to each river edge. */
 function riverPath(river: TileDraw['river'], rotation: Rotation): ReactElement[] {
@@ -442,6 +501,7 @@ export function Board({
   live = true,
   spot = null,
   hold = 0,
+  focus = [],
 }: Props) {
   const options =
     live && state.drawnTile
@@ -488,6 +548,31 @@ export function Board({
   const height = (sheetRows + padY * 2) * CELL;
 
   const px = (c: Coord) => ({ x: (c.x - minX) * CELL, y: (c.y - minY) * CELL });
+
+  /**
+   * The camera. It moves itself: in on whatever a beat is pointing at, along
+   * with a Host as it walks, and back out to the whole board when the screen
+   * has finished talking.
+   */
+  const shot = shotFor(focus.map(px), { width, height });
+  /**
+   * Whether the paper may be paper.
+   *
+   * The sheet's torn edge and its fibre grain are live turbulence, and a
+   * filter has to be re-rasterised at every scale it is drawn at — so under a
+   * moving camera they are re-computed every frame, which measured at eight
+   * per cent of frames missing their deadline against one and a half.
+   *
+   * They are therefore a property of the still shot. The moment the camera
+   * leaves its wide position the paper goes plain, and it comes back when the
+   * camera settles. It changes exactly when the eye is following something
+   * else, and when zoomed in the torn edges are usually off screen anyway.
+   */
+  const papery = shot.zoom === 1;
+  const camera = [
+    `translate(${width / 2 - shot.x * shot.zoom}px, ${height / 2 - shot.y * shot.zoom}px)`,
+    `scale(${shot.zoom})`,
+  ].join(' ');
 
   const sheet = {
     x: (sheetMinX - minX) * CELL,
@@ -545,6 +630,14 @@ export function Board({
       role="img"
       aria-label="BABEL board"
     >
+      {/*
+        One group for the whole scene, so the camera is a single transform
+        rather than a recalculated viewBox. `will-change` promotes it to its
+        own layer: the papyrus underneath is built out of turbulence filters,
+        and without the hint they would be re-rasterised on every frame of a
+        move.
+      */}
+      <g className="camera" style={{ transform: camera, willChange: 'transform' }}>
       {/* Desk furniture, drawn first so the sheet always lies on top of it */}
       <CompassRose cx={compass.cx} cy={compass.cy} r={compass.r} />
       <Cartouche
@@ -553,10 +646,11 @@ export function Board({
         w={cartouche.w}
         h={cartouche.h}
         stage={STAGE_LABEL[state.stage]}
+        papery={papery}
       />
 
       {/* The papyrus the map is drawn on, torn at its edges */}
-      <g filter="url(#deckle-map)">
+      <g filter={papery ? 'url(#deckle-map)' : undefined}>
         <rect
           x={sheet.x}
           y={sheet.y}
@@ -566,9 +660,11 @@ export function Board({
         />
       </g>
       {/* Fibre grain, clipped to the sheet so it never bleeds onto the desk */}
-      <g clipPath="url(#sheet-clip)" opacity={0.5} filter="url(#fibre)">
-        <rect width={width} height={height} />
-      </g>
+      {papery && (
+        <g clipPath="url(#sheet-clip)" opacity={0.5} filter="url(#fibre)">
+          <rect x={sheet.x} y={sheet.y} width={sheet.width} height={sheet.height} />
+        </g>
+      )}
       <clipPath id="sheet-clip">
         <rect x={sheet.x} y={sheet.y} width={sheet.width} height={sheet.height} />
       </clipPath>
@@ -900,6 +996,7 @@ export function Board({
           No legal placement for this tile.
         </text>
       )}
+      </g>
     </svg>
   );
 }

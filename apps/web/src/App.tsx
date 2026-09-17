@@ -734,6 +734,7 @@ export function App() {
               live={!stage.busy}
               spot={stage.spot}
               hold={stage.hold}
+              focus={stage.focus}
             />
             <DiceTray state={state} />
             <Announce spot={stage.spot} state={stage.view} ms={stage.hold} />

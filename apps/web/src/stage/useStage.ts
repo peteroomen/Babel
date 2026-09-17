@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { GameEvent, GameState } from '@babel-game/game-core';
+import type { Coord, GameEvent, GameState } from '@babel-game/game-core';
 import { STILL, direct, type Beat, type Spotlight, type Tempo } from '@babel-game/stagecraft';
 
 /**
@@ -26,6 +26,9 @@ function useStillness(): boolean {
   return still;
 }
 
+/** One shared empty, so an idle stage does not re-render on identity alone. */
+const EMPTY: readonly Coord[] = [];
+
 export type Stage = {
   /** The world to draw right now: a held frame, or the live state. */
   readonly view: GameState;
@@ -35,6 +38,8 @@ export type Stage = {
   readonly busy: boolean;
   /** How long this beat is being held, so a transition can match it. */
   readonly hold: number;
+  /** Where the map should be looking. Empty means the whole board. */
+  readonly focus: readonly Coord[];
   /** Give up on the story and show the present. */
   readonly skip: () => void;
   /** Hand the stage a transition to play. */
@@ -96,6 +101,7 @@ export function useStage(live: GameState, tempo: Tempo = STILL): Stage {
     view: current?.frame ?? live,
     spot: current?.spot ?? null,
     hold: current?.hold ?? 0,
+    focus: current?.focus ?? EMPTY,
     busy,
     skip,
     play,
