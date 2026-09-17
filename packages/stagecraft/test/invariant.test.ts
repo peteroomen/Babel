@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyMove, setupGame, type GameState } from '@babel-game/game-core';
-import { CANON_RULES, ROLLED_HEAVEN, type RuleSet } from '@babel-game/game-data';
+import { CANON_RULES, CANON_WALLS, ROLLED_HEAVEN, type RuleSet } from '@babel-game/game-data';
 import { ARCHETYPES, aiRandom, nextCommand, tableCommand, type AiSeats } from '@babel-game/game-ai';
 import { direct, heldFor } from '../src/index.js';
 
@@ -90,14 +90,12 @@ describe('every transition the rules can produce', () => {
 
 /** Every scene-moving event must actually be seen during those games. */
 describe('coverage', () => {
-  it('exercises the events the board cares about', () => {
+  /** Every event type one game produced. */
+  function eventsIn(seed: string, rules: RuleSet): Set<string> {
     const seen = new Set<string>();
-    let state: GameState = setupGame(['Ada', 'Peter', 'Rook'], 'coverage', {
-      ...CANON_RULES,
-      heavenSpawn: ROLLED_HEAVEN,
-    });
+    let state: GameState = setupGame(['Ada', 'Peter', 'Rook'], seed, rules);
     const seats = seatsFor(state.order);
-    const rand = aiRandom('coverage');
+    const rand = aiRandom(seed);
 
     while (state.phase !== 'gameOver' && state.round <= 60) {
       const command = tableCommand(state, rand) ?? nextCommand(state, seats, rand);
@@ -105,6 +103,32 @@ describe('coverage', () => {
       const { state: after, events } = applyMove(state, command);
       for (const event of events) seen.add(event.type);
       state = after;
+    }
+    return seen;
+  }
+
+  it('exercises the events the board cares about', () => {
+    /**
+     * Unioned across seeds, not read off one game.
+     *
+     * A single seed makes this test a hostage to every rule change: the agents
+     * are not obliged to reach for a given action in a given game, so one
+     * placement decided differently three rounds in can take a whole event type
+     * off the board. v0.4's river rule did exactly that to `wallsBuilt`.
+     *
+     * Walls themselves left canon in v0.4, but the Director and the board still
+     * draw `wallsBuilt` and `wallBroken` for a table that has switched them back
+     * on. What is covered here is the board's event vocabulary, not canon's
+     * action list, so the run turns them on.
+     */
+    const rules: RuleSet = {
+      ...CANON_RULES,
+      heavenSpawn: ROLLED_HEAVEN,
+      walls: CANON_WALLS,
+    };
+    const seen = new Set<string>();
+    for (const seed of ['coverage', 'coverage-b', 'coverage-c', 'coverage-d']) {
+      for (const type of eventsIn(seed, rules)) seen.add(type);
     }
 
     for (const type of [
