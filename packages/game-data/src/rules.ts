@@ -407,6 +407,14 @@ export const V03_RULES: RuleSet = {
  *
  * The rule the Wall *machinery* still serves is a variant: `walls: CANON_WALLS`
  * puts them back, which is what keeps the comparison above re-runnable.
+ *
+ * **v0.4 against v0.3, 160 paired seeds** (`npm run model -- --canon --paired`):
+ * 76.9% shared wins against 75.6%, 38.9 rounds against 41.6, Babel's river 6.0
+ * tiles against 2.6. The difficulty drift each change showed on its own does not
+ * survive putting them together, because they pull opposite ways: the river
+ * makes the ground harder for Heaven, and the Walls that went with it were the
+ * other thing slowing Heaven down. Net, v0.4 is the same game three rounds
+ * shorter, with a river in it.
  */
 export const CANON_RULES: RuleSet = {
   ...V03_RULES,

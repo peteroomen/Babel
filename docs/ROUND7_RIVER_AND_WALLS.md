@@ -307,7 +307,9 @@ changed its payout, but it decides entirely where the river runs.
 
 > **Adopted.** Both are canon as of v0.4 (`CANON_RULES`,
 > `packages/game-data/src/rules.ts`). This section is what was recommended and
-> why; `docs/RULES_QUICK_REFERENCE.md` is what the game now plays.
+> why; `docs/RULES_QUICK_REFERENCE.md` is what the game now plays. The two
+> changes together were then measured against the v0.3 they replace — see
+> **v0.4 as a whole**, below.
 
 ### Adopt the river at +1, per tile, on reach
 
@@ -386,3 +388,41 @@ shaping rather than Walls, which is a policy change, not a rules change.
 - **A tile-choice rule.** Every river number here assumes a blind draw. A Reserve,
   or any rule that lets a Leader pick terrain, uncaps the river strategy and the
   cap stops being decorative.
+
+
+---
+
+## v0.4 as a whole, against the v0.3 it replaces
+
+Each change above was measured on its own, against a control carrying neither.
+That is the right way to attribute an effect and the wrong way to decide a
+version, because the thing a table actually chooses between is all of v0.3 and
+all of v0.4. `npm run model -- --canon --paired`, 160 seeds:
+
+| | v0.3 | v0.4 |
+|---|---|---|
+| Shared win rate | 75.6% | 76.9% |
+| Mean rounds | 41.6 | **38.9** |
+| Mean Babel pieces | 11.3 | 11.5 |
+| Reach from Babel | 2.61 | **6.02** |
+| River Prestige, share of all | — | 2.8% |
+| Walls' share of actions | 3.3% | — |
+| Payout per placement | 1.836 | 1.809 |
+
+**The difficulty drift does not survive putting the two changes together.** 1.3
+points is nothing at this sample, against the 5.7 the river showed on its own.
+The reason is that the changes pull opposite ways and nobody would have guessed
+the size: the river makes the ground harder for Heaven, and Walls were the other
+thing slowing Heaven down, so removing them gives back roughly what the river
+takes. This is the round-three lesson again — two changes that each look like a
+result can cancel — except that this time cancelling is the outcome we wanted.
+
+So v0.4 is the same game, three rounds shorter, with a river in it and one fewer
+action on the bar.
+
+One number moved the way the original idea predicted, for the first time:
+payout per placement falls from 1.836 to 1.809. That is Leaders giving up about
+1.5% of their placement income to the river. It is small, it is the first run of
+several to show it at all, and it is not far outside what these runs vary by —
+so it is a hint that the trade-off is real, not evidence of it. The human table
+is still what decides that question.
