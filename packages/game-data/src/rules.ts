@@ -284,28 +284,38 @@ export const LEGACY_V01_RULES: RuleSet = {
 };
 
 /**
- * Canon v0.2 — what the game plays under now.
- *
- * Two changes from v0.1, both carried by the factorial sweep in
- * docs/MILESTONE_6_BASELINE.md, which measured each across every setting of the
- * others over 384 games:
- *
- * - **Babel costs a broad bundle** (+21.9 points on the shared win rate). Every
- *   Stage wants three resources instead of Brick and Food, so a Leader's income
- *   is useful to Babel whatever ground they are sitting on, and Metal finally
- *   has a sink.
- * - **Barter takes four of one resource** (+9.4 points, and the only lever that
- *   moved Barter's share of actions at all). It stops being the way to convert
- *   any pile into the one thing Babel wants.
- *
- * Together: 80% shared wins against v0.1's 60%, and games of 48 rounds rather
- * than 66.
+ * Canon v0.2 — the first pass of Milestone 6, kept for comparison.
  */
-export const CANON_RULES: RuleSet = {
+export const V02_RULES: RuleSet = {
   ...LEGACY_V01_RULES,
   barterMode: 'sameKind',
   barterCost: 4,
   babelPieceCost: BROAD_PIECE_COST,
+};
+
+/**
+ * Canon v0.3 — what the game plays under now.
+ *
+ * On top of v0.2's broad Babel curve and same-kind Barter at four:
+ *
+ * - **Barter no longer costs the action.** Same-kind Barter at four destroys
+ *   three resources every time it runs, so it was already the best sink in the
+ *   game — it was just gated behind the only thing a Leader is short of. Free,
+ *   it runs three times as often and the share of everything earned that is
+ *   never spent falls from about a half to under a third.
+ * - **Heaven is rolled from a table rather than spawning one Host per Beacon.**
+ *   A d6 keyed to Babel's Stage says what arrives, the open Beacons say where,
+ *   and a printed number per Stage says how many. That decouples the amount of
+ *   Heaven from the player count, and lets Stage II and III introduce Hosts
+ *   that the table's existing answers do not cover.
+ *
+ * Together: 67% shared wins over 30 games at 1.61 arrivals a round, against
+ * 92% and 2.03 for v0.2. Fewer Hosts on the board and a game you can lose.
+ */
+export const CANON_RULES: RuleSet = {
+  ...V02_RULES,
+  barterIsFree: true,
+  heavenSpawn: { table: SPAWN_TABLE, arrivals: ARRIVALS_BY_STAGE },
 };
 
 /** At most this many Reserve slots. A guard, not a design statement. */
@@ -336,11 +346,8 @@ export const TIERED_BEACONS = BEACON_TIERS;
 /** Heaven with the harder roster: Herald, Colossus, Swarm, Warded. */
 export const DEEP_BEACONS = DEEP_BEACON_TIERS;
 
-/** The d6 spawn table, at the default arrival rate. */
-export const ROLLED_HEAVEN: RuleSet['heavenSpawn'] = {
-  table: SPAWN_TABLE,
-  arrivals: ARRIVALS_BY_STAGE,
-};
+/** The d6 spawn table at its default rate — what canon v0.3 plays. */
+export const ROLLED_HEAVEN: RuleSet['heavenSpawn'] = CANON_RULES.heavenSpawn;
 
 /** Two of one resource buys one more Attack die, up to three. */
 export const MUNITIONS_RULE: RuleSet['munitions'] = {

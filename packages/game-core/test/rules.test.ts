@@ -3,6 +3,7 @@ import {
   ARRIVALS_BY_STAGE,
   CANON_RULES,
   DEEP_BEACONS,
+  V02_RULES,
   HOSTS,
   ROLLED_HEAVEN,
   SPAWN_TABLE,
@@ -61,13 +62,16 @@ function atAction(state: GameState): GameState {
 }
 
 describe('the ruleset travels with the game', () => {
-  it('defaults to canon v0.2', () => {
+  it('defaults to canon v0.3', () => {
     const state = setupGame(['Ada', 'Peter'], 'seed');
     expect(state.rules).toEqual(CANON_RULES);
-    /* v0.2: same-kind Barter at four cards and the broad Babel curve. */
+    /* v0.2 carried forward: same-kind Barter at four, broad Babel curve. */
     expect(state.rules.barterMode).toBe('sameKind');
     expect(state.rules.barterCost).toBe(4);
     expect(state.rules.babelPieceCost[1]).toEqual({ brick: 1, wood: 1, food: 1 });
+    /* v0.3 adds: Barter is free, and Heaven is rolled from a table. */
+    expect(state.rules.barterIsFree).toBe(true);
+    expect(state.rules.heavenSpawn).not.toBeNull();
     expect(state.reserve).toEqual([]);
   });
 
@@ -454,7 +458,10 @@ describe('levers on the resource pile', () => {
   });
 
   it('a paid Barter still ends the turn', () => {
-    const state = withHand(atAction(setupGame(['Ada', 'Peter'], 'paid')), { wood: 8 });
+    /* v0.3 makes Barter free; v0.2 is where it cost the action. */
+    const state = withHand(atAction(setupGame(['Ada', 'Peter'], 'paid', V02_RULES)), {
+      wood: 8,
+    });
     const me = currentPlayer(state);
     const after = applyMove(state, {
       type: 'barter',
@@ -811,7 +818,11 @@ describe('Heaven rolled from a table', () => {
     expect(seen).toEqual(new Set(['ophanim']));
   });
 
-  it('still spawns one per Beacon when no table is set', () => {
-    expect(CANON_RULES.heavenSpawn).toBeNull();
+  it('is what canon plays, and is absent from the earlier rulesets', () => {
+    expect(CANON_RULES.heavenSpawn).not.toBeNull();
+    expect(CANON_RULES.heavenSpawn?.arrivals).toEqual([1, 2, 2]);
+    /* v0.2 and v0.1 keep GDD §13's one Host per Beacon per round. */
+    expect(V02_RULES.heavenSpawn).toBeNull();
+    expect(LEGACY_V01_RULES.heavenSpawn).toBeNull();
   });
 });

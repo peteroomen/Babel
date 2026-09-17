@@ -10,7 +10,7 @@ import {
   type Rotation,
   type TileDraw,
 } from '@babel-game/game-core';
-import { STAGE_LABEL } from '@babel-game/game-data';
+import { STAGE_LABEL, type HostKind } from '@babel-game/game-data';
 import {
   BEACON_LIGHT,
   BUILDING_GLYPH,
@@ -37,6 +37,182 @@ const CELL = 64;
  * to a tile already down.
  */
 const SHEET_PAD = 1;
+
+/** Points for a regular polygon, so a ward ring is one path rather than six. */
+function ringPoints(cx: number, cy: number, r: number, sides: number, turn = 0): string {
+  return Array.from({ length: sides }, (_, i) => {
+    const angle = turn + (i * 2 * Math.PI) / sides;
+    return `${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`;
+  }).join(' ');
+}
+
+/** A Host glyph on its own, for a legend or a list. */
+export function HostIcon({ kind, size = 34 }: { kind: HostKind; size?: number }): ReactElement {
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${CELL} ${CELL}`} aria-hidden="true">
+      <HostGlyph kind={kind} shieldUp />
+    </svg>
+  );
+}
+
+/**
+ * One Host, drawn so its kind is readable from across the table.
+ *
+ * Every Host is ivory and gold — that is the family, and it never changes.
+ * The *kind* is carried by silhouette rather than colour, because a player
+ * deciding which Host to shoot first is reading the board at a glance and from
+ * an angle: a Colossus is simply larger, a Swarm is three bodies because
+ * killing it leaves three behind, a Warded sits inside a closed ring because
+ * Tower dice cannot reach through it, a Herald broadcasts a dashed halo
+ * because its entire effect is on its neighbours. Shape alone should be enough
+ * to tell you what the thing does.
+ */
+function HostGlyph({ kind, shieldUp }: { kind: HostKind; shieldUp: boolean }): ReactElement {
+  const c = CELL / 2;
+  const u = (n: number) => CELL * n;
+
+  /* The shared body: a shadow so the piece lifts off the terrain, then the
+     ivory face and its gold rim. Every kind below is a variation on this. */
+  const body = (r: number, fill: string = HEAVEN_IVORY) => (
+    <>
+      <circle cx={c} cy={c} r={r + u(0.03)} fill="#00000055" />
+      <circle cx={c} cy={c} r={r} fill={fill} stroke={HEAVEN_GOLD} strokeWidth={3} />
+    </>
+  );
+
+  switch (kind) {
+    /* GDD §14: the Shield is a ring that comes off on the first hit, so it has
+       to be visible — it is the difference between one die and two. */
+    case 'seraph':
+      return (
+        <>
+          {shieldUp && (
+            <circle
+              cx={c}
+              cy={c}
+              r={u(0.33)}
+              fill="none"
+              stroke={HEAVEN_IVORY}
+              strokeWidth={3}
+              opacity={0.95}
+            />
+          )}
+          <ellipse
+            cx={c}
+            cy={c}
+            rx={u(0.17)}
+            ry={u(0.26)}
+            fill={SERAPH_CORE}
+            stroke={HEAVEN_GOLD}
+            strokeWidth={2}
+          />
+        </>
+      );
+
+    /* Armoured rather than fast: a plate across the face. */
+    case 'zealot':
+      return (
+        <>
+          {body(u(0.26))}
+          <polygon points={ringPoints(c, c, u(0.19), 5, -Math.PI / 2)} fill={HEAVEN_GOLD} opacity={0.9} />
+        </>
+      );
+
+    /* Wings, because rivers and Walls are simply not in its way. */
+    case 'flier':
+      return (
+        <>
+          <path
+            d={`M ${c - u(0.04)} ${c - u(0.02)} Q ${c - u(0.36)} ${c - u(0.26)} ${c - u(0.3)} ${c + u(0.1)} Q ${c - u(0.18)} ${c - u(0.02)} ${c - u(0.04)} ${c + u(0.06)} Z`}
+            fill={HEAVEN_IVORY}
+            stroke={HEAVEN_GOLD}
+            strokeWidth={2}
+          />
+          <path
+            d={`M ${c + u(0.04)} ${c - u(0.02)} Q ${c + u(0.36)} ${c - u(0.26)} ${c + u(0.3)} ${c + u(0.1)} Q ${c + u(0.18)} ${c - u(0.02)} ${c + u(0.04)} ${c + u(0.06)} Z`}
+            fill={HEAVEN_IVORY}
+            stroke={HEAVEN_GOLD}
+            strokeWidth={2}
+          />
+          {body(u(0.15), SERAPH_CORE)}
+        </>
+      );
+
+    /* Fragile itself; the halo is the threat, so the halo is what you see. */
+    case 'herald':
+      return (
+        <>
+          <circle
+            cx={c}
+            cy={c}
+            r={u(0.42)}
+            fill="none"
+            stroke={HEAVEN_GOLD}
+            strokeWidth={2}
+            strokeDasharray="4 4"
+            opacity={0.85}
+          />
+          {body(u(0.2))}
+          <path
+            d={`M ${c - u(0.1)} ${c + u(0.08)} L ${c + u(0.12) } ${c - u(0.12)} L ${c + u(0.12)} ${c + u(0.08)} Z`}
+            fill={HEAVEN_GOLD}
+          />
+        </>
+      );
+
+    /* Four hits and it eats buildings: the biggest thing on the board, with
+       the cleft of the wall it just pulled down. */
+    case 'colossus':
+      return (
+        <>
+          {body(u(0.36), '#efdcb6')}
+          <path
+            d={`M ${c - u(0.04)} ${c - u(0.26)} L ${c + u(0.12)} ${c - u(0.05)} L ${c + u(0.01)} ${c - u(0.01)} L ${c + u(0.13)} ${c + u(0.26)} L ${c - u(0.14)} ${c + u(0.02)} L ${c - u(0.02)} ${c - u(0.02)} Z`}
+            fill={HEAVEN_GOLD}
+          />
+        </>
+      );
+
+    /* Three bodies, because three is exactly what killing it leaves behind. */
+    case 'swarm':
+      return (
+        <>
+          <circle cx={c - u(0.14)} cy={c + u(0.1)} r={u(0.15)} fill="#00000044" />
+          <circle cx={c + u(0.14)} cy={c + u(0.1)} r={u(0.15)} fill="#00000044" />
+          <circle cx={c} cy={c - u(0.14)} r={u(0.15)} fill="#00000044" />
+          <circle cx={c - u(0.14)} cy={c + u(0.08)} r={u(0.14)} fill={HEAVEN_IVORY} stroke={HEAVEN_GOLD} strokeWidth={2} />
+          <circle cx={c + u(0.14)} cy={c + u(0.08)} r={u(0.14)} fill={HEAVEN_IVORY} stroke={HEAVEN_GOLD} strokeWidth={2} />
+          <circle cx={c} cy={c - u(0.16)} r={u(0.14)} fill={HEAVEN_IVORY} stroke={HEAVEN_GOLD} strokeWidth={2} />
+        </>
+      );
+
+    /* Sealed against Tower dice, so it is drawn sealed: a closed ward around
+       the body that nothing reaches through. */
+    case 'warded':
+      return (
+        <>
+          <polygon
+            points={ringPoints(c, c, u(0.38), 6, -Math.PI / 2)}
+            fill="none"
+            stroke={HEAVEN_GOLD}
+            strokeWidth={3}
+          />
+          {body(u(0.22))}
+          <polygon points={ringPoints(c, c, u(0.12), 6, -Math.PI / 2)} fill={HEAVEN_GOLD} opacity={0.8} />
+        </>
+      );
+
+    /* The Ophanim wheel — the shape every other kind is read against. */
+    default:
+      return (
+        <>
+          {body(u(0.26))}
+          <circle cx={c} cy={c} r={u(0.13)} fill="none" stroke={HEAVEN_GOLD} strokeWidth={2} />
+        </>
+      );
+  }
+}
+
 
 /**
  * Turn the painted tile art by a quarter turn or three, chosen from the tile's
@@ -535,91 +711,13 @@ export function Board({
         );
       })}
 
-      {/* Heavenly Hosts */}
-      {state.hosts.map((host, index) => {
-        const { x, y } = px(host.at);
-        /* Stacked Hosts fan out slightly so they stay countable. */
-        const offset = index % 3 === 0 ? 0 : index % 3 === 1 ? -9 : 9;
-        const chosen = selectedHosts[host.id] ?? 0;
-        return (
-          <g
-            key={`host-${host.id}`}
-            transform={`translate(${x + offset} ${y})`}
-            onClick={() => onHost?.(host.id)}
-            style={{ cursor: onHost ? 'pointer' : 'default' }}
-          >
-            {host.kind === 'seraph' ? (
-              <>
-                {host.shieldUp && (
-                  <circle
-                    cx={CELL / 2}
-                    cy={CELL / 2}
-                    r={CELL * 0.33}
-                    fill="none"
-                    stroke={HEAVEN_IVORY}
-                    strokeWidth={3}
-                    opacity={0.95}
-                  />
-                )}
-                <ellipse
-                  cx={CELL / 2}
-                  cy={CELL / 2}
-                  rx={CELL * 0.17}
-                  ry={CELL * 0.26}
-                  fill={SERAPH_CORE}
-                  stroke={HEAVEN_GOLD}
-                  strokeWidth={2}
-                />
-              </>
-            ) : (
-              <>
-                <circle
-                  cx={CELL / 2}
-                  cy={CELL / 2}
-                  r={CELL * 0.29}
-                  fill="#00000055"
-                />
-                <circle
-                  cx={CELL / 2}
-                  cy={CELL / 2}
-                  r={CELL * 0.26}
-                  fill={HEAVEN_IVORY}
-                  stroke={HEAVEN_GOLD}
-                  strokeWidth={3}
-                />
-                <circle
-                  cx={CELL / 2}
-                  cy={CELL / 2}
-                  r={CELL * 0.13}
-                  fill="none"
-                  stroke={HEAVEN_GOLD}
-                  strokeWidth={2}
-                />
-              </>
-            )}
-            {chosen > 0 && (
-              <text
-                x={CELL / 2}
-                y={CELL / 2 + 4}
-                textAnchor="middle"
-                fontSize={12}
-                fontWeight={700}
-                fill="#a33"
-                fontFamily="system-ui"
-              >
-                {chosen}
-              </text>
-            )}
-          </g>
-        );
-      })}
-
       {/* Squares offered while siting a Beacon */}
       {beaconSites.map((at) => {
         const { x, y } = px(at);
         return (
           <g
             key={`bs-${coordKey(at)}`}
+            data-beacon-site=""
             transform={`translate(${x} ${y})`}
             onClick={() => onBeaconSite?.(at)}
             style={{ cursor: 'pointer' }}
@@ -674,6 +772,38 @@ export function Board({
           </g>
         );
       })()}
+
+      {/* Heavenly Hosts */}
+      {state.hosts.map((host, index) => {
+        const { x, y } = px(host.at);
+        /* Stacked Hosts fan out slightly so they stay countable. */
+        const offset = index % 3 === 0 ? 0 : index % 3 === 1 ? -9 : 9;
+        const chosen = selectedHosts[host.id] ?? 0;
+        return (
+          <g
+            key={`host-${host.id}`}
+            data-host-kind={host.kind}
+            transform={`translate(${x + offset} ${y})`}
+            onClick={() => onHost?.(host.id)}
+            style={{ cursor: onHost ? 'pointer' : 'default' }}
+          >
+            <HostGlyph kind={host.kind} shieldUp={host.shieldUp} />
+            {chosen > 0 && (
+              <text
+                x={CELL / 2}
+                y={CELL / 2 + 4}
+                textAnchor="middle"
+                fontSize={12}
+                fontWeight={700}
+                fill="#a33"
+                fontFamily="system-ui"
+              >
+                {chosen}
+              </text>
+            )}
+          </g>
+        );
+      })}
 
       {/* Legal placements for the drawn tile */}
       {options.map((option) => {

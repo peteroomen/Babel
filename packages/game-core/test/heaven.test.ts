@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { V02_RULES } from '@babel-game/game-data';
 import {
   applyMove,
   coordKey,
@@ -189,9 +190,11 @@ describe('Beacons (GDD §13)', () => {
     expect(state.hosts.every((h) => h.kind === 'ophanim')).toBe(true);
   });
 
-  it('mixes Seraphs in at Stage III', () => {
+  it('mixes Seraphs in at Stage III, under the one-per-Beacon spawn', () => {
     const board: Board = { '1,0': land(), '2,0': land() };
-    let state = game(board, { beacons: [{ x: 2, y: 0 }], stage: 3 });
+    /* GDD §14's Seraph roll belongs to the one-per-Beacon spawn, which v0.3
+       replaced with a rolled table. V02_RULES is where this rule still lives. */
+    let state = game(board, { beacons: [{ x: 2, y: 0 }], stage: 3, rules: V02_RULES });
     const kinds: string[] = [];
     for (let i = 0; i < 60; i++) {
       const result = resolveHeavenPhase(state);

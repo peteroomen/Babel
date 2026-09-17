@@ -3,6 +3,7 @@ import { CONFUSION_IDS, confusionCardsForStage } from '@babel-game/game-data';
 import {
   activeConfusion,
   applyMove,
+  currentPlayer,
   drawCard,
   createRng,
   getLegalActions,
@@ -160,6 +161,11 @@ describe('Fractured Command (GDD §19)', () => {
     let state = under('fractured-command');
     const four = ['wood', 'wood', 'wood', 'wood'] as const;
     state = applyMove(state, { type: 'barter', player: 'p0', spend: four, gain: 'brick' }).state;
+    /* Barter is free under v0.3, so p0's turn is still open. Fractured Command
+       cares about who has used the category, not about whose turn it is. */
+    if (state.turnStep === 'action' && currentPlayer(state) === 'p0') {
+      state = applyMove(state, { type: 'pass', player: 'p0' }).state;
+    }
 
     /* p1's turn; Barter is spoken for. */
     const next: GameState = { ...state, turnStep: 'action', drawnTile: null };

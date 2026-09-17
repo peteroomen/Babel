@@ -11,8 +11,10 @@ import {
   CANON_RULES,
   CONFUSION,
   RESOURCE_TYPES,
+  ROLLED_HEAVEN,
   SCHEMES,
   type BuildingType,
+  type HostKind,
   type ResourceType,
   type RuleSet,
 } from '@babel-game/game-data';
@@ -33,7 +35,7 @@ import {
   type Rotation,
 } from '@babel-game/game-core';
 import { BookOpenIcon, PanelRightIcon, RotateCcwIcon, ScrollTextIcon, UsersIcon } from 'lucide-react';
-import { Board } from './Board';
+import { Board, HostIcon } from './Board';
 import { PaperFx } from './PaperFx';
 import { BabelCard, ConfusionCard, LeaderRow, LogCard, LogList } from './Panels';
 import { ActionButtons, Act } from './ActionBar';
@@ -50,7 +52,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { HOST_LABEL, RESOURCE_LABEL, TERRAIN_LABEL } from './theme';
+import { HOST_BLURB, HOST_LABEL, RESOURCE_LABEL, TERRAIN_LABEL } from './theme';
 import { ARCHETYPE_BLURB, ARCHETYPE_LABEL } from '@babel-game/game-ai';
 import { aiSeatsFor, useAiTurns } from './useAi';
 
@@ -132,6 +134,19 @@ export function App() {
     () => (state.drawnTile ? getLegalTilePlacements(state.board, state.drawnTile, state.rules) : []),
     [state.board, state.drawnTile],
   );
+
+  /* Only list Hosts the rules in force can actually send. Under canon's
+     one-per-Beacon spawn that is the two original silhouettes; under the
+     rolled table it is whatever the Stage tables name. */
+  const heavenKinds = useMemo<readonly HostKind[]>(() => {
+    const spawn = state.rules.heavenSpawn;
+    if (!spawn) return ['ophanim', 'seraph'];
+    const seen = new Set<HostKind>();
+    for (const stage of [1, 2, 3] as const) {
+      for (const entry of spawn.table[stage]) seen.add(entry.kind);
+    }
+    return [...seen];
+  }, [state.rules.heavenSpawn]);
   const active = currentPlayer(state);
   const leader = state.leaders[active];
   const legal = useMemo(() => getLegalActions(state, active), [state, active]);
@@ -282,6 +297,19 @@ export function App() {
                       route to Babel. Rivers block them permanently. A Host anywhere in a feature
                       shuts down that whole feature's economy.
                     </p>
+                    <div className="space-y-1">
+                      {heavenKinds.map((kind) => (
+                        <div key={kind} className="flex items-start gap-2">
+                          <span className="shrink-0 pt-0.5">
+                            <HostIcon kind={kind} />
+                          </span>
+                          <p>
+                            <strong>{HOST_LABEL[kind]}</strong>{' '}
+                            <span className="text-muted-foreground">{HOST_BLURB[kind]}</span>
+                          </p>
+                        </div>
+                      ))}
+                    </div>
                     <p>
                       <strong>Losing:</strong> a Host reaching Babel knocks off its newest piece.
                       With Babel at zero, the first Host occupies the Foundation and the second
@@ -409,6 +437,37 @@ export function App() {
                             choice === 'broad'
                               ? BROAD_PIECE_COST
                               : CANON_RULES.babelPieceCost,
+                        },
+                      })
+                    }
+                  />
+                  <Choice
+                    label="Barter action"
+                    hint="v0.3 lets you Barter without spending your turn's action, once per turn. Same-kind Barter already destroys three cards every time it runs — it was simply gated behind the one thing a Leader is short of, which is the action."
+                    options={[
+                      { value: 'free', label: 'Free' },
+                      { value: 'action', label: 'Costs your action' },
+                    ]}
+                    value={table.rules.barterIsFree ? 'free' : 'action'}
+                    onChange={(choice) =>
+                      restart({
+                        rules: { ...table.rules, barterIsFree: choice === 'free' },
+                      })
+                    }
+                  />
+                  <Choice
+                    label="Heaven arrives"
+                    hint="v0.3 rolls a d6 on the Stage's table for what comes and a die among the Beacons for where — one, then two a round. Canon sent one Host out of every Beacon, so the amount of Heaven was a side effect of how many people were playing."
+                    options={[
+                      { value: 'rolled', label: 'Rolled' },
+                      { value: 'perBeacon', label: 'One per Beacon' },
+                    ]}
+                    value={table.rules.heavenSpawn ? 'rolled' : 'perBeacon'}
+                    onChange={(choice) =>
+                      restart({
+                        rules: {
+                          ...table.rules,
+                          heavenSpawn: choice === 'rolled' ? ROLLED_HEAVEN : null,
                         },
                       })
                     }

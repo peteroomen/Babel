@@ -82,9 +82,22 @@ Exit: full canon v0.1 rules playable locally.
 
 ## Milestone 6 — resource agency experiment
 
-**Status: harness and candidates built; baseline established.** See
-`docs/AI_AND_HARNESS.md` for how to run the model and
-`docs/MILESTONE_6_BASELINE.md` for the first results.
+**Status: done. Canon is v0.3.** See `docs/AI_AND_HARNESS.md` for how to run
+the model and `docs/MILESTONE_6_BASELINE.md` for every round of results.
+
+What the modelling adopted, in the order it was adopted:
+
+- **v0.2** — same-kind Barter at four cards, and a Babel cost curve that
+  spreads the same total across three resources per Stage.
+- **v0.3** — Barter no longer costs the turn's action (once per turn), and
+  Heaven arrives from a rolled table rather than one Host per Beacon: a d6 on
+  the Stage's table says what comes, a die among the open Beacons says where,
+  and a printed number per Stage says how many (1 / 2 / 2). Four new Host kinds
+  came with it — Herald, Colossus, Swarm and Warded — each posing a problem the
+  table's existing answers do not cover.
+
+Measured at 67% shared wins over 30 games with 1.61 arrivals a round, against
+92% and 2.03 for v0.2: fewer Hosts on the board, and a game you can lose.
 
 Both candidates are implemented as a `RuleSet` carried by the game state rather
 than a fork of the rules, so the browser can offer the same switches the model
@@ -166,7 +179,90 @@ For human sessions, also record a simple subjective prompt after several turns: 
 
 Exit: choose whether same-kind Barter and `RESERVE_SLOTS = 0/1/2` should become canon v0.2, based on harness results plus human feel rather than win rate alone.
 
-## Milestone 7 — playtest instrumentation
+## Milestone 7 — telegraphing the game state
+
+**Next.** The rules are close to right; the screen is not yet saying what they
+are doing. The last full playthrough surfaced this as the loudest remaining
+problem: the active Confusion card was only visible if you opened the panel, so
+a whole round's rule change could pass unnoticed. Nothing here changes a rule.
+The goal is that a player can look up at any moment and know what just happened
+and what is about to.
+
+### Make the active state impossible to miss
+
+- **Confusion is a permanent fixture, not a panel entry.** The card in force
+  sits in the header for the whole round, face up, with its one-line effect
+  readable without a click.
+- **A new Confusion announces itself.** Each round's reveal plays once —
+  the card turns over, holds long enough to read, then settles into its
+  header slot. Introduce it, then leave it visible; the announcement is the
+  thing that is currently missing, not the information.
+- Same treatment for the other state that changes under you: Stage
+  escalation, a Scheme coming into force, a Beacon opening.
+
+### Animate what the dice and the pieces actually do
+
+- **Dice rolls resolve on screen.** The dice land, then the successes are
+  marked against the Defence they beat — so a player sees *why* three dice
+  became one hit, rather than being handed the total.
+- **Tile and building placement.** A placed tile drops into its square; a
+  harvester or Tower stamps onto the tile; a Babel piece rises onto the stack.
+  Each one is short, and each one names its own consequence — the resources a
+  tile pays should visibly come *from* the tiles that paid them.
+- **Heaven moves in sequence, not in a jump cut.** Hosts step tile by tile in
+  spawn order, Walls break where they break, a Colossus visibly stops at the
+  building it pulls down. The Heaven Phase is the moment players have the least
+  information about and the most at stake in.
+
+### Rules
+
+- Every animation is skippable and interruptible: a player who already knows
+  what happened must never wait for the screen to finish telling them. Respect
+  `prefers-reduced-motion` by collapsing every transition to its end state.
+- Animation reads `GameState` and the event log; it never becomes a source of
+  truth. `game-core` stays pure and stays synchronous — if the animation layer
+  were deleted the game would still be playable.
+- Motion is short (150–400ms) and informative. Nothing moves that is not
+  telling the player something they would otherwise have to work out.
+
+Exit: a player who has not read the rulebook can name the active Confusion
+card, say why their last Attack scored what it scored, and follow a whole
+Heaven Phase, without opening a panel.
+
+## Milestone 8 — the five-Stage Babel
+
+**Followup to Milestone 7.** Three Stages of five or six pieces gives Heaven
+only two escalation points, which is why the v0.3 spawn table has to introduce
+three new Host kinds at once at Stage III. Five Stages of two pieces each gives
+the same tower a slower, finer clock: **one new kind of Host arrives with each
+new Stage**, so the table meets one new problem at a time and has a round or
+two to find the answer before the next arrives.
+
+This is a real refactor rather than a constant change. `Stage` is `1 | 2 | 3`
+throughout the codebase, and every one of these is keyed on it:
+
+- the player-count scaling table (pieces per Stage, Beacons owed);
+- `babelPieceCost` and the Prestige awarded per piece;
+- `hostDefenceBonus`, `SPAWN_TABLE` and `ARRIVALS_BY_STAGE`;
+- Confusion and Scheme unlocks;
+- `STAGE_LABEL` and everything in the UI that prints it.
+
+Approach:
+
+- widen `Stage` to `1 | 2 | 3 | 4 | 5` and let the type errors enumerate the
+  work — every table above is exhaustive on `Stage`, so the compiler will find
+  them all;
+- keep total pieces per game roughly where they are, so this changes the
+  *shape* of the escalation rather than the length of the game;
+- keep three-Stage play available as a `RuleSet` variant so the harness can
+  measure the new curve against the adopted one rather than replacing it on
+  feel.
+
+Exit: a factorial sweep of the five-Stage curve against v0.3, holding the win
+rate in the 60–70% band, with the arrival mix showing one genuinely new
+problem per Stage rather than a cliff at the top.
+
+## Milestone 9 — playtest instrumentation
 
 Record/export per game:
 
@@ -186,12 +282,11 @@ Add optional deterministic replay from seed + command log.
 
 Exit: human alpha sessions generate evidence comparable to the headless model.
 
-## Milestone 8 — only after the game is fun
+## Milestone 10 — only after the game is fun
 
 Then consider:
 
 - character powers;
-- visual polish and animation;
 - online multiplayer;
 - AI opponents;
 - extra cards/enemies/buildings;

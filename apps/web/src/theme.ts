@@ -92,3 +92,21 @@ export const HOST_LABEL = {
   swarm: 'Swarm',
   warded: 'Warded',
 } as const;
+
+/**
+ * What each kind actually does to you, in one line.
+ *
+ * The board carries the silhouette; this carries the reason the silhouette is
+ * different. Between them a player should never have to open a rulebook to
+ * work out which Host on the board is the urgent one.
+ */
+export const HOST_BLURB = {
+  ophanim: 'One hit kills it. Moves one tile a round toward Babel.',
+  seraph: 'Moves two. Its Shield soaks the first hit and stays broken.',
+  zealot: 'Armoured: two hits, and every die needs a better roll.',
+  flier: 'Flies. Rivers and Lakes do not stop it, and it moves two.',
+  herald: 'Fragile, but every other Host standing with it is harder to kill. Shoot it first.',
+  colossus: 'Four hits, heavily armoured, and it stops to pull down the first building it reaches.',
+  swarm: 'Two hits — and killing it leaves three Ophanim behind. Concentrate your fire.',
+  warded: 'Tower dice cannot touch it. Three hits, and only an Army will do.',
+} as const;

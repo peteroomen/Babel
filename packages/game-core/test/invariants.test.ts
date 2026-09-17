@@ -65,13 +65,17 @@ function playGame(seed: string, turns: number): GameState {
     state = settleTable(state);
     if (state.phase === 'gameOver') break;
 
-    const options = getLegalTilePlacements(state.board, state.drawnTile!);
-    expect(options.length).toBeGreaterThan(0);
-    const option = options[roll(options.length)]!;
-    const rotation = option.rotations[roll(option.rotations.length)]!;
+    /* A turn only owes a placement when it has just begun. Under v0.3 a free
+       Barter leaves the turn open, so the loop can come round again with the
+       tile already down and the same Leader still to act. */
     const me = currentPlayer(state);
-
-    state = applyMove(state, { type: 'placeTile', player: me, at: option.at, rotation }).state;
+    if (state.turnStep === 'place') {
+      const options = getLegalTilePlacements(state.board, state.drawnTile!, state.rules);
+      expect(options.length).toBeGreaterThan(0);
+      const option = options[roll(options.length)]!;
+      const rotation = option.rotations[roll(option.rotations.length)]!;
+      state = applyMove(state, { type: 'placeTile', player: me, at: option.at, rotation }).state;
+    }
 
     const legal = getLegalActions(state, me);
     const choice = legal[roll(legal.length)]!;
@@ -194,6 +198,9 @@ describe('board invariants hold across whole games', () => {
       const state = playGame(seed, 110);
       for (const event of state.log) {
         if (event.type === 'actionTaken') actions.add(event.action.split(' ')[0] as string);
+        /* A free Barter is not the turn's action, so it never emits
+           actionTaken — the trade itself is the record. */
+        if (event.type === 'bartered') actions.add('barter');
       }
     }
     for (const action of ['pass', 'build', 'barter', 'walls', 'tower', 'babel', 'attack']) {
