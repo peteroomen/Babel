@@ -39,7 +39,7 @@ import {
 import { BookOpenIcon, PanelRightIcon, RotateCcwIcon, ScrollTextIcon, UsersIcon } from 'lucide-react';
 import { Board, HostIcon } from './Board';
 import { PaperFx } from './PaperFx';
-import { BabelCard, LeaderRow, LogCard, LogList } from './Panels';
+import { BabelCard, LeaderRow, LogCard, LogList, SchemeCard } from './Panels';
 import { ActionButtons, Act } from './ActionBar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -785,13 +785,19 @@ export function App() {
               hint={`${state.pendingBeacon.sites.length} legal frontier tiles are lit. Every Beacon spawns a Host each Heaven Phase, for the rest of the game.`}
             />
           ) : state.phase === 'confusion' && state.confusion.card ? (
-            <Bar title={`${CONFUSION[state.confusion.card].label} revealed`} hint={CONFUSION[state.confusion.card].text}>
+            <Bar
+              title={`${CONFUSION[state.confusion.card].label} revealed`}
+              hint={CONFUSION[state.confusion.card].text}
+            >
+              {state.order.some((id) =>
+                state.leaders[id]?.schemeHand.includes('common-tongue'),
+              ) && <SchemeCard scheme="common-tongue" />}
               {state.order
                 .filter((id) => state.leaders[id]?.schemeHand.includes('common-tongue'))
                 .map((id) => (
                   <Act
                     key={id}
-                    label={`${state.leaders[id]?.name}: Common Tongue`}
+                    label={`${state.leaders[id]?.name} plays it`}
                     variant="accent"
                     hint="Cancel this Confusion for the round."
                     onClick={() =>
@@ -806,10 +812,8 @@ export function App() {
               />
             </Bar>
           ) : state.bonusWindow ? (
-            <Bar
-              title={`${state.leaders[state.bonusWindow]?.name} holds Frenzied Works`}
-              hint={SCHEMES['frenzied-works'].text}
-            >
+            <Bar title={`${state.leaders[state.bonusWindow]?.name} may play a Scheme`}>
+              <SchemeCard scheme="frenzied-works" />
               <Act
                 label="Play it"
                 variant="accent"
@@ -866,7 +870,13 @@ export function App() {
             </Bar>
           ) : state.pendingAttack ? (
             <Bar
-              title={`${assigned}/${successes} hits assigned`}
+              title={
+                assigned === successes
+                  ? `${successes} hit${successes === 1 ? '' : 's'} assigned`
+                  : `${successes - assigned} hit${
+                      successes - assigned === 1 ? '' : 's'
+                    } still to place`
+              }
               hint="The dice are on the table: every face, and the Defence each one had to beat. A Seraph needs two hits — the first only breaks its shield."
             >
               {state.hosts.map((host) => (
@@ -884,10 +894,32 @@ export function App() {
                   onClick={() => tapHost(host.id)}
                 />
               ))}
+              {/*
+                A hit that is never given a target is simply thrown away, and
+                "Confirm" was perfectly happy to throw all of them away on one
+                tap. It cannot be disabled outright — a roll can beat the bar
+                and still have nothing left it is allowed to kill — so it says
+                what it is about to do instead, and stops looking like the
+                ordinary way to finish.
+              */}
               <Act
-                label="Confirm"
-                variant="accent"
-                hint="Apply the hits and end your turn."
+                label={
+                  assigned === 0
+                    ? `Waste ${successes} hit${successes === 1 ? '' : 's'}`
+                    : assigned < successes
+                      ? `Confirm · ${successes - assigned} unspent`
+                      : 'Confirm'
+                }
+                variant={assigned === 0 ? 'outline' : 'accent'}
+                hint={
+                  assigned === 0
+                    ? 'Nothing has been targeted, so every hit is lost. Tap a Host above first.'
+                    : assigned < successes
+                      ? `${successes - assigned} hit${
+                          successes - assigned === 1 ? '' : 's'
+                        } will be lost — tap another Host if there is one worth hitting.`
+                      : 'Apply the hits and end your turn.'
+                }
                 onClick={() => dispatch({ type: 'assignHits', player: active, assignments: hits })}
               />
             </Bar>
@@ -985,42 +1017,73 @@ export function App() {
               <Act label="Cancel" variant="ghost" hint="Back to your actions." onClick={reset} />
             </Bar>
           ) : mode.kind === 'barter' && leader ? (
+            /*
+             * Two taps, not five.
+             *
+             * Same-kind Barter spends a fixed pile of one resource, so picking
+             * the resource *is* picking the pile — there was never a decision
+             * in the four separate taps it used to take, only the chance to
+             * get halfway and be stuck. A resource you cannot complete a
+             * Barter with is disabled and says why, rather than letting you
+             * find out on the last tap.
+             *
+             * Mixed Barter is the one variant where the taps carry a real
+             * choice, since the cards may differ, so there it stays one at a
+             * time.
+             */
             <Bar
-              title={`Barter · ${spend.length}/${state.rules.barterCost}`}
+              title={spend.length > 0 ? 'Barter · take what you need' : 'Barter'}
               hint={
-                sameKind
-                  ? `Discard ${state.rules.barterCost} of the same resource for one of your choice.`
-                  : `Discard any ${state.rules.barterCost} cards for one of your choice.`
+                spend.length > 0
+                  ? `Giving up ${spend.length} ${RESOURCE_LABEL[spend[0]!]}.`
+                  : sameKind
+                    ? `Give up ${state.rules.barterCost} of one resource for any single resource you choose.`
+                    : `Give up any ${state.rules.barterCost} cards for any single resource you choose.`
               }
             >
-              {RESOURCE_TYPES.map((resource) => {
-                const held = leader.resources[resource] - spend.filter((s) => s === resource).length;
-                /* Under same-kind Barter every card spent must match the first
-                   one picked, so the rest go dead as soon as one is chosen. */
-                const offKind = sameKind && spend.length > 0 && spend[0] !== resource;
-                return (
-                  <Act
-                    key={resource}
-                    label={`${RESOURCE_LABEL[resource]} ${held}`}
-                    disabled={held <= 0 || spend.length >= state.rules.barterCost || offKind}
-                    hint={
-                      offKind
-                        ? `These rules need three of the same resource — you have picked ${RESOURCE_LABEL[spend[0]!]}.`
-                        : `Discard one ${RESOURCE_LABEL[resource]}.`
-                    }
-                    onClick={() => setSpend((s) => [...s, resource])}
-                  />
-                );
-              })}
+              {spend.length < state.rules.barterCost &&
+                RESOURCE_TYPES.map((resource) => {
+                  const held =
+                    leader.resources[resource] - spend.filter((s) => s === resource).length;
+                  const need = sameKind ? state.rules.barterCost : 1;
+                  const offKind = sameKind && spend.length > 0 && spend[0] !== resource;
+                  const short = held < need;
+                  return (
+                    <Act
+                      key={resource}
+                      label={`${RESOURCE_LABEL[resource]} ${held}`}
+                      disabled={short || offKind}
+                      hint={
+                        short
+                          ? `You hold ${held}. A Barter gives up ${need}.`
+                          : offKind
+                            ? `You have already committed ${RESOURCE_LABEL[spend[0]!]}.`
+                            : sameKind
+                              ? `Give up ${need} ${RESOURCE_LABEL[resource]}.`
+                              : `Add one ${RESOURCE_LABEL[resource]} to the pile.`
+                      }
+                      onClick={() =>
+                        setSpend((s) =>
+                          sameKind
+                            ? Array.from({ length: state.rules.barterCost }, () => resource)
+                            : [...s, resource],
+                        )
+                      }
+                    />
+                  );
+                })}
               {spend.length === state.rules.barterCost && (
                 <>
-                  <span className="text-muted-foreground text-sm">Gain:</span>
                   {RESOURCE_TYPES.map((resource) => (
                     <Act
                       key={resource}
-                      label={RESOURCE_LABEL[resource]}
-                      variant="accent"
-                      hint={`Take one ${RESOURCE_LABEL[resource]}.`}
+                      label={`Take ${RESOURCE_LABEL[resource]}`}
+                      variant={resource === spend[0] ? 'outline' : 'accent'}
+                      hint={
+                        resource === spend[0]
+                          ? `Trading ${RESOURCE_LABEL[resource]} for itself would only lose you cards.`
+                          : `Take one ${RESOURCE_LABEL[resource]} and end the Barter.`
+                      }
                       onClick={() =>
                         dispatch({ type: 'barter', player: active, spend, gain: resource })
                       }
@@ -1028,7 +1091,12 @@ export function App() {
                   ))}
                 </>
               )}
-              <Act label="Cancel" variant="ghost" hint="Back to your actions." onClick={reset} />
+              <Act
+                label={spend.length > 0 ? 'Start over' : 'Cancel'}
+                variant="ghost"
+                hint={spend.length > 0 ? 'Put the cards back.' : 'Back to your actions.'}
+                onClick={spend.length > 0 ? () => setSpend([]) : reset}
+              />
             </Bar>
           ) : (
             <Bar
@@ -1060,7 +1128,15 @@ export function App() {
   );
 }
 
-/** One line of context, then the controls. Keeps the bar to a fixed height. */
+/**
+ * What is going on, why, and what you can do about it.
+ *
+ * The explanation used to hang off a "why?" that was `hidden sm:inline`, which
+ * meant that on a phone — where the rail is also hidden — there was no way to
+ * reach it at all, and the surrounding buttons explain themselves through
+ * tooltips, which a touchscreen has no way to open either. A player on a
+ * phone was simply told less. It is plain text now, on every screen.
+ */
 function Bar({
   title,
   hint,
@@ -1072,18 +1148,9 @@ function Bar({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-      <div className="flex min-w-0 items-baseline gap-2">
+      <div className="flex min-w-0 shrink flex-col justify-center">
         <span className="truncate text-sm">{title}</span>
-        {hint && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="text-muted-foreground hidden cursor-help text-xs underline decoration-dotted underline-offset-2 sm:inline">
-                why?
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>{hint}</TooltipContent>
-          </Tooltip>
-        )}
+        {hint && <span className="text-muted-foreground text-xs">{hint}</span>}
       </div>
       <div className="flex flex-wrap items-center gap-1.5">{children}</div>
     </div>
@@ -1106,6 +1173,7 @@ function ProphetPicker({
 
   return (
     <>
+      <SchemeCard scheme="false-prophet" />
       {host === undefined
         ? state.hosts.map((h) => (
             <Act

@@ -1,4 +1,10 @@
-import { CONFUSION, RESOURCE_TYPES, SCHEMES, STAGE_LABEL } from '@babel-game/game-data';
+import {
+  CONFUSION,
+  RESOURCE_TYPES,
+  SCHEMES,
+  STAGE_LABEL,
+  type SchemeId,
+} from '@babel-game/game-data';
 import {
   piecesPerStage,
   piecesToNextEscalation,
@@ -310,5 +316,24 @@ export function LogCard({ state }: { state: GameState }) {
         </ScrollArea>
       </CardContent>
     </Card>
+  );
+}
+
+/**
+ * A Scheme, as the card it is.
+ *
+ * Every window that offers one used to be a sentence and two buttons —
+ * "Ada holds Frenzied Works · Play it · End turn" — with the effect hidden
+ * behind a hover that phones cannot perform. You were being asked to spend a
+ * card without being told what it did. Now you are holding it.
+ */
+export function SchemeCard({ scheme }: { scheme: SchemeId }) {
+  const spec = SCHEMES[scheme];
+  return (
+    <div className="paper penned-alt max-w-[19rem] min-w-0 px-3 py-1.5">
+      <div className="text-[10px] tracking-wide uppercase opacity-50">Scheme</div>
+      <div className="font-scrawl text-xl leading-none font-bold">{spec.label}</div>
+      <div className="mt-1 text-xs opacity-80">{spec.text}</div>
+    </div>
   );
 }
