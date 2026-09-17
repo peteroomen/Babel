@@ -126,6 +126,36 @@ This is the thing to watch in human play, not Prestige inflation: the rule's
 real cost is paid in Heaven's mobility, and a table that leans into it is buying
 safety as much as points.
 
+### A milestone instead of a stipend — the idea that should have been better
+
+Per-tile Prestige is *income*: everyone who draws a river tile takes a point and
+nobody competes for it. A milestone is *claimed* — only one Leader can be the one
+who takes the river from five tiles to six — so it ought to be worth taking a bad
+square for, which is the wrinkle the whole rule was wanted for.
+
+It does not work. 120 paired seeds:
+
+| | Control | +1 per tile | +2 every 3rd | +3 every 4th |
+|---|---|---|---|---|
+| Reach from Babel | 2.66 | **6.39** | 3.18 | 2.92 |
+| River Prestige per game | 0.0 | 5.3 | 1.7 | 1.3 |
+| Placements paid | — | 3.8% | 0.7% | 0.4% |
+
+The milestone arms barely move the river at all, and the rarer the milestone the
+worse it gets. The reason is a chicken and egg that no amount of tuning fixes:
+**the reward only exists at the threshold, and the river only arrives at the
+threshold if somebody paid for the tiles in between.** Nobody does, so it never
+arrives, so the milestone is never claimed.
+
+It is worse than that with people at the table, not better. A milestone at six
+tiles means the Leaders who place tiles four and five are building a prize for
+whoever happens to draw the right tile next. A human sees that faster than a bot
+does.
+
+So the stipend it is — and the reason the stipend works is exactly the thing that
+looked like its weakness. It pays every contributor a little, so the river is
+built by everyone, which is what makes it long enough to matter.
+
 ---
 
 ## 2. Walls
