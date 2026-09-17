@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   BABEL_PIECE_COST,
+  CANON_RULES,
+  CANON_WALLS,
   MUSTER_COST,
   WALL_COST,
   structureCost,
   type ResourceType,
+  type RuleSet,
 } from '@babel-game/game-data';
 import {
   EDGES,
@@ -16,7 +19,10 @@ import {
   getLegalActions,
   getLegalTilePlacements,
   hasRiverOn,
+  hitsRemaining,
+  hostDefence,
   neighbour,
+  rollsBeating,
   setupGame,
   type Board,
   type Command,
@@ -53,8 +59,8 @@ const RESOURCES: readonly ResourceType[] = ['food', 'wood', 'brick', 'metal'];
  * sets the core itself reports. Every action type the core offers gets
  * exercised, so the invariants below cover real games rather than a pass loop.
  */
-function playGame(seed: string, turns: number): GameState {
-  let state = setupGame(['Ada', 'Peter', 'Rook'], seed);
+function playGame(seed: string, turns: number, rules: RuleSet = CANON_RULES): GameState {
+  let state = setupGame(['Ada', 'Peter', 'Rook'], seed, rules);
   let cursor = 7;
   const roll = (n: number) => {
     cursor = (cursor * 31 + 17) % 1009;
@@ -132,16 +138,28 @@ function playGame(seed: string, turns: number): GameState {
     }
     state = applyMove(state, command).state;
 
-    /* GDD §15: an Attack that rolled successes must assign them before the
-       turn can end. Spread them over the Hosts that are actually on the board. */
+    /**
+     * GDD §15: an Attack that rolled successes must assign them before the turn
+     * can end, hardest target first.
+     *
+     * Not a detail the driver may skip. A die that only just beat an Ophanim
+     * cannot be spent on a Warded, so assigning in board order strands the good
+     * dice and the core rejects the whole assignment. Same order the AI uses.
+     */
     if (state.pendingAttack) {
+      const pending = state.pendingAttack;
+      const bonus = state.rules.combatDieBonus;
+      const defenceOf = (host: (typeof state.hosts)[number]) =>
+        hostDefence(state.order.length, state.stage, state.rules, host.kind);
       const assignments: Record<string, number> = {};
-      let left = state.pendingAttack.successes;
-      for (const host of state.hosts) {
-        if (left <= 0) break;
-        const take = Math.min(left, host.kind === 'seraph' && host.shieldUp ? 2 : 1);
+      let spent = 0;
+
+      for (const host of [...state.hosts].sort((a, b) => defenceOf(b) - defenceOf(a))) {
+        const good = rollsBeating(pending.rolls, defenceOf(host), bonus) - spent;
+        const take = Math.min(good, pending.successes - spent, hitsRemaining(host));
+        if (take <= 0) continue;
         assignments[host.id] = take;
-        left -= take;
+        spent += take;
       }
       state = applyMove(state, { type: 'assignHits', player: me, assignments }).state;
     }
@@ -203,9 +221,24 @@ describe('board invariants hold across whole games', () => {
         if (event.type === 'bartered') actions.add('barter');
       }
     }
-    for (const action of ['pass', 'build', 'barter', 'walls', 'tower', 'babel', 'attack']) {
+    for (const action of ['pass', 'build', 'barter', 'tower', 'babel', 'attack']) {
       expect(actions).toContain(action);
     }
+    /* Walls left canon in v0.4, so they are not among the actions a canon game
+       offers. The command path is still supported as a variant and still has to
+       survive a real game, which is what the run below covers. */
+    expect(actions).not.toContain('walls');
+  });
+
+  it('still exercises Walls at a table that has switched them back on', () => {
+    const walled: RuleSet = { ...CANON_RULES, walls: CANON_WALLS };
+    const actions = new Set<string>();
+    for (const seed of [...seeds, 'zeta', 'eta', 'theta']) {
+      for (const event of playGame(seed, 110, walled).log) {
+        if (event.type === 'actionTaken') actions.add(event.action.split(' ')[0] as string);
+      }
+    }
+    expect(actions).toContain('walls');
   });
 
   it('reveals exactly one Confusion card per round', () => {

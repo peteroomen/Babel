@@ -17,6 +17,7 @@ import {
   CONFIRM_VARIANTS,
   LAKE_VARIANTS,
   LEVER_VARIANTS,
+  CANON_VARIANTS,
   RIVER_CONFIRM_VARIANTS,
   RIVER_MILESTONE_VARIANTS,
   RIVER_VARIANTS,
@@ -40,6 +41,7 @@ import {
  *   npm run model -- --river      -- Prestige for lengthening Babel's river
  *   npm run model -- --walls      -- do Walls earn their rules text?
  *   npm run model -- --lake       -- the terrain-weight question instead
+ *   npm run model -- --canon      -- v0.4 as adopted, against the v0.3 it replaces
  *   npm run model -- --paired     -- every variant from the same seeds
  *   npm run model -- --table a,b,c -- choose the archetypes at the table
  *   npm run model -- --json       -- machine-readable, for diffing runs
@@ -94,6 +96,7 @@ const SETS: readonly { flag: string; variants: readonly Variant[] }[] = [
   { flag: 'river-confirm', variants: RIVER_CONFIRM_VARIANTS },
   { flag: 'river-milestone', variants: RIVER_MILESTONE_VARIANTS },
   { flag: 'walls-confirm', variants: WALL_CONFIRM_VARIANTS },
+  { flag: 'canon', variants: CANON_VARIANTS },
 ];
 const variants: readonly Variant[] = SETS.find((set) => flag(set.flag))?.variants ?? VARIANTS;
 

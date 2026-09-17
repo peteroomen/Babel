@@ -123,8 +123,11 @@ describe('round seven: the river and the Walls', () => {
   const river = RIVER_VARIANTS.find((v) => v.id === 'river-reach')!;
   const noWalls = WALL_VARIANTS.find((v) => v.id === 'no-walls')!;
 
-  it('measures Babel’s river in every variant, paid or not', () => {
-    const summary = summarise('control', [play(control, 'river')]);
+  it('measures Babel’s river whether or not the rules pay for it', () => {
+    /* `control` tracks canon, which has paid for the river since v0.4; the
+       round-seven control is pinned to v0.3, which did not. */
+    const unpaid = RIVER_VARIANTS.find((v) => v.id === 'control')!;
+    const summary = summarise(unpaid.id, [play(unpaid, 'river')]);
     /* The fixed opening tile is always in it, so the reach is never zero. */
     expect(summary.river.reach).toBeGreaterThanOrEqual(1);
     expect(summary.river.prestigePerGame).toBe(0);
@@ -142,6 +145,8 @@ describe('round seven: the river and the Walls', () => {
   });
 
   it('builds no Walls at all when Walls are not in the rules', () => {
+    /* Which is canon since v0.4, and `no-walls` is the arm that established it. */
+    expect(CANON_RULES.walls).toBeNull();
     const summary = summarise(noWalls.id, [play(noWalls, 'w'), play(noWalls, 'x')]);
     expect(summary.walls.segmentsPerGame).toBe(0);
     expect(summary.walls.standingAtEnd).toBe(0);
@@ -149,7 +154,8 @@ describe('round seven: the river and the Walls', () => {
   });
 
   it('counts a crossed Wall as a share of the Walls built', () => {
-    const summary = summarise('control', [play(control, 'w'), play(control, 'x')]);
+    const walled = WALL_VARIANTS.find((v) => v.id === 'control')!;
+    const summary = summarise(walled.id, [play(walled, 'w'), play(walled, 'x')]);
     expect(summary.walls.brokenShare).toBeGreaterThanOrEqual(0);
     expect(summary.walls.brokenShare).toBeLessThanOrEqual(1);
     expect(summary.walls.standingAtEnd).toBeLessThanOrEqual(summary.walls.segmentsPerGame);

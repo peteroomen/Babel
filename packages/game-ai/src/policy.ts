@@ -72,7 +72,7 @@ export const ARCHETYPE_BLURB: Record<Archetype, string> = {
   architect: 'Races Babel upward and lets others worry about Heaven.',
   commander: 'Builds an Army and spends it. Metal first, questions later.',
   industrialist: 'Harvesters everywhere. Gets rich, helps late.',
-  engineer: 'Towers and Walls. Makes the ground itself do the fighting.',
+  engineer: 'Towers and the river. Makes the ground itself do the fighting.',
   merchant: 'Schemes and Barter. Chases Prestige wherever it is cheapest.',
 };
 
@@ -176,6 +176,8 @@ export const RIVER_PRESTIGE_WEIGHT: Record<Archetype, number> = {
   architect: 2,
   commander: 2,
   industrialist: 2,
+  /* The Engineer's whole plan is ground that fights, and since v0.4 the river
+     is what is left of that idea besides the Tower. */
   engineer: 2.5,
   merchant: 3,
 };
@@ -614,9 +616,12 @@ export function chooseAction(
       break;
 
     case 'engineer':
-      /* Makes the ground fight. A Tower is communal and permanent, and a Wall
-         is a round of delay for 1 Wood — the cheapest thing in the game and
-         the only use for the Wood everyone ends up drowning in. */
+      /* Makes the ground fight. A Tower is communal and permanent, and the
+         river is the other half of the same idea: water is the one thing Heaven
+         cannot walk across, and under v0.4 extending Babel's own river scores
+         as well as blocking. That half is played at placement time rather than
+         here — see `RIVER_PRESTIGE_WEIGHT`, which the Engineer pays most.
+         Walls, when a table has switched them back on, still come next. */
       order.push(towerAt());
       if (state.hosts.length > 0) order.push(wall());
       order.push(trade());

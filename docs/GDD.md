@@ -8,6 +8,16 @@
 
 This document freezes the core rules that survived the design conversation and software modelling pass. Numbers marked **TUNEABLE** are balance values, not unresolved mechanics.
 
+> **Canon has moved on in places.** The live rules are `CANON_RULES` in
+> `packages/game-data/src/rules.ts`, at v0.4, and
+> `docs/RULES_QUICK_REFERENCE.md` is the digest of what it actually says.
+> Sections superseded since this document was frozen carry a note where they
+> begin: **§7** (Babel's river now scores), **§8** and **§11** (Barter is free
+> and does not spend the action), **§12** (the Babel cost curve is broad),
+> **§13** (Heaven is rolled from a table), **§17** (Walls are removed) and
+> **§20** (the Defender identity lost one of its three legs). Everything else
+> here still stands.
+
 ---
 
 ## 0. Tone, world and visual flavour
@@ -178,6 +188,12 @@ Desert and Lake give no resource.
 ---
 
 ## 7. Rivers and Lakes
+
+> **Extended in v0.4.** Rivers still do everything below. They also score now:
+> placing a tile that carries *Babel's own river* — the connected chain reaching
+> the Foundation — further from Babel than it has ever run pays **+1 Prestige**.
+> Widening it or branching it sideways pays nothing. See
+> `docs/ROUND7_RIVER_AND_WALLS.md`.
 
 Rivers are printed through tile centres and connect through tile edges.
 
@@ -465,6 +481,19 @@ The purpose of Towers is to make prepared ground more efficient without replacin
 
 ## 17. Walls
 
+> **Removed in v0.4.** The section below is kept because the rule is still
+> implemented and a table can switch it back on (`walls: CANON_WALLS`), but no
+> Wall action is offered under canon.
+>
+> The reasoning is in `docs/ROUND7_RIVER_AND_WALLS.md`. In short: a Wall never
+> changed *where* Heaven walked, only delayed whatever stepped on that exact
+> edge, so two thirds of every segment ever built was still standing untouched
+> at the end of the game. Deleting them at the standard table moved nothing
+> outside noise; at a table with a wall-builder in it they cost games — 47.5%
+> shared wins against 81.7% without — while paying the wall-builder Prestige
+> the whole time. Walls and rivers are the same idea, and §7's river does it
+> better: permanent rather than one crossing, no action, no Wood, and it scores.
+
 Walls are temporary barricades, not permanent pathfinding blockers.
 
 ### Build Walls
@@ -550,6 +579,10 @@ This produces only **six unique Confusion effects/cards types** and nine physica
 
 ## 20. Prestige and viable strategies
 
+> **Amended in v0.4.** The Defender below loses its Wall leg, since Walls are
+> gone (§17), and keeps both Tower legs. Prepared ground is now Towers plus
+> Babel's river (§7), which scores for the Leader who extends it.
+
 The base game currently supports three primary Prestige identities plus defensive variation.
 
 ### Architect
@@ -568,8 +601,10 @@ The base game currently supports three primary Prestige identities plus defensiv
 
 ### Defender / fortified Commander
 - +1 Prestige for building a Tower.
-- +1 Prestige for a Build Walls action.
+- ~~+1 Prestige for a Build Walls action.~~ Removed with Walls in v0.4.
 - +1 Prestige whenever their Tower support die scores a hit.
+- +1 Prestige for carrying Babel's river further upstream (§7), which is
+  prepared ground that scores.
 
 This is **not** intended as a fully separate class. Modelling showed that pure wall-building is weak; successful defensive play combines military readiness with prepared geography.
 

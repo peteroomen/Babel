@@ -373,11 +373,45 @@ export const V02_RULES: RuleSet = {
  *
  * Together: 67% shared wins over 30 games at 1.61 arrivals a round, against
  * 92% and 2.03 for v0.2. Fewer Hosts on the board and a game you can lose.
+ *
+ * Kept frozen, like v0.1 and v0.2, so round seven's two changes can always be
+ * measured against the game they were proposed for.
  */
-export const CANON_RULES: RuleSet = {
+export const V03_RULES: RuleSet = {
   ...V02_RULES,
   barterIsFree: true,
   heavenSpawn: { table: SPAWN_TABLE, arrivals: ARRIVALS_BY_STAGE },
+};
+
+/**
+ * Canon v0.4 — what the game plays under now.
+ *
+ * Round seven asked two questions about the same thing, which is what the
+ * terrain is *for*, and answered both. See `docs/ROUND7_RIVER_AND_WALLS.md`.
+ *
+ * - **Babel's river pays Prestige.** GDD §5 runs a river into the Foundation
+ *   and then gives nobody a reason to continue it, so under v0.3 that river
+ *   ends a whole game 2.6 tiles long. Paying the Leader who carries it further
+ *   upstream takes it to 6.4, for 2.4% of the Prestige on the table — about 1.8
+ *   points a Leader in a game they score 60 to 80 in. The reward is small on
+ *   purpose: the interesting part is that water is ground Heaven cannot walk,
+ *   so a Leader extending the river is digging a moat as well as scoring.
+ * - **Walls are gone.** A Wall bought one Host-move of delay, once, if a Host
+ *   walked that exact edge — and never changed where Heaven walked, so it had
+ *   to be that edge. At the standard table deleting them moved nothing outside
+ *   noise. At a table with a wall-builder in it they were worse than inert:
+ *   47.5% shared wins against 81.7% without, while paying the wall-builder 95.8
+ *   Prestige for a game humanity lost. Walls and rivers are the same idea, and
+ *   the river does it better — permanent, free, on a tile you were placing
+ *   anyway, and now scoring.
+ *
+ * The rule the Wall *machinery* still serves is a variant: `walls: CANON_WALLS`
+ * puts them back, which is what keeps the comparison above re-runnable.
+ */
+export const CANON_RULES: RuleSet = {
+  ...V03_RULES,
+  riverPrestige: { perTile: 1, requireReach: true, cap: null, milestone: null },
+  walls: null,
 };
 
 /** At most this many Reserve slots. A guard, not a design statement. */

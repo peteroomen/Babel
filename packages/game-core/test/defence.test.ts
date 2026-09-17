@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CANON_RULES, CANON_WALLS } from '@babel-game/game-data';
 import {
   applyMove,
   canBuildTower,
@@ -33,8 +34,15 @@ const seraph = (id: string, x: number, y: number): Host => ({
   shieldUp: true,
 });
 
+/**
+ * Walls left canon in v0.4, so the build action is only legal where a table has
+ * switched them back on. The rule itself is unchanged and still supported, so
+ * these tests name the ruleset they are about rather than assuming the default.
+ */
+const WALLED = { ...CANON_RULES, walls: CANON_WALLS };
+
 function game(board: Board, over: Partial<GameState> = {}): GameState {
-  const base = setupGame(['Ada', 'Peter'], 'defence');
+  const base = setupGame(['Ada', 'Peter'], 'defence', WALLED);
   return {
     ...base,
     /* Neutralise Confusion so this suite tests one rule at a time. */

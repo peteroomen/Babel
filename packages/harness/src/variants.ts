@@ -1,10 +1,12 @@
 import {
   BROAD_PIECE_COST,
   CANON_RULES,
+  CANON_WALLS,
   LEGACY_V01_RULES,
   MONUMENT_RULE,
   TERMINATOR_RIVER_WEIGHTS,
   TERRAIN_WEIGHTS,
+  V03_RULES,
   type RuleSet,
 } from '@babel-game/game-data';
 
@@ -227,18 +229,28 @@ export const LAKE_VARIANTS: readonly Variant[] = [0, 4, 8].map((lake) =>
  * `reach` pays only when the river's furthest point gets further away, which is
  * the rule as a person would say it aloud. The rest are the price.
  */
+const fromV03 = (id: string, label: string, note: string, rules: Partial<RuleSet>): Variant => ({
+  id,
+  label,
+  note,
+  /* Pinned to v0.3 rather than to `CANON_RULES`, because these sets are the
+     evidence for v0.4: read against the new canon they would be comparing two
+     candidates to a control that already carries one of them. */
+  rules: { ...V03_RULES, ...rules },
+});
+
 export const RIVER_VARIANTS: readonly Variant[] = [
-  withRules('control', 'Control', 'Canon v0.3: the river pays nothing', {}),
-  withRules('river-any', 'Any join, +1', 'Any tile joining Babel’s river', {
+  fromV03('control', 'Control', 'Canon v0.3: the river pays nothing', {}),
+  fromV03('river-any', 'Any join, +1', 'Any tile joining Babel’s river', {
     riverPrestige: { perTile: 1, requireReach: false, cap: null, milestone: null },
   }),
-  withRules('river-reach', 'Reach, +1', 'Only when the river runs further', {
+  fromV03('river-reach', 'Reach, +1', 'Only when the river runs further', {
     riverPrestige: { perTile: 1, requireReach: true, cap: null, milestone: null },
   }),
-  withRules('river-reach-2', 'Reach, +2', 'The same rule at twice the price', {
+  fromV03('river-reach-2', 'Reach, +2', 'The same rule at twice the price', {
     riverPrestige: { perTile: 2, requireReach: true, cap: null, milestone: null },
   }),
-  withRules('river-capped', 'Reach, +1, cap 8', 'Bounded per Leader', {
+  fromV03('river-capped', 'Reach, +1, cap 8', 'Bounded per Leader', {
     riverPrestige: { perTile: 1, requireReach: true, cap: 8, milestone: null },
   }),
 ];
@@ -253,12 +265,12 @@ export const RIVER_VARIANTS: readonly Variant[] = [
  * two segments for no Wood at all.
  */
 export const WALL_VARIANTS: readonly Variant[] = [
-  withRules('control', 'Control', 'Canon: 1 Wood, 2 segments', {}),
-  withRules('no-walls', 'No Walls', 'The action is removed', { walls: null }),
-  withRules('walls-4', 'Four segments', '1 Wood, 4 segments', {
+  fromV03('control', 'Control', 'v0.3: 1 Wood, 2 segments', { walls: CANON_WALLS }),
+  fromV03('no-walls', 'No Walls', 'The action is removed — v0.4', { walls: null }),
+  fromV03('walls-4', 'Four segments', '1 Wood, 4 segments', {
     walls: { cost: { wood: 1 }, segments: 4, prestige: 1 },
   }),
-  withRules('walls-cheap', 'Free Walls', 'No Wood, 2 segments', {
+  fromV03('walls-cheap', 'Free Walls', 'No Wood, 2 segments', {
     walls: { cost: {}, segments: 2, prestige: 1 },
   }),
 ];
@@ -273,19 +285,19 @@ export const WALL_VARIANTS: readonly Variant[] = [
  * share their opening boards instead of being compared across unrelated maps.
  */
 export const RIVER_CONFIRM_VARIANTS: readonly Variant[] = [
-  withRules('control', 'Control', 'Canon v0.3: the river pays nothing', {}),
-  withRules('river-reach', 'Reach, +1', 'Only when the river runs further', {
+  fromV03('control', 'Control', 'Canon v0.3: the river pays nothing', {}),
+  fromV03('river-reach', 'Reach, +1', 'Only when the river runs further', {
     riverPrestige: { perTile: 1, requireReach: true, cap: null, milestone: null },
   }),
-  withRules('river-reach-2', 'Reach, +2', 'The same rule at twice the price', {
+  fromV03('river-reach-2', 'Reach, +2', 'The same rule at twice the price', {
     riverPrestige: { perTile: 2, requireReach: true, cap: null, milestone: null },
   }),
 ];
 
 /** Walls against no Walls, with enough seeds to believe the gap. */
 export const WALL_CONFIRM_VARIANTS: readonly Variant[] = [
-  withRules('control', 'Control', 'Canon: 1 Wood, 2 segments', {}),
-  withRules('no-walls', 'No Walls', 'The action is removed', { walls: null }),
+  fromV03('control', 'Control', 'v0.3: 1 Wood, 2 segments', { walls: CANON_WALLS }),
+  fromV03('no-walls', 'No Walls', 'The action is removed — v0.4', { walls: null }),
 ];
 
 
@@ -302,14 +314,27 @@ export const WALL_CONFIRM_VARIANTS: readonly Variant[] = [
  * six or seven tiles crosses a third-tile milestone twice.
  */
 export const RIVER_MILESTONE_VARIANTS: readonly Variant[] = [
-  withRules('control', 'Control', 'Canon v0.3: the river pays nothing', {}),
-  withRules('river-reach', 'Reach, +1 each', 'Per tile: the stipend', {
+  fromV03('control', 'Control', 'Canon v0.3: the river pays nothing', {}),
+  fromV03('river-reach', 'Reach, +1 each', 'Per tile: the stipend', {
     riverPrestige: { perTile: 1, requireReach: true, cap: null, milestone: null },
   }),
-  withRules('mile3', 'Every 3rd tile, +2', 'Claimed, not earned', {
+  fromV03('mile3', 'Every 3rd tile, +2', 'Claimed, not earned', {
     riverPrestige: { perTile: 2, requireReach: true, cap: null, milestone: 3 },
   }),
-  withRules('mile4', 'Every 4th tile, +3', 'Rarer and worth more', {
+  fromV03('mile4', 'Every 4th tile, +3', 'Rarer and worth more', {
     riverPrestige: { perTile: 3, requireReach: true, cap: null, milestone: 4 },
   }),
+];
+
+
+/**
+ * v0.4 as adopted, against the v0.3 it replaces.
+ *
+ * The two round-seven changes were measured one at a time and against a control
+ * that carried neither. This is the pair a person actually chooses between:
+ * every rule of v0.3, against every rule of v0.4. Run it paired.
+ */
+export const CANON_VARIANTS: readonly Variant[] = [
+  { id: 'v03', label: 'v0.3', note: 'Walls in play, the river pays nothing', rules: V03_RULES },
+  { id: 'v04', label: 'v0.4', note: 'No Walls, Babel’s river scores', rules: CANON_RULES },
 ];

@@ -305,6 +305,10 @@ changed its payout, but it decides entirely where the river runs.
 
 ## Recommendations
 
+> **Adopted.** Both are canon as of v0.4 (`CANON_RULES`,
+> `packages/game-data/src/rules.ts`). This section is what was recommended and
+> why; `docs/RULES_QUICK_REFERENCE.md` is what the game now plays.
+
 ### Adopt the river at +1, per tile, on reach
 
 ```ts

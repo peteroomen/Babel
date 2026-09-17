@@ -48,7 +48,7 @@ weighted evaluation function does not.
 | **Architect** | Babel. Races the Tower upward and lets others worry about Heaven. |
 | **Commander** | The Army. Metal first, then Towers, then kills things. |
 | **Industrialist** | Harvesters. Gets rich, helps late. |
-| **Engineer** | Towers and Walls. Makes the ground do the fighting. |
+| **Engineer** | Towers and Babel's river. Makes the ground do the fighting. |
 | **Merchant** | Schemes and Barter. Chases Prestige wherever it is cheapest. |
 
 All five share two behaviours that the loss condition forces on them:
@@ -117,7 +117,7 @@ used, and no experiment ever needs a branch of the rules.
 setupGame(names, seed, { ...CANON_RULES, barterMode: 'sameKind', reserveSlots: 1 })
 ```
 
-`CANON_RULES` is canon v0.1 and is the default everywhere.
+`CANON_RULES` is canon v0.4 and is the default everywhere. Every earlier canon is kept frozen beside it — `LEGACY_V01_RULES`, `V02_RULES`, `V03_RULES` — so a round's evidence can always be re-read against the game it was proposed for.
 
 ## What the metrics mean
 

@@ -311,6 +311,17 @@ export function App() {
                         </div>
                       ))}
                     </div>
+                    {state.rules.riverPrestige && (
+                      <p>
+                        <strong>Babel's river:</strong> the water running into the Foundation is
+                        the one Heaven can never cross. Place a tile that carries it further
+                        upstream and you score{' '}
+                        {state.rules.riverPrestige.perTile === 1
+                          ? '1 Prestige'
+                          : `${state.rules.riverPrestige.perTile} Prestige`}
+                        . It has to run <em>further</em> — widening it beside Babel pays nothing.
+                      </p>
+                    )}
                     <p>
                       <strong>Losing:</strong> a Host reaching Babel knocks off its newest piece.
                       With Babel at zero, the first Host occupies the Foundation and the second
@@ -475,7 +486,7 @@ export function App() {
                   />
                   <Choice
                     label="River Prestige"
-                    hint="Pays the Leader who places a tile that carries Babel’s own river further upstream. Untested at a human table: the model says it more than doubles the river and costs about 2% of all Prestige, and the real effect is that Heaven cannot cross water, so the reward for extending it is a moat."
+                    hint="Canon since v0.4. Pays the Leader who places a tile carrying Babel’s own river further upstream — worth about 2% of the Prestige on the table. The real effect is that Heaven cannot cross water, so the reward for extending the river is also a moat."
                     options={[
                       { value: 'off', label: 'Off' },
                       { value: 'reach', label: '+1 per tile' },
@@ -504,10 +515,10 @@ export function App() {
                   />
                   <Choice
                     label="Walls"
-                    hint="A Wall buys one Host-move of delay, once, if a Host walks that exact edge — Walls never change where Heaven goes. Over 160 games, removing them entirely moved nothing that could be told from noise."
+                    hint="Removed in v0.4. A Wall bought one Host-move of delay, once, if a Host walked that exact edge, and never changed where Heaven went. At a table with a wall-builder in it, Walls cost more games than they saved: 47.5% shared wins against 81.7% without."
                     options={[
-                      { value: 'on', label: 'In play' },
                       { value: 'off', label: 'Removed' },
+                      { value: 'on', label: 'In play' },
                     ]}
                     value={table.rules.walls ? 'on' : 'off'}
                     onChange={(choice) =>

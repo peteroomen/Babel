@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CANON_RULES, type RuleSet } from '@babel-game/game-data';
+import { CANON_RULES, CANON_WALLS, type RuleSet } from '@babel-game/game-data';
 import {
   applyMove,
   babelRiverDistances,
@@ -87,10 +87,13 @@ describe('Prestige for lengthening it', () => {
   const upstream = { x: 0, y: -2 };
   const straight = { terrain: 'farmland', river: 'straight' } as const;
 
-  it('pays nothing under canon, where the rule is off', () => {
-    expect(
-      riverPrestigeFor(START, upstream, straight, 0, CANON_RULES),
-    ).toBe(0);
+  it('pays under canon, which has carried the rule since v0.4', () => {
+    expect(riverPrestigeFor(START, upstream, straight, 0, CANON_RULES)).toBe(1);
+  });
+
+  it('pays nothing where the rule is off', () => {
+    const off = { ...CANON_RULES, riverPrestige: null };
+    expect(riverPrestigeFor(START, upstream, straight, 0, off)).toBe(0);
   });
 
   it('pays for a placement that pushes the river further upstream', () => {
@@ -190,8 +193,12 @@ describe('the Walls lever', () => {
   const wallAction = (state: GameState) =>
     getLegalActions(state, state.order[0]!).find((action) => action.type === 'buildWalls');
 
-  it('offers two segments under canon', () => {
-    const walls = wallAction(opening(CANON_RULES));
+  it('offers no Wall action under canon, which dropped them in v0.4', () => {
+    expect(wallAction(opening(CANON_RULES))).toBeUndefined();
+  });
+
+  it('offers two segments where a table has switched them back on', () => {
+    const walls = wallAction(opening({ ...CANON_RULES, walls: CANON_WALLS }));
     expect(walls?.type === 'buildWalls' && walls.segments).toBe(2);
   });
 
