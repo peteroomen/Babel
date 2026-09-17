@@ -112,16 +112,21 @@ export function ActionButtons({
           hint={`Costs ${cost(monument.cost)}. +${monument.prestige} Prestige and nothing else — it does not help humanity survive. Babel is shared; this is yours. One per feature.`}
         />
       )}
-      <Act
-        label="Walls"
-        disabled={!walls}
-        onClick={onWalls}
-        hint={
-          walls
-            ? `1 Wood for ${walls.segments} segment${walls.segments === 1 ? '' : 's'}. A Host crossing one destroys it and spends its whole movement doing so.`
-            : 'Cannot afford it, or nowhere to build.'
-        }
-      />
+      {/* A table playing without Walls should not be shown a button for them. */}
+      {state.rules.walls && (
+        <Act
+          label="Walls"
+          disabled={!walls}
+          onClick={onWalls}
+          hint={
+            walls
+              ? `${cost(state.rules.walls.cost)} for ${walls.segments} segment${
+                  walls.segments === 1 ? '' : 's'
+                }. A Host crossing one destroys it and spends its whole movement doing so.`
+              : 'Cannot afford it, or nowhere to build.'
+          }
+        />
+      )}
       <Act
         label="Babel"
         variant={babel ? 'accent' : 'outline'}

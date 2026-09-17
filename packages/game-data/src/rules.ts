@@ -1,6 +1,12 @@
 import { TERRAIN_WEIGHTS, type ResourceType, type TerrainType } from './terrain.js';
 import { BABEL_PIECE_COST, type Stage } from './babel.js';
-import { MONUMENT_COST, MONUMENT_PRESTIGE } from './buildings.js';
+import {
+  MONUMENT_COST,
+  MONUMENT_PRESTIGE,
+  WALL_COST,
+  WALL_PRESTIGE,
+  WALL_SEGMENTS,
+} from './buildings.js';
 import {
   ARRIVALS_BY_STAGE,
   BEACON_TIERS,
@@ -200,6 +206,53 @@ export type RuleSet = {
     readonly cost: Partial<Record<ResourceType, number>>;
     readonly maxExtraDice: number;
   } | null;
+  /**
+   * Prestige for lengthening the river that feeds Babel.
+   *
+   * The river is currently pure geography: it shapes where Heaven can walk and
+   * nothing else, so a Leader placing a river tile is either defending or
+   * ignoring it. Paying Prestige for extending *Babel's own* river puts a
+   * second, selfish reason on the same decision, and the two reasons do not
+   * always point at the same square — which is the point. A Leader who takes
+   * the river square gives up the payout the other square would have paid.
+   *
+   * `requireReach` decides what "longer" means. Without it any tile that joins
+   * the Babel river scores, so a Leader can farm the same delta by thickening
+   * it locally. With it, only a placement that pushes the river's furthest
+   * point further from Babel scores, which is the rule as it reads aloud.
+   *
+   * `cap` bounds the whole strategy per Leader, since the supply of river tiles
+   * is not bounded by anything else.
+   */
+  readonly riverPrestige: {
+    readonly perTile: number;
+    readonly requireReach: boolean;
+    readonly cap: number | null;
+    /**
+     * Pay only when the river's reach crosses a multiple of this, instead of
+     * paying for every extension. null for per-tile.
+     *
+     * The sharper shape of the same idea, and the one that actually creates a
+     * decision: a milestone can only be claimed once and by one Leader, so the
+     * tile that takes the river from four to five is worth fighting over in a
+     * way that the fourth tile of an open-ended stipend never is. A placement
+     * that drags a whole disconnected chain in can cross several at once, and
+     * is paid for all of them.
+     */
+    readonly milestone: number | null;
+  } | null;
+  /**
+   * The Wall action, or null to remove Walls from the game.
+   *
+   * Included as a lever rather than a constant because the question asked of
+   * Walls is whether they earn their place at all: a subsystem that changes no
+   * measurable thing when deleted is costing rules text for nothing.
+   */
+  readonly walls: {
+    readonly cost: Partial<Record<ResourceType, number>>;
+    readonly segments: number;
+    readonly prestige: number;
+  } | null;
   /** The personal Prestige sink, or null for canon where none exists. */
   readonly monument: {
     readonly cost: Partial<Record<ResourceType, number>>;
@@ -252,6 +305,13 @@ export const TERMINATOR_RIVER_WEIGHTS: RuleSet['riverWeights'] = {
   lake: { none: 100, straight: 0, bend: 0, tee: 0, source: 0 },
 };
 
+/** Walls exactly as GDD §17 prints them: 1 Wood, two segments, 1 Prestige. */
+export const CANON_WALLS: RuleSet['walls'] = {
+  cost: WALL_COST,
+  segments: WALL_SEGMENTS,
+  prestige: WALL_PRESTIGE,
+};
+
 /**
  * Canon v0.1, frozen.
  *
@@ -279,6 +339,8 @@ export const LEGACY_V01_RULES: RuleSet = {
   armyUpkeepFood: 0,
   resourceCap: null,
   monument: null,
+  riverPrestige: null,
+  walls: CANON_WALLS,
   reserveSlots: 0,
   terrainWeights: TERRAIN_WEIGHTS,
 };

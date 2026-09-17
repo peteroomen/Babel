@@ -246,7 +246,14 @@ export type GameEvent =
       readonly type: 'prestigeGained';
       readonly player: PlayerId;
       readonly amount: number;
-      readonly source: 'babel' | 'building' | 'combat' | 'tower' | 'walls' | 'monument';
+      readonly source:
+        | 'babel'
+        | 'building'
+        | 'combat'
+        | 'tower'
+        | 'walls'
+        | 'monument'
+        | 'river';
     }
   /** GDD §2: humanity completes Babel; highest Prestige wins individually. */
   | { readonly type: 'humanityWins'; readonly topPrestige: readonly PlayerId[] }

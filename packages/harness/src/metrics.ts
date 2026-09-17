@@ -47,6 +47,36 @@ export type Summary = {
   /** Mean round at which each Stage was first reached, over games reaching it. */
   readonly stagePacing: Readonly<Partial<Record<Stage, number | null>>>;
   readonly meanBabelPieces: number;
+  /**
+   * Babel's river, and what a Leader gave up for it.
+   *
+   * `payoutPerPlacement` is the control on the whole river experiment: if
+   * Leaders are taking worse squares to lengthen the river, this is where it
+   * shows up, and if it does not move then nobody changed their mind and the
+   * Prestige was free money.
+   */
+  readonly river: {
+    readonly prestigePerGame: number;
+    readonly shareOfPrestige: number;
+    readonly rewardedPlacements: number;
+    readonly reach: number;
+    readonly tiles: number;
+    readonly payoutPerPlacement: number;
+  };
+  /**
+   * Walls, from built to broken.
+   *
+   * A Wall only ever does anything by being crossed — that is the whole rule —
+   * so `brokenShare` is the share of the Wood spent on Walls that bought a
+   * round of delay, and everything else was decoration.
+   */
+  readonly walls: {
+    readonly actionsPerGame: number;
+    readonly segmentsPerGame: number;
+    readonly brokenPerGame: number;
+    readonly brokenShare: number;
+    readonly standingAtEnd: number;
+  };
   readonly prestigeByArchetype: Readonly<Record<Archetype, number>>;
   readonly prestigeWinsByArchetype: Readonly<Record<Archetype, number>>;
   /** Null when the variant has no Reserve. */
@@ -138,6 +168,49 @@ export function summarise(variant: string, games: readonly GameRecord[]): Summar
     ]),
   ) as Record<Archetype, number>;
 
+  const placements = events.filter((event) => event.type === 'tilePlaced').length;
+  const prestigeEvents = events.filter((event) => event.type === 'prestigeGained');
+  const totalPrestige = prestigeEvents.reduce(
+    (sum, event) => sum + (event.type === 'prestigeGained' ? event.amount : 0),
+    0,
+  );
+  const riverEvents = prestigeEvents.filter(
+    (event) => event.type === 'prestigeGained' && event.source === 'river',
+  );
+  const riverPrestige = riverEvents.reduce(
+    (sum, event) => sum + (event.type === 'prestigeGained' ? event.amount : 0),
+    0,
+  );
+  const placementResources = events.reduce(
+    (sum, event) =>
+      sum + (event.type === 'resourcesGained' && event.source === 'placement' ? event.amount : 0),
+    0,
+  );
+
+  const river = {
+    prestigePerGame: share(riverPrestige, games.length),
+    shareOfPrestige: share(riverPrestige, totalPrestige),
+    rewardedPlacements: share(riverEvents.length, placements),
+    reach: mean(games.map((game) => game.riverReach)),
+    tiles: mean(games.map((game) => game.riverTiles)),
+    payoutPerPlacement: share(placementResources, placements),
+  };
+
+  const wallSegments = events.reduce(
+    (sum, event) => sum + (event.type === 'wallsBuilt' ? event.edges.length : 0),
+    0,
+  );
+  const wallActions = events.filter((event) => event.type === 'wallsBuilt').length;
+  const wallsBroken = events.filter((event) => event.type === 'wallBroken').length;
+
+  const walls = {
+    actionsPerGame: share(wallActions, games.length),
+    segmentsPerGame: share(wallSegments, games.length),
+    brokenPerGame: share(wallsBroken, games.length),
+    brokenShare: share(wallsBroken, wallSegments),
+    standingAtEnd: mean(games.map((game) => game.wallsStanding)),
+  };
+
   const reserveTurns = turns.filter((turn) => turn.swap !== null);
   const taken = games.flatMap((game) => game.reserveTaken);
   const reserve =
@@ -189,6 +262,8 @@ export function summarise(variant: string, games: readonly GameRecord[]): Summar
     surplusByResource,
     stagePacing,
     meanBabelPieces: mean(games.map((game) => game.babelPieces)),
+    river,
+    walls,
     prestigeByArchetype,
     prestigeWinsByArchetype,
     reserve,

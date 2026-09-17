@@ -9,10 +9,13 @@ import {
   type ResourceType,
 } from '@babel-game/game-data';
 import {
+  babelRiverDistances,
   coordKey,
   distancesToBabel,
   getLegalTilePlacements,
   previewPlacement,
+  riverPrestigeEarned,
+  riverPrestigeFor,
   type Coord,
   type GameState,
   type LegalAction,
@@ -156,6 +159,28 @@ export function want(
 export type Placement = { at: Coord; rotation: Rotation; score: number };
 
 /**
+ * What one Prestige off the river is worth against one resource of payout.
+ *
+ * This number is the whole experiment, so it is named rather than buried. A
+ * placement pays 1 to 4 resources and the score triples for the resource a
+ * Leader is short of, so at 2.0 a river Prestige outbids a mediocre payout and
+ * loses to a good one that lands on the plan — which is the trade the rule is
+ * supposed to offer. The Merchant, which plays for Prestige wherever it is
+ * cheapest, pays more for it; nobody pays zero, because the river also happens
+ * to be the thing Heaven cannot walk across.
+ *
+ * Read every river result against it. A rule that only looks good because the
+ * bots were told to like it is not a result (docs/AI_AND_HARNESS.md).
+ */
+export const RIVER_PRESTIGE_WEIGHT: Record<Archetype, number> = {
+  architect: 2,
+  commander: 2,
+  industrialist: 2,
+  engineer: 2.5,
+  merchant: 3,
+};
+
+/**
  * Score every legal placement for a tile and return the best.
  *
  * The payout the placement would pay *this Leader* dominates, weighted up when
@@ -172,6 +197,13 @@ export function bestPlacement(
   const seeking = want(state, me, archetype);
   let best: Placement | null = null;
 
+  /* Walked once for the whole draw rather than once per candidate square: the
+     river that reaches Babel does not change until this tile goes down. */
+  const riverRule = state.rules.riverPrestige;
+  const scoresRiver = riverRule !== null && draw.river !== 'none';
+  const riverBefore = scoresRiver ? babelRiverDistances(state.board) : undefined;
+  const riverEarned = scoresRiver ? riverPrestigeEarned(state, me) : 0;
+
   for (const option of getLegalTilePlacements(state.board, draw, state.rules)) {
     /**
      * Score the square, not the square-and-rotation.
@@ -184,8 +216,34 @@ export function bestPlacement(
      * whole board and flood-filling its feature up to four times per square,
      * which is where the model spent most of its time.
      */
-    const rotation = option.rotations[0];
+    /**
+     * Rotation matters again once the river pays.
+     *
+     * Turning a tile never changes its payout, which is why the loop below
+     * scores one rotation per square — but it decides entirely where the river
+     * runs, so under the river-Prestige rule the rotations of a river tile are
+     * genuinely different moves and each has to be tried.
+     */
+    let rotation = option.rotations[0];
     if (rotation === undefined) continue;
+    let riverReward = 0;
+    if (scoresRiver) {
+      for (const candidate of option.rotations) {
+        const reward = riverPrestigeFor(
+          state.board,
+          option.at,
+          draw,
+          candidate,
+          state.rules,
+          riverEarned,
+          riverBefore,
+        );
+        if (reward > riverReward) {
+          riverReward = reward;
+          rotation = candidate;
+        }
+      }
+    }
     const payout = previewPlacement(state, option.at, draw, rotation);
 
     let score = payout ? payout.amount : 0;
@@ -202,6 +260,11 @@ export function bestPlacement(
       score += (Math.abs(option.at.x) + Math.abs(option.at.y)) * 0.08;
     }
     if (archetype === 'industrialist' && payout) score += payout.amount * 0.5;
+
+    /* The wrinkle the rule is for: a Leader may now take a worse square
+       because the river pays for it. `payoutPerPlacement` in the harness is
+       what measures whether they actually did. */
+    score += riverReward * RIVER_PRESTIGE_WEIGHT[archetype];
 
     score += rand() * 0.4;
     if (!best || score > best.score) best = { at: option.at, rotation, score };

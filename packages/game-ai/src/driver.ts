@@ -1,11 +1,16 @@
+import { HOSTS } from '@babel-game/game-data';
 import {
   applyMove,
+  coordKey,
   currentPlayer,
   getLegalActions,
+  hasWallBetween,
   hitsRemaining,
   hostDefence,
   rollsBeating,
+  stepOptions,
   type Command,
+  type Coord,
   type GameState,
   type PlayerId,
 } from '@babel-game/game-core';
@@ -133,6 +138,41 @@ export function nextCommand(
 }
 
 /**
+ * Walk each Host into a Wall, where the table has the choice.
+ *
+ * GDD §14 lets the players pick between equally short routes, and §17 makes a
+ * Wall cost the Host that crossed it its whole movement — so when one of a
+ * Host's legal steps crosses a Wall, steering it there is simply the correct
+ * play, and it is the play that makes a Wall worth building at all.
+ *
+ * Without this the bots take a random step among the equally short ones and a
+ * Wall only ever lands by luck, which measures the dice rather than the rule
+ * (docs/AI_AND_HARNESS.md: a bot defect looks exactly like a balance finding).
+ *
+ * Only the first step of each Host is planned, and only when a Wall is actually
+ * there to be chosen: everything else stays random, so this changes nothing
+ * about a game with no Walls in it.
+ */
+export function heavenPlan(state: GameState): Record<string, readonly Coord[]> {
+  if (state.walls.length === 0) return {};
+  const plan: Record<string, readonly Coord[]> = {};
+
+  for (const host of state.hosts) {
+    const how = {
+      impassable: state.rules.impassableTerrain,
+      flies: HOSTS[host.kind].flies,
+    };
+    const options = stepOptions(state.board, host.at, undefined, how);
+    /* With one legal step there is nothing to steer: it happens anyway. */
+    if (options.length < 2) continue;
+    const intoWall = options.find((option) => hasWallBetween(state.walls, host.at, option));
+    if (intoWall && coordKey(intoWall) !== coordKey(host.at)) plan[host.id] = [intoWall];
+  }
+
+  return plan;
+}
+
+/**
  * The next table-level command, for a table with nobody human at it.
  *
  * The harness uses this to run unattended games. A human table keeps these
@@ -150,7 +190,9 @@ export function tableCommand(state: GameState, rand: () => number): Command | nu
        becoming a hidden constant shared by every simulated game. */
     return { type: 'placeBeacon', player: speaker, at: sites[Math.floor(rand() * sites.length)]! };
   }
-  if (state.phase === 'heaven') return { type: 'resolveHeaven', player: speaker };
+  if (state.phase === 'heaven') {
+    return { type: 'resolveHeaven', player: speaker, plan: heavenPlan(state) };
+  }
   if (state.pendingVote) {
     const voter = state.order.find((id) => state.pendingVote!.votes[id] === undefined);
     return voter ? { type: 'castVote', player: voter, option: 0 } : null;

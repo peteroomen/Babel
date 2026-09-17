@@ -12,7 +12,14 @@ const ROUNDS = 12;
 const play = (variant: Parameters<typeof playGame>[0], seed: string) =>
   playGame(variant, seed, undefined, { rounds: ROUNDS });
 import { CANON_RULES } from '@babel-game/game-data';
-import { LAKE_VARIANTS, VARIANTS, playGame, summarise } from '../src/index.js';
+import {
+  LAKE_VARIANTS,
+  RIVER_VARIANTS,
+  VARIANTS,
+  WALL_VARIANTS,
+  playGame,
+  summarise,
+} from '../src/index.js';
 
 /* Look variants up by id: the list grows, and a positional index silently
    points at the wrong rules when it does. */
@@ -109,5 +116,53 @@ describe('the summary', () => {
   it('reports no Reserve statistics for a variant without one', () => {
     expect(summary.reserve).toBeNull();
     expect(summarise('reserve1', ['a'].map((s) => play(reserve1, s))).reserve).not.toBeNull();
+  });
+});
+
+describe('round seven: the river and the Walls', () => {
+  const river = RIVER_VARIANTS.find((v) => v.id === 'river-reach')!;
+  const noWalls = WALL_VARIANTS.find((v) => v.id === 'no-walls')!;
+
+  it('measures Babel’s river in every variant, paid or not', () => {
+    const summary = summarise('control', [play(control, 'river')]);
+    /* The fixed opening tile is always in it, so the reach is never zero. */
+    expect(summary.river.reach).toBeGreaterThanOrEqual(1);
+    expect(summary.river.prestigePerGame).toBe(0);
+    expect(summary.river.shareOfPrestige).toBe(0);
+  });
+
+  it('pays somebody for the river once the rule is on', () => {
+    /* Several seeds: a single twelve-round game can go by without the bag
+       dealing a river tile that extends anything. */
+    const games = ['a', 'b', 'c', 'd'].map((seed) => play(river, seed));
+    const summary = summarise(river.id, games);
+    expect(summary.river.prestigePerGame).toBeGreaterThan(0);
+    expect(summary.river.shareOfPrestige).toBeGreaterThan(0);
+    expect(summary.river.reach).toBeGreaterThan(1);
+  });
+
+  it('builds no Walls at all when Walls are not in the rules', () => {
+    const summary = summarise(noWalls.id, [play(noWalls, 'w'), play(noWalls, 'x')]);
+    expect(summary.walls.segmentsPerGame).toBe(0);
+    expect(summary.walls.standingAtEnd).toBe(0);
+    expect(summary.actionMix.buildWalls ?? 0).toBe(0);
+  });
+
+  it('counts a crossed Wall as a share of the Walls built', () => {
+    const summary = summarise('control', [play(control, 'w'), play(control, 'x')]);
+    expect(summary.walls.brokenShare).toBeGreaterThanOrEqual(0);
+    expect(summary.walls.brokenShare).toBeLessThanOrEqual(1);
+    expect(summary.walls.standingAtEnd).toBeLessThanOrEqual(summary.walls.segmentsPerGame);
+  });
+
+  it('gives paired variants the same opening board', () => {
+    const a = playGame(control, 'pair', undefined, { rounds: 2, paired: true });
+    const b = playGame(river, 'pair', undefined, { rounds: 2, paired: true });
+    const first = (game: typeof a) => game.events.find((e) => e.type === 'tilePlaced');
+    expect(first(a)).toEqual(first(b));
+    /* Unpaired, the variant's own name salts the seed and the boards diverge
+       from the first draw, which is what every earlier round was measured on. */
+    const unpaired = playGame(river, 'pair', undefined, { rounds: 2 });
+    expect(first(unpaired)).not.toEqual(first(a));
   });
 });

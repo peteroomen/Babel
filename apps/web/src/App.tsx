@@ -9,6 +9,7 @@ import { useMemo, useState } from 'react';
 import {
   BROAD_PIECE_COST,
   CANON_RULES,
+  CANON_WALLS,
   CONFUSION,
   RESOURCE_TYPES,
   ROLLED_HEAVEN,
@@ -468,6 +469,52 @@ export function App() {
                         rules: {
                           ...table.rules,
                           heavenSpawn: choice === 'rolled' ? ROLLED_HEAVEN : null,
+                        },
+                      })
+                    }
+                  />
+                  <Choice
+                    label="River Prestige"
+                    hint="Pays the Leader who places a tile that carries Babel’s own river further upstream. Untested at a human table: the model says it more than doubles the river and costs about 2% of all Prestige, and the real effect is that Heaven cannot cross water, so the reward for extending it is a moat."
+                    options={[
+                      { value: 'off', label: 'Off' },
+                      { value: 'reach', label: '+1 per tile' },
+                      { value: 'mile3', label: '+2 every 3rd' },
+                    ]}
+                    value={
+                      table.rules.riverPrestige === null
+                        ? 'off'
+                        : table.rules.riverPrestige.milestone === null
+                          ? 'reach'
+                          : 'mile3'
+                    }
+                    onChange={(choice) =>
+                      restart({
+                        rules: {
+                          ...table.rules,
+                          riverPrestige:
+                            choice === 'off'
+                              ? null
+                              : choice === 'reach'
+                                ? { perTile: 1, requireReach: true, cap: null, milestone: null }
+                                : { perTile: 2, requireReach: true, cap: null, milestone: 3 },
+                        },
+                      })
+                    }
+                  />
+                  <Choice
+                    label="Walls"
+                    hint="A Wall buys one Host-move of delay, once, if a Host walks that exact edge — Walls never change where Heaven goes. Over 160 games, removing them entirely moved nothing that could be told from noise."
+                    options={[
+                      { value: 'on', label: 'In play' },
+                      { value: 'off', label: 'Removed' },
+                    ]}
+                    value={table.rules.walls ? 'on' : 'off'}
+                    onChange={(choice) =>
+                      restart({
+                        rules: {
+                          ...table.rules,
+                          walls: choice === 'on' ? CANON_WALLS : null,
                         },
                       })
                     }

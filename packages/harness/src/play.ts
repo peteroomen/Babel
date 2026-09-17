@@ -6,6 +6,8 @@ import {
 } from '@babel-game/game-data';
 import {
   applyMove,
+  babelRiverReach,
+  babelRiverTiles,
   currentPlayer,
   setupGame,
   type GameEvent,
@@ -66,6 +68,11 @@ export type GameRecord = {
   readonly babelPieces: number;
   readonly turns: readonly TurnRecord[];
   readonly events: readonly GameEvent[];
+  /** How far upstream Babel's own river ran by the end, and how many tiles. */
+  readonly riverReach: number;
+  readonly riverTiles: number;
+  /** Wall segments still standing when the game ended. */
+  readonly wallsStanding: number;
   /** Reserve tiles discarded as unplaceable, per Milestone 6's dead-slot rule. */
   readonly reserveDead: number;
   /** Terrain of every tile taken out of the Reserve. */
@@ -106,15 +113,23 @@ export function playGame(
   seed: string,
   archetypes: readonly Archetype[] = CLASSIC_TABLE,
   /* `rounds` exists for tests, which need the machinery exercised rather than
-     whole games played: one full game is ~200 turns and blocks for seconds. */
-  options: { readonly rounds?: number } = {},
+     whole games played: one full game is ~200 turns and blocks for seconds.
+
+     `paired` runs every variant from the same seed rather than from one salted
+     with the variant's name. The RNG streams still diverge as soon as the rules
+     make a different number of draws, but the opening board, the first tiles
+     and the first Confusion are shared, so two variants are compared on the
+     same early game instead of on two unrelated ones. Off by default: every
+     result recorded before this existed was measured unpaired. */
+  options: { readonly rounds?: number; readonly paired?: boolean } = {},
 ): GameRecord {
   const cap = options.rounds ?? ROUND_CAP;
-  let state = setupGame(archetypes, `${variant.id}:${seed}`, variant.rules);
+  const gameSeed = options.paired ? seed : `${variant.id}:${seed}`;
+  let state = setupGame(archetypes, gameSeed, variant.rules);
   const seats = Object.fromEntries(
     state.order.map((id, i) => [id, archetypes[i % archetypes.length]!]),
   ) as AiSeats;
-  const rand = aiRandom(`${variant.id}:${seed}`);
+  const rand = aiRandom(gameSeed);
 
   const turns: TurnRecord[] = [];
   const stageRounds: Partial<Record<Stage, number>> = { 1: 1 };
@@ -204,6 +219,9 @@ export function playGame(
     ),
     stageRounds,
     babelPieces: state.babel.stack.length,
+    riverReach: babelRiverReach(state.board),
+    riverTiles: babelRiverTiles(state.board),
+    wallsStanding: state.walls.length,
     turns,
     events: state.log,
     reserveDead,

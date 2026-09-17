@@ -4,8 +4,6 @@ import {
   MUSTER_COST,
   RESOURCE_TYPES,
   TOWER_COST,
-  WALL_COST,
-  WALL_SEGMENTS,
   type ResourceType,
 } from '@babel-game/game-data';
 import { canBuildBabel, pieceCost, piecesPerStage } from '../babel/index.js';
@@ -137,14 +135,16 @@ export function getLegalActions(state: GameState, playerId: PlayerId): LegalActi
     }
   }
 
-  /* GDD §17: 1 Wood places two Wall segments on edges between land tiles. */
-  if (canBuild && canAfford(leader, WALL_COST)) {
+  /* GDD §17: 1 Wood places two Wall segments on edges between land tiles.
+     `rules.walls` is null in the variant that removes Walls altogether. */
+  const wallRule = state.rules.walls;
+  if (wallRule && canBuild && canAfford(leader, wallRule.cost)) {
     const edges = getLegalWallEdges(state.board, state.walls);
     if (edges.length > 0) {
       actions.push({
         type: 'buildWalls',
         edges,
-        segments: Math.min(WALL_SEGMENTS, edges.length),
+        segments: Math.min(wallRule.segments, edges.length),
       });
     }
   }

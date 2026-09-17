@@ -10,9 +10,6 @@ import {
   TOWER,
   TOWER_COST,
   TOWER_PRESTIGE,
-  WALL_COST,
-  WALL_PRESTIGE,
-  WALL_SEGMENTS,
   isHarvester,
   structureCost,
   type ResourceType,
@@ -52,6 +49,7 @@ import {
 } from '../buildings/index.js';
 import { getConnectedFeature } from '../features/index.js';
 import { rollD6 } from '../rng/index.js';
+import { riverPrestigeEarned, riverPrestigeFor } from '../rivers/index.js';
 import {
   canonicalWall,
   getLegalWallEdges,
@@ -525,6 +523,40 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         });
       }
 
+      /**
+       * Prestige for lengthening Babel's river, when the rules pay for it.
+       *
+       * Scored against the board *before* this tile went down, so a Leader is
+       * paid for what their own placement added and not for what the river
+       * already was.
+       */
+      const riverReward = riverPrestigeFor(
+        state.board,
+        command.at,
+        draw,
+        command.rotation,
+        state.rules,
+        riverPrestigeEarned(state, command.player),
+      );
+      if (riverReward > 0) {
+        events.push({
+          type: 'prestigeGained',
+          player: command.player,
+          amount: riverReward,
+          source: 'river',
+        });
+        next = {
+          ...next,
+          leaders: {
+            ...next.leaders,
+            [command.player]: {
+              ...next.leaders[command.player]!,
+              prestige: next.leaders[command.player]!.prestige + riverReward,
+            },
+          },
+        };
+      }
+
       if (harvest) {
         events.push({
           type: 'harvestTriggered',
@@ -842,12 +874,14 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
     case 'buildWalls': {
       requireActionPhase(state, command.player, 'build');
       const leader = leaderOf(state, command.player);
-      if (!canAfford(leader, WALL_COST)) throw new Error('cannot afford Walls');
+      const wallRule = state.rules.walls;
+      if (!wallRule) throw new Error('Walls are not in play');
+      if (!canAfford(leader, wallRule.cost)) throw new Error('cannot afford Walls');
 
       /* GDD §17: one Build action places two segments. RD-010 allows fewer only
          when the board offers fewer legal edges. */
       const available = getLegalWallEdges(state.board, state.walls);
-      const cap = Math.min(WALL_SEGMENTS, available.length);
+      const cap = Math.min(wallRule.segments, available.length);
       if (command.edges.length < 1 || command.edges.length > cap) {
         throw new Error(`a Build Walls action places ${cap} segment(s)`);
       }
@@ -869,7 +903,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       events.push({
         type: 'prestigeGained',
         player: command.player,
-        amount: WALL_PRESTIGE,
+        amount: wallRule.prestige,
         source: 'walls',
       });
 
@@ -881,8 +915,8 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
             ...state.leaders,
             [command.player]: {
               ...leader,
-              resources: paySpecific(leader, WALL_COST),
-              prestige: leader.prestige + WALL_PRESTIGE,
+              resources: paySpecific(leader, wallRule.cost),
+              prestige: leader.prestige + wallRule.prestige,
             },
           },
         },

@@ -29,6 +29,14 @@ Those are the table's decisions rather than any one Leader's (RD-005, RD-008),
 and handing them to a bot would quietly decide things a person should be
 deciding.
 
+When nobody is at the table — an unattended harness game — `tableCommand` makes
+those calls instead. One of them is a real decision rather than a formality:
+RD-008 lets the table pick between equally short routes for a Host, and
+`heavenPlan` spends that choice on steering a Host into a Wall wherever one is
+there to be walked into. That is what a competent table would do, and without it
+a Wall only ever lands by luck, so every measurement of Walls was measuring the
+dice.
+
 ## The archetypes
 
 Five, each a short priority list rather than a search. A reader has to be able
@@ -76,8 +84,25 @@ npm run sweep -- --cells 0-15 --games 12 --out a.json
 npm run sweep -- --cells 16-31 --games 12 --out b.json
 npm run sweep -- --report a.json b.json
 npm run model -- --lake        # the terrain-weight question instead
+npm run model -- --river       # Prestige for lengthening Babel's river
+npm run model -- --walls       # do Walls earn their rules text?
 npm run model -- --json        # machine-readable, for diffing runs
+
+# Two flags that apply to any set:
+npm run model -- --river --paired               # same seeds for every variant
+npm run model -- --walls --table engineer,commander,architect
 ```
+
+`--paired` gives every variant the same seeds instead of seeds salted with the
+variant's own name. The streams still diverge as soon as the rules make a
+different number of draws, but the opening board and the first tiles are shared,
+so two arms are compared on the same early game. Every result recorded before
+round seven was measured unpaired, which is why it is off by default.
+
+`--table` chooses who is sitting down. It matters more than it looks for any
+question about a subsystem only one archetype plays: asking whether Walls earn
+their place at a table with no Engineer at it answers a narrower question than
+it appears to.
 
 A game takes roughly three seconds, so a default run is a few minutes.
 
@@ -104,6 +129,15 @@ Most are counted straight off the event log. Two need defining:
   asks human playtesters: *could you pursue the plan you wanted this turn?*
 - **Surplus at end** — resources still in hand when the game ended, per Leader.
   A high number means the economy produced things nobody could use.
+- **Payout per placement** — mean resources a placed tile paid its placer. The
+  control on any rule that pays a Leader to place somewhere other than where the
+  money is: if they are really taking worse squares, this falls.
+- **Reach from Babel** — how far upstream the water that actually touches the
+  Foundation runs, in tiles. Under canon it is about 2.5 at the end of a whole
+  game, which is the fixed start tile and very little else.
+- **Segments crossed** — the share of Wall segments ever built that a Host
+  actually walked into. A Wall does nothing else, so this is the share of the
+  Wood spent on Walls that bought anything at all.
 
 ## Two warnings
 

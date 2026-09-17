@@ -1,5 +1,5 @@
 import { RESOURCE_TYPES, type Stage } from '@babel-game/game-data';
-import { CLASSIC_TABLE, ARCHETYPE_LABEL } from '@babel-game/game-ai';
+import { ARCHETYPES, CLASSIC_TABLE, ARCHETYPE_LABEL, type Archetype } from '@babel-game/game-ai';
 import { playGame } from './play.js';
 import { summarise, type Summary } from './metrics.js';
 import {
@@ -17,7 +17,12 @@ import {
   CONFIRM_VARIANTS,
   LAKE_VARIANTS,
   LEVER_VARIANTS,
+  RIVER_CONFIRM_VARIANTS,
+  RIVER_MILESTONE_VARIANTS,
+  RIVER_VARIANTS,
   VARIANTS,
+  WALL_CONFIRM_VARIANTS,
+  WALL_VARIANTS,
   type Variant,
 } from './variants.js';
 
@@ -32,7 +37,11 @@ import {
  *   npm run model -- --stack      -- the leading candidates alone and together
  *   npm run model -- --geo        -- rivers, Desert and the map
  *   npm run model -- --sink       -- the Monument
+ *   npm run model -- --river      -- Prestige for lengthening Babel's river
+ *   npm run model -- --walls      -- do Walls earn their rules text?
  *   npm run model -- --lake       -- the terrain-weight question instead
+ *   npm run model -- --paired     -- every variant from the same seeds
+ *   npm run model -- --table a,b,c -- choose the archetypes at the table
  *   npm run model -- --json       -- machine-readable, for diffing runs
  */
 const argv = process.argv.slice(2);
@@ -45,6 +54,28 @@ const option = (name: string, fallback: number): number => {
 };
 
 const games = option('games', 200);
+
+/**
+ * Who is sitting at the table, e.g. `--table engineer,commander,architect`.
+ *
+ * The default three are the roster every earlier round was measured with, so a
+ * new run stays comparable by default. It matters for any question about a
+ * subsystem only one archetype plays: asking whether Walls are worth their
+ * rules text at a table with no Engineer at it answers a narrower question than
+ * it appears to.
+ */
+const table_ = ((): readonly Archetype[] => {
+  const at = argv.indexOf('--table');
+  if (at === -1) return CLASSIC_TABLE;
+  const names = (argv[at + 1] ?? '').split(',').map((name) => name.trim().toLowerCase());
+  const seats = names.filter((name): name is Archetype =>
+    (ARCHETYPES as readonly string[]).includes(name),
+  );
+  if (seats.length < 2 || seats.length !== names.length) {
+    throw new Error(`--table wants 2-4 of: ${ARCHETYPES.join(', ')}`);
+  }
+  return seats;
+})();
 const SETS: readonly { flag: string; variants: readonly Variant[] }[] = [
   { flag: 'lake', variants: LAKE_VARIANTS },
   { flag: 'levers', variants: LEVER_VARIANTS },
@@ -58,6 +89,11 @@ const SETS: readonly { flag: string; variants: readonly Variant[] }[] = [
   { flag: 'defence', variants: DEFENCE_VARIANTS },
   { flag: 'roster', variants: ROSTER_VARIANTS },
   { flag: 'sink', variants: SINK_VARIANTS },
+  { flag: 'river', variants: RIVER_VARIANTS },
+  { flag: 'walls', variants: WALL_VARIANTS },
+  { flag: 'river-confirm', variants: RIVER_CONFIRM_VARIANTS },
+  { flag: 'river-milestone', variants: RIVER_MILESTONE_VARIANTS },
+  { flag: 'walls-confirm', variants: WALL_CONFIRM_VARIANTS },
 ];
 const variants: readonly Variant[] = SETS.find((set) => flag(set.flag))?.variants ?? VARIANTS;
 
@@ -156,7 +192,7 @@ function report(summaries: readonly Summary[], labels: Readonly<Record<string, s
   console.log(
     table([
       head,
-      ...CLASSIC_TABLE.map((archetype) => [
+      ...table_.map((archetype) => [
         ARCHETYPE_LABEL[archetype],
         ...summaries.map(
           (s) =>
@@ -165,6 +201,31 @@ function report(summaries: readonly Summary[], labels: Readonly<Record<string, s
             )})`,
         ),
       ]),
+    ]),
+  );
+
+  console.log('\nBABEL’S RIVER');
+  console.log(
+    table([
+      head,
+      ['River Prestige / game', ...summaries.map((s) => num(s.river.prestigePerGame))],
+      ['  share of all Prestige', ...summaries.map((s) => pct(s.river.shareOfPrestige))],
+      ['Placements paid', ...summaries.map((s) => pct(s.river.rewardedPlacements))],
+      ['Reach from Babel (tiles)', ...summaries.map((s) => num(s.river.reach, 2))],
+      ['Tiles in Babel’s river', ...summaries.map((s) => num(s.river.tiles, 2))],
+      ['Payout per placement', ...summaries.map((s) => num(s.river.payoutPerPlacement, 3))],
+    ]),
+  );
+
+  console.log('\nWALLS');
+  console.log(
+    table([
+      head,
+      ['Wall actions / game', ...summaries.map((s) => num(s.walls.actionsPerGame, 2))],
+      ['Segments built / game', ...summaries.map((s) => num(s.walls.segmentsPerGame, 2))],
+      ['Segments crossed / game', ...summaries.map((s) => num(s.walls.brokenPerGame, 2))],
+      ['  share of segments built', ...summaries.map((s) => pct(s.walls.brokenShare))],
+      ['Still standing at end', ...summaries.map((s) => num(s.walls.standingAtEnd, 2))],
     ]),
   );
 
@@ -187,8 +248,11 @@ function report(summaries: readonly Summary[], labels: Readonly<Record<string, s
 }
 
 const started = Date.now();
+const paired = flag('paired');
 const summaries = variants.map((variant) => {
-  const played = Array.from({ length: games }, (_, i) => playGame(variant, `s${i}`));
+  const played = Array.from({ length: games }, (_, i) =>
+    playGame(variant, `s${i}`, table_, { paired }),
+  );
   return summarise(variant.id, played);
 });
 
@@ -196,8 +260,8 @@ if (flag('json')) {
   console.log(JSON.stringify({ games, summaries }, null, 2));
 } else {
   console.log(
-    `BABEL model — ${games} games per variant, ${CLASSIC_TABLE.length} Leaders ` +
-      `(${CLASSIC_TABLE.map((a) => ARCHETYPE_LABEL[a]).join(', ')})`,
+    `BABEL model — ${games} games per variant, ${table_.length} Leaders ` +
+      `(${table_.map((a) => ARCHETYPE_LABEL[a]).join(', ')})`,
   );
   for (const variant of variants) console.log(`  ${variant.id.padEnd(10)} ${variant.note}`);
   report(summaries, Object.fromEntries(variants.map((v) => [v.id, v.label])));

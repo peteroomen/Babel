@@ -213,3 +213,103 @@ export const LAKE_VARIANTS: readonly Variant[] = [0, 4, 8].map((lake) =>
     },
   ),
 );
+
+/**
+ * Round seven, question one: does lengthening Babel's river deserve Prestige?
+ *
+ * The river is currently geography and nothing else — it decides where Heaven
+ * can walk, and a Leader who is not being invaded has no reason to care which
+ * way the water runs. Paying for it puts a second reason on the placement
+ * decision, and the two reasons disagree often enough to be a choice.
+ *
+ * The arms separate the two readings of "longer". `any` pays for any tile that
+ * joins Babel's water, which includes thickening it next to the Foundation;
+ * `reach` pays only when the river's furthest point gets further away, which is
+ * the rule as a person would say it aloud. The rest are the price.
+ */
+export const RIVER_VARIANTS: readonly Variant[] = [
+  withRules('control', 'Control', 'Canon v0.3: the river pays nothing', {}),
+  withRules('river-any', 'Any join, +1', 'Any tile joining Babel’s river', {
+    riverPrestige: { perTile: 1, requireReach: false, cap: null, milestone: null },
+  }),
+  withRules('river-reach', 'Reach, +1', 'Only when the river runs further', {
+    riverPrestige: { perTile: 1, requireReach: true, cap: null, milestone: null },
+  }),
+  withRules('river-reach-2', 'Reach, +2', 'The same rule at twice the price', {
+    riverPrestige: { perTile: 2, requireReach: true, cap: null, milestone: null },
+  }),
+  withRules('river-capped', 'Reach, +1, cap 8', 'Bounded per Leader', {
+    riverPrestige: { perTile: 1, requireReach: true, cap: 8, milestone: null },
+  }),
+];
+
+/**
+ * Round seven, question two: do Walls earn their rules text?
+ *
+ * `no-walls` is the null hypothesis — delete the action and see whether any
+ * number moves. `walls-4` and `walls-cheap` ask the other question first, which
+ * is whether Walls are ignored because they are pointless or because they are
+ * simply too weak to be worth an action: four segments per action, and the same
+ * two segments for no Wood at all.
+ */
+export const WALL_VARIANTS: readonly Variant[] = [
+  withRules('control', 'Control', 'Canon: 1 Wood, 2 segments', {}),
+  withRules('no-walls', 'No Walls', 'The action is removed', { walls: null }),
+  withRules('walls-4', 'Four segments', '1 Wood, 4 segments', {
+    walls: { cost: { wood: 1 }, segments: 4, prestige: 1 },
+  }),
+  withRules('walls-cheap', 'Free Walls', 'No Wood, 2 segments', {
+    walls: { cost: {}, segments: 2, prestige: 1 },
+  }),
+];
+
+
+/**
+ * The two river arms worth more seeds, against the control.
+ *
+ * Forty games puts roughly seven points of standard error on a win rate, which
+ * is wider than any difference the first river round produced except the one at
+ * +2 Prestige. Run this paired (`--paired`), so the control and the candidates
+ * share their opening boards instead of being compared across unrelated maps.
+ */
+export const RIVER_CONFIRM_VARIANTS: readonly Variant[] = [
+  withRules('control', 'Control', 'Canon v0.3: the river pays nothing', {}),
+  withRules('river-reach', 'Reach, +1', 'Only when the river runs further', {
+    riverPrestige: { perTile: 1, requireReach: true, cap: null, milestone: null },
+  }),
+  withRules('river-reach-2', 'Reach, +2', 'The same rule at twice the price', {
+    riverPrestige: { perTile: 2, requireReach: true, cap: null, milestone: null },
+  }),
+];
+
+/** Walls against no Walls, with enough seeds to believe the gap. */
+export const WALL_CONFIRM_VARIANTS: readonly Variant[] = [
+  withRules('control', 'Control', 'Canon: 1 Wood, 2 segments', {}),
+  withRules('no-walls', 'No Walls', 'The action is removed', { walls: null }),
+];
+
+
+/**
+ * Round seven, question one again: a milestone instead of a stipend.
+ *
+ * Per-tile Prestige is income — everyone who draws a river tile takes a point,
+ * and nobody competes for it. A milestone is claimed: only one Leader can be
+ * the one who takes the river from five tiles to six, so the placement is worth
+ * taking a worse square for, which is the wrinkle the whole idea was for.
+ *
+ * The prices are set so the total on offer is roughly what `reach, +1` paid
+ * out, which was about 5 Prestige across the table per game: a river reaching
+ * six or seven tiles crosses a third-tile milestone twice.
+ */
+export const RIVER_MILESTONE_VARIANTS: readonly Variant[] = [
+  withRules('control', 'Control', 'Canon v0.3: the river pays nothing', {}),
+  withRules('river-reach', 'Reach, +1 each', 'Per tile: the stipend', {
+    riverPrestige: { perTile: 1, requireReach: true, cap: null, milestone: null },
+  }),
+  withRules('mile3', 'Every 3rd tile, +2', 'Claimed, not earned', {
+    riverPrestige: { perTile: 2, requireReach: true, cap: null, milestone: 3 },
+  }),
+  withRules('mile4', 'Every 4th tile, +3', 'Rarer and worth more', {
+    riverPrestige: { perTile: 3, requireReach: true, cap: null, milestone: 4 },
+  }),
+];

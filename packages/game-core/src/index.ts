@@ -1,6 +1,7 @@
 export * from './rng/index.js';
 export * from './map/edges.js';
 export * from './map/placement.js';
+export * from './rivers/index.js';
 export * from './features/index.js';
 export * from './buildings/index.js';
 export * from './walls/index.js';
