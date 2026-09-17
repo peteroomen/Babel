@@ -38,6 +38,7 @@ export function resolveHeavenPhase(
   /* A Colossus pulls buildings down as it comes, so the standing set changes
      during movement rather than only at the end of the phase. */
   let standing = { ...state.buildings };
+  let occupier = hostAtBabel(state.hosts) ?? null;
 
   /* GDD §19 March of Heaven: every Host already on the board gets +1 movement. */
   const marching = confusionIs(state, 'march-of-heaven') ? 1 : 0;
@@ -61,6 +62,11 @@ export function resolveHeavenPhase(
           hadChoice: true,
         });
         current = { ...current, at: to };
+      }
+      /* Occupation is physical: redirecting the Foundation's Host away clears
+         the slot before later arrivals are resolved. */
+      if (occupier?.id === host.id && coordKey(current.at) !== coordKey(BABEL_COORD)) {
+        occupier = null;
       }
       if (coordKey(current.at) === coordKey(BABEL_COORD)) arrivals.push(current);
       else moved.push(current);
@@ -146,7 +152,6 @@ export function resolveHeavenPhase(
 
   /* 2. Hosts that reached Babel. GDD §2. */
   let stack = [...state.babel.stack];
-  let occupier = hostAtBabel(state.hosts) ?? null;
   const survivors = [...moved];
 
   for (const host of arrivals) {
@@ -177,6 +182,7 @@ export function resolveHeavenPhase(
         ...state,
         rng,
         walls,
+        buildings: standing,
         babel: { stack },
         hosts: [...survivors, host],
         phase: 'gameOver',

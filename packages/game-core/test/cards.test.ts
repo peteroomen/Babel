@@ -157,6 +157,17 @@ describe('Lost Ledgers (GDD §19)', () => {
 });
 
 describe('Fractured Command (GDD §19)', () => {
+  it('keeps tile placement behind the Common Tongue decision window', () => {
+    const state = under('fractured-command', {
+      phase: 'confusion',
+      turnStep: 'place',
+      drawnTile: { terrain: 'desert', river: 'none' },
+    });
+    expect(() => applyMove(state, {
+      type: 'placeTile', player: state.order[0]!, at: { x: 3, y: 0 }, rotation: 0,
+    })).toThrow(/Confusion decision/);
+  });
+
   it('lets only one Leader use each action category', () => {
     let state = under('fractured-command');
     const four = ['wood', 'wood', 'wood', 'wood'] as const;

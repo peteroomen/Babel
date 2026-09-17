@@ -238,7 +238,7 @@ export function describe(event: GameEvent, state: GameState): string {
     case 'hostHit':
       return event.shieldBroken
         ? `${who(event.player)} shatters a Seraph's shield`
-        : `${who(event.player)} hits a Host`;
+        : `${who(event.player)} damages a Host`;
     case 'hostKilled':
       return `${who(event.player)} destroys a Host`;
     case 'mustered':

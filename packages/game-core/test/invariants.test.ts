@@ -15,6 +15,7 @@ import {
   applyMove,
   coordKey,
   currentPlayer,
+  effectiveHostDefence,
   getConnectedFeature,
   getLegalActions,
   getLegalTilePlacements,
@@ -149,8 +150,7 @@ function playGame(seed: string, turns: number, rules: RuleSet = CANON_RULES): Ga
     if (state.pendingAttack) {
       const pending = state.pendingAttack;
       const bonus = state.rules.combatDieBonus;
-      const defenceOf = (host: (typeof state.hosts)[number]) =>
-        hostDefence(state.order.length, state.stage, state.rules, host.kind);
+      const defenceOf = (host: (typeof state.hosts)[number]) => effectiveHostDefence(state, host);
       const assignments: Record<string, number> = {};
       let spent = 0;
 
