@@ -10,7 +10,18 @@ import {
   type GameEvent,
   type GameState,
 } from '@babel-game/game-core';
-import { NATURAL, STILL, advance, direct, heldFor, reelFrom, sceneOf } from '../src/index.js';
+import {
+  NATURAL,
+  PACE,
+  STILL,
+  advance,
+  direct,
+  heldFor,
+  paced,
+  reelFrom,
+  sceneOf,
+  type Pace,
+} from '../src/index.js';
 
 const SLOW = heldFor(200);
 
@@ -177,5 +188,40 @@ describe('the state that changes underneath you', () => {
     ];
 
     expect(direct(state, events, state, NATURAL).beats).toHaveLength(1);
+  });
+});
+
+describe('pace', () => {
+  it('keeps the shape of the tempo, only the scale', () => {
+    const brisk = paced('brisk');
+    const natural = paced('natural');
+    const slow = paced('unhurried');
+
+    expect(natural).toEqual(NATURAL);
+    /* A card to read stays the longest beat at every pace, and a Host walking
+       stays among the shortest: a preference changes how long, never what
+       matters. */
+    for (const tempo of [brisk, natural, slow]) {
+      expect(tempo.confusion).toBeGreaterThan(tempo.babelLost);
+      expect(tempo.babelLost).toBeGreaterThan(tempo.march);
+    }
+    expect(brisk.march).toBeLessThan(natural.march);
+    expect(slow.march).toBeGreaterThan(natural.march);
+  });
+
+  it('never leaves a beat too short to register', () => {
+    for (const kind of Object.keys(paced('brisk')) as (keyof typeof NATURAL)[]) {
+      const ms = paced('brisk')[kind];
+      if (NATURAL[kind] === 0) continue;
+      expect(ms, `${kind} vanishes at a brisk pace`).toBeGreaterThanOrEqual(200);
+    }
+  });
+
+  it('holds the dice long enough for the roll to finish turning', () => {
+    /* The tumble is 620ms scaled by the same pace, so the beat that shows it
+       has to outlast it or the tray would change under a moving die. */
+    for (const [pace, factor] of Object.entries(PACE) as [Pace, number][]) {
+      expect(paced(pace).dice, `${pace}`).toBeGreaterThan(620 * factor);
+    }
   });
 });

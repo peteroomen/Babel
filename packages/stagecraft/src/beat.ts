@@ -113,44 +113,71 @@ export const STILL: Tempo = heldFor(0);
 /**
  * What the screen currently takes its time over.
  *
- * Only the Heaven Phase, so far. It is the moment players have the least
- * information about and the most at stake in, and until now the whole of it —
- * every step, every Wall, every piece knocked off Babel — arrived as a single
- * changed picture.
+ * Only the Heaven Phase, the Attack and the announcements, so far. Those are
+ * the moments players have the least information about and the most at stake
+ * in, and until now the whole of each one arrived as a single changed picture.
  *
- * The numbers are the milestone's own: short enough to stay informative rather
- * than theatrical, longer where the thing that happened is worse. A Host
- * walking is a quarter of a second because there may be a dozen of them; Babel
- * losing a piece is nearly a second because it happens once and it hurts.
+ * The numbers are paced to be read rather than admired, and they are longer
+ * where the thing that happened is worse. A Host walking is the shortest beat
+ * because there may be a dozen of them in a phase; Babel losing a piece is
+ * over a second because it happens once and it hurts. A card that rewrites the
+ * round gets long enough to actually read the sentence on it, which is the
+ * whole reason it turns over at all.
  *
- * Everything else is still zero and will be raised by the slice that earns it.
+ * This is the middle setting. `paced` scales the lot for people who want it
+ * brisker or slower, and the screen is interruptible at any point regardless.
  */
 export const NATURAL: Tempo = {
   ...STILL,
-  heaven: 420,
-  march: 260,
-  spawn: 340,
-  wallBroken: 480,
-  razed: 560,
-  babelLost: 720,
-  foundation: 780,
-  loss: 900,
+  heaven: 620,
+  march: 400,
+  spawn: 520,
+  wallBroken: 720,
+  razed: 850,
+  babelLost: 1100,
+  foundation: 1200,
+  loss: 1400,
 
-  /* An Attack: the dice land, the Towers fire one at a time, and each hit is
-     spent on something you can see it being spent on. */
-  tower: 520,
-  dice: 560,
-  shield: 560,
-  slain: 460,
-  split: 640,
+  /* An Attack: the dice tumble and come to rest, the Towers fire one at a
+     time, and each hit is spent on something you can see it being spent on.
+     `dice` has to outlast the roll itself or the tray would change under a die
+     that is still turning. */
+  tower: 800,
+  dice: 1100,
+  shield: 850,
+  slain: 700,
+  split: 950,
 
   /* The state that changes underneath a player rather than because of them.
-     Long enough to read a card that rewrites the round, because these arrive
-     once and are then lived with. */
-  confusion: 1500,
-  cancel: 1100,
-  stage: 1500,
-  scheme: 1100,
-  beacon: 800,
-  win: 1200,
+     These arrive once and are then lived with, so they are the only beats
+     measured in seconds. */
+  confusion: 2600,
+  cancel: 2000,
+  stage: 2600,
+  scheme: 2000,
+  beacon: 1500,
+  win: 2200,
 };
+
+/** The same tempo, faster or slower throughout. */
+export const scaled = (tempo: Tempo, factor: number): Tempo =>
+  Object.fromEntries(
+    Object.entries(tempo).map(([kind, ms]) => [kind, Math.round(ms * factor)]),
+  ) as Tempo;
+
+/**
+ * How long the screen should take, as a person would put it.
+ *
+ * One number rather than a table of them: what differs between someone who
+ * has played fifty games and someone who has played none is not which beats
+ * matter, it is how long they need on each.
+ */
+export type Pace = 'brisk' | 'natural' | 'unhurried';
+
+export const PACE: Readonly<Record<Pace, number>> = {
+  brisk: 0.6,
+  natural: 1,
+  unhurried: 1.7,
+};
+
+export const paced = (pace: Pace): Tempo => scaled(NATURAL, PACE[pace]);

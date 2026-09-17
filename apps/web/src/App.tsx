@@ -19,7 +19,7 @@ import {
   type ResourceType,
   type RuleSet,
 } from '@babel-game/game-data';
-import { NATURAL } from '@babel-game/stagecraft';
+import { PACE, paced, type Pace } from '@babel-game/stagecraft';
 import {
   applyMove,
   coordKey,
@@ -122,6 +122,25 @@ type Table = {
 
 const OPENING: Table = { leaders: 2, ai: 1, rules: CANON_RULES };
 
+/**
+ * How long the screen takes, remembered between sittings.
+ *
+ * A per-person convenience rather than part of the game, so it lives in the
+ * browser and never goes near `GameState`. Storage can throw or come back
+ * empty — a private window, cleared site data — and the default is fine.
+ */
+const PACE_KEY = 'babel:pace';
+
+function rememberedPace(): Pace {
+  try {
+    const saved = window.localStorage.getItem(PACE_KEY);
+    if (saved === 'brisk' || saved === 'natural' || saved === 'unhurried') return saved;
+  } catch {
+    /* Storage is a nicety. */
+  }
+  return 'natural';
+}
+
 export function App() {
   const [table, setTable] = useState<Table>(OPENING);
   const [seed, setSeed] = useState('babel-1');
@@ -180,7 +199,18 @@ export function App() {
    * every question of legality. Under a still tempo the two are the same
    * object and this costs nothing.
    */
-  const stage = useStage(state, NATURAL);
+  const [pace, setPace] = useState<Pace>(rememberedPace);
+  const tempo = useMemo(() => paced(pace), [pace]);
+  const choosePace = (next: Pace) => {
+    setPace(next);
+    try {
+      window.localStorage.setItem(PACE_KEY, next);
+    } catch {
+      /* Storage is a nicety. */
+    }
+  };
+
+  const stage = useStage(state, tempo);
 
   const reset = () => {
     setSelected(null);
@@ -256,7 +286,10 @@ export function App() {
   return (
     <TooltipProvider>
       <PaperFx />
-      <div className="flex h-full flex-col overflow-hidden">
+      <div
+        className="flex h-full flex-col overflow-hidden"
+        style={{ ['--pace' as string]: PACE[pace] }}
+      >
         {/* ── Header ─────────────────────────────────────────────── */}
         <header className="bg-papyrus-light/60 flex h-12 shrink-0 items-center gap-2 border-b px-3">
           <span className="font-scrawl text-3xl leading-none font-bold tracking-tight">
@@ -580,6 +613,19 @@ export function App() {
                       })
                     }
                   />
+                  {/* The only setting here that is about the screen rather
+                      than the rules, so it takes effect where it stands. */}
+                  <Choice
+                    label="Pace"
+                    hint="How long the screen takes to tell you what just happened. It changes nothing about the game, applies immediately, and every sequence can be skipped with a click or a key whatever this says."
+                    options={[
+                      { value: 'brisk', label: 'Brisk' },
+                      { value: 'natural', label: 'Natural' },
+                      { value: 'unhurried', label: 'Unhurried' },
+                    ]}
+                    value={pace}
+                    onChange={choosePace}
+                  />
                   <Choice
                     label="Reserve slots"
                     hint="Face-up tiles beside the bag. Swapping your draw for one is free and is not your action — but the Reserve is shared, so you leave your cast-off for the next Leader."
@@ -687,6 +733,7 @@ export function App() {
               selectedHosts={hits}
               live={!stage.busy}
               spot={stage.spot}
+              hold={stage.hold}
             />
             <DiceTray state={state} />
             <Announce spot={stage.spot} state={stage.view} ms={stage.hold} />

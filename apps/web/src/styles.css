@@ -158,10 +158,11 @@
 @layer components {
   /* A Host walking from one square to the next. */
   .marching {
-    transition: transform 220ms cubic-bezier(0.34, 0.8, 0.4, 1);
+    transition: transform calc(340ms * var(--pace, 1)) cubic-bezier(0.34, 0.8, 0.4, 1);
   }
 
-  /* Something the beat wants looked at. */
+  /* Something the beat wants looked at. Its duration is the beat's own hold,
+     set inline, so a ring can never outlive the moment it is pointing at. */
   .spotlit {
     animation: spotlight 640ms ease-out;
     transform-box: fill-box;
@@ -176,9 +177,37 @@
 
   /* A Host arriving out of a Beacon, or three left behind by a Swarm. */
   .descending {
-    animation: descend 320ms ease-out;
+    animation: descend calc(320ms * var(--pace, 1)) ease-out;
     transform-box: fill-box;
     transform-origin: center;
+  }
+
+  /*
+   * A die, as an actual cube.
+   *
+   * Six faces carrying their own pips, so what you see edge-on while it turns
+   * is a die rather than a card flipping over. Opposite faces sum to seven,
+   * which is the thing anyone who has held a die will notice if it is wrong.
+   *
+   * It spins on the spot and decelerates onto the face it rolled: `--rx` and
+   * `--ry` are the orientation that shows that number, and the animation
+   * starts some whole turns away from it and arrives.
+   */
+  .die {
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(var(--rx)) rotateY(var(--ry));
+  }
+  .tumbling {
+    animation: tumble calc(620ms * var(--pace, 1)) cubic-bezier(0.13, 0.78, 0.24, 1) both;
+  }
+  .die-face {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 18%;
+    backface-visibility: hidden;
   }
 }
 
@@ -190,6 +219,15 @@
   100% {
     opacity: 0;
     transform: scale(1.35);
+  }
+}
+
+@keyframes tumble {
+  from {
+    transform: rotateX(calc(var(--rx) + var(--spin-x))) rotateY(calc(var(--ry) + var(--spin-y)));
+  }
+  to {
+    transform: rotateX(var(--rx)) rotateY(var(--ry));
   }
 }
 
@@ -232,7 +270,8 @@
   .marching,
   .spotlit,
   .descending,
-  .turning {
+  .turning,
+  .tumbling {
     transition: none;
     animation: none;
   }

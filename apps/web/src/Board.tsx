@@ -382,6 +382,8 @@ type Props = {
   live?: boolean;
   /** What the moment on screen is about, when the stage is playing one. */
   spot?: Spotlight | null;
+  /** How long that moment is being held, so nothing outlives it. */
+  hold?: number;
 };
 
 /** Half-edge segments, drawn from the tile centre out to each river edge. */
@@ -439,6 +441,7 @@ export function Board({
   selectedHosts = {},
   live = true,
   spot = null,
+  hold = 0,
 }: Props) {
   const options =
     live && state.drawnTile
@@ -878,6 +881,7 @@ export function Board({
           <rect
             key={`spot-${i}-${coordKey(at)}`}
             className="spotlit"
+            style={{ animationDuration: `${Math.max(240, Math.min(hold, 900))}ms` }}
             x={x + 2}
             y={y + 2}
             width={CELL - 4}

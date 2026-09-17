@@ -39,45 +39,92 @@ const PIPS: Record<number, readonly (readonly [number, number])[]> = {
 };
 
 /**
- * One die, landed.
+ * Where each number lives on the cube, and how to turn it to the front.
  *
- * The face is the thing a player wants to see; the arithmetic underneath it is
- * what they would otherwise have to do in their head. A die that missed stays
- * on the table rather than disappearing, because "I rolled six dice and two
- * hit" is the sentence the screen is trying to make obvious.
+ * Opposite faces sum to seven, as they do on any die you have held: 1 against
+ * 6, 2 against 5, 3 against 4. `show` is the orientation of the whole cube
+ * that brings that face to the camera, which is what a roll has to land on.
+ */
+const FACES = [
+  { pip: 1, place: 'translateZ(var(--half))', show: [0, 0] },
+  { pip: 6, place: 'rotateY(180deg) translateZ(var(--half))', show: [0, 180] },
+  { pip: 3, place: 'rotateY(90deg) translateZ(var(--half))', show: [0, -90] },
+  { pip: 4, place: 'rotateY(-90deg) translateZ(var(--half))', show: [0, 90] },
+  { pip: 2, place: 'rotateX(90deg) translateZ(var(--half))', show: [-90, 0] },
+  { pip: 5, place: 'rotateX(-90deg) translateZ(var(--half))', show: [90, 0] },
+] as const;
+
+const SIZE = 36;
+
+/**
+ * One die, tumbling to a stop on the face it rolled.
+ *
+ * The number of turns it takes to get there is derived from the die's own
+ * position and face rather than from `Math.random`, so a given volley always
+ * rolls the same way it rolled — the same courtesy the rules pay by drawing
+ * every die from a seeded generator.
+ *
+ * A die that missed stays on the table rather than disappearing, because "I
+ * rolled six dice and two hit" is the sentence the screen is trying to make
+ * obvious.
  */
 function Die({
   roll,
   hit,
   bonus,
+  index,
   delay,
 }: {
   roll: number;
   hit: boolean;
   bonus: number;
+  index: number;
   delay: number;
 }) {
-  const size = 34;
+  const landing = FACES.find((face) => face.pip === roll) ?? FACES[0];
+  const [rx, ry] = landing.show;
+  /* Two to four whole turns each way, varied per die so a handful of them do
+     not tumble in lockstep. */
+  const spinX = 360 * (2 + ((index + roll) % 3));
+  const spinY = 360 * (2 + ((index * 2 + roll) % 3));
+
   return (
-    <span
-      className={cn('descending inline-flex flex-col items-center gap-0.5', !hit && 'opacity-45')}
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      <svg width={size} height={size} viewBox="0 0 1 1" aria-hidden>
-        <rect
-          x={0.04}
-          y={0.04}
-          width={0.92}
-          height={0.92}
-          rx={0.16}
-          fill={hit ? '#f6eed8' : '#e0d2ac'}
-          stroke={hit ? '#c08a2e' : INK}
-          strokeWidth={hit ? 0.07 : 0.035}
-        />
-        {PIPS[roll]?.map(([cx, cy], i) => (
-          <circle key={i} cx={cx} cy={cy} r={0.082} fill={INK} />
-        ))}
-      </svg>
+    <span className={cn('inline-flex flex-col items-center gap-1', !hit && 'opacity-45')}>
+      <span
+        className="inline-block"
+        style={{ width: SIZE, height: SIZE, perspective: `${SIZE * 16}px` }}
+      >
+        <span
+          className="die tumbling block size-full"
+          style={{
+            ['--half' as string]: `${SIZE / 2}px`,
+            ['--rx' as string]: `${rx}deg`,
+            ['--ry' as string]: `${ry}deg`,
+            ['--spin-x' as string]: `${spinX}deg`,
+            ['--spin-y' as string]: `${spinY}deg`,
+            animationDelay: `${delay}ms`,
+          }}
+          aria-label={`rolled ${roll}`}
+        >
+          {FACES.map((face) => (
+            <span
+              key={face.pip}
+              className="die-face"
+              style={{
+                transform: face.place,
+                background: hit ? '#f6eed8' : '#e0d2ac',
+                border: `${hit ? 2 : 1}px solid ${hit ? '#c08a2e' : INK}`,
+              }}
+            >
+              <svg width={SIZE * 0.8} height={SIZE * 0.8} viewBox="0 0 1 1" aria-hidden>
+                {PIPS[face.pip]?.map(([cx, cy], i) => (
+                  <circle key={i} cx={cx} cy={cy} r={0.088} fill={INK} />
+                ))}
+              </svg>
+            </span>
+          ))}
+        </span>
+      </span>
       <span className="text-[10px] tabular-nums opacity-70">
         {roll === 6 ? '6' : `${roll}+${bonus}`}
       </span>
@@ -118,7 +165,8 @@ export function DiceTray({ state }: { state: GameState }) {
                   roll={shot.roll}
                   hit={shot.hit}
                   bonus={volley.bonus}
-                  delay={i * 70}
+                  index={i}
+                  delay={i * 90}
                 />
               ))}
             </div>
@@ -148,7 +196,8 @@ export function DiceTray({ state }: { state: GameState }) {
                 roll={die.roll}
                 hit={die.hit}
                 bonus={volley.bonus}
-                delay={(volley.towers.length + i) * 70}
+                index={volley.towers.length + i}
+                delay={(volley.towers.length + i) * 90}
               />
             ))}
           </div>
