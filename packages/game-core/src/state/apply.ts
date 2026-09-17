@@ -32,7 +32,12 @@ import { affordableDice } from '../actions/legal.js';
 import { getLegalBeaconSites, hostDefence } from '../heaven/beacons.js';
 import { isPassableAt } from '../heaven/path.js';
 import { beaconsOwed, openBeaconDecision, resolveHeavenPhase } from '../heaven/phase.js';
-import { isFoundationOccupied, newHost, occupiedKeys } from '../heaven/hosts.js';
+import {
+  defenceOf as hostDefenceNow,
+  isFoundationOccupied,
+  newHost,
+  occupiedKeys,
+} from '../heaven/hosts.js';
 import {
   canBuildBabel,
   isBabelComplete,
@@ -953,22 +958,10 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       if (state.hosts.length === 0) throw new Error('there are no Hosts to attack');
 
       /* The easiest target on the board sets the bar a die has to clear to
-         count at all; assignment then checks each hit against its own target. */
-      /**
-       * A Herald raises the Defence of everything standing with it, so the
-       * answer is to shoot the Herald first — a target-priority decision the
-       * table does not otherwise have to make. The aura never applies to the
-       * Herald itself, or a pair of them would be unkillable.
-       */
-      const auraAt = (host: GameState['hosts'][number]) =>
-        state.hosts
-          .filter((other) => other.id !== host.id && HOSTS[other.kind].aura > 0)
-          .filter((other) =>
-            getConnectedFeature(state.board, other.at).includes(coordKey(host.at)),
-          )
-          .reduce((sum, other) => sum + HOSTS[other.kind].aura, 0);
-      const defenceOf = (host: GameState['hosts'][number]) =>
-        hostDefence(state.order.length, state.stage, state.rules, host.kind) + auraAt(host);
+         count at all; assignment then checks each hit against its own target.
+         `defenceOf` carries the Herald's aura, and is the same function the
+         screen reads when it shows a player what a Host is worth. */
+      const defenceOf = (host: GameState['hosts'][number]) => hostDefenceNow(state, host);
       const defence = Math.min(...state.hosts.map(defenceOf));
       const bonus = state.rules.combatDieBonus;
       let rng = state.rng;

@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import {
   BABEL_COORD,
   coordKey,
+  defenceOf,
   getConnectedFeature,
   getLegalTilePlacements,
   riverEdgesOf,
@@ -905,6 +906,9 @@ export function Board({
             <g
               key={`host-${host.id}`}
               data-host-kind={host.kind}
+              /* The drop target for a die being dragged out of the tray. */
+              data-host-id={host.id}
+              data-host-defence={onHost ? defenceOf(state, host) : undefined}
               className={
                 arriving && spot?.hostIds.includes(host.id) ? 'descending' : 'marching'
               }
@@ -915,18 +919,49 @@ export function Board({
               onClick={() => onHost?.(host.id)}
             >
               <HostGlyph kind={host.kind} shieldUp={host.shieldUp} />
+              {/*
+                While hits are being handed out, every Host says what a die has
+                to beat to touch it. A Herald in the same feature raises it, so
+                a number read off the board is the only one that is right.
+              */}
+              {onHost && (
+                <g transform={`translate(${CELL / 2} ${CELL - 9})`}>
+                  <rect
+                    x={-13}
+                    y={-8}
+                    width={26}
+                    height={15}
+                    rx={4}
+                    fill="#2a211add"
+                    stroke={HEAVEN_GOLD}
+                    strokeWidth={1}
+                  />
+                  <text
+                    y={3.5}
+                    textAnchor="middle"
+                    fontSize={10}
+                    fontWeight={700}
+                    fill="#f6eed8"
+                    fontFamily="system-ui"
+                  >
+                    {defenceOf(state, host)}+
+                  </text>
+                </g>
+              )}
               {chosen > 0 && (
-                <text
-                  x={CELL / 2}
-                  y={CELL / 2 + 4}
-                  textAnchor="middle"
-                  fontSize={12}
-                  fontWeight={700}
-                  fill="#a33"
-                  fontFamily="system-ui"
-                >
-                  {chosen}
-                </text>
+                <g transform={`translate(${CELL - 12} 12)`}>
+                  <circle r={9} fill="#9c3a22" stroke="#fffdf8" strokeWidth={1.5} />
+                  <text
+                    y={4}
+                    textAnchor="middle"
+                    fontSize={11}
+                    fontWeight={700}
+                    fill="#fffdf8"
+                    fontFamily="system-ui"
+                  >
+                    {chosen}
+                  </text>
+                </g>
               )}
             </g>
           );

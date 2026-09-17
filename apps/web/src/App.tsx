@@ -26,6 +26,8 @@ import {
   currentPlayer,
   getLegalActions,
   getLegalTilePlacements,
+  defenceOf,
+  dieHits,
   hitsRemaining,
   isPassableAt,
   neighbours,
@@ -256,6 +258,25 @@ export function App() {
 
   const assigned = Object.values(hits).reduce((sum, n) => sum + n, 0);
   const successes = state.pendingAttack?.successes ?? 0;
+
+  /**
+   * A die dropped onto a Host.
+   *
+   * Refused rather than corrected when it would not land: a face that cannot
+   * beat that Host's Defence, a Host that has already taken every hit it can
+   * survive, or no successes left to spend. The rules would reject the same
+   * assignment at `assignHits`, so the only question is whether a player finds
+   * that out by dragging or by having their whole Attack throw an error.
+   */
+  const dropOnHost = (id: string, roll: number): boolean => {
+    const host = state.hosts.find((h) => h.id === id);
+    if (!host || !state.pendingAttack) return false;
+    if (assigned >= successes) return false;
+    if ((hits[id] ?? 0) >= hitsRemaining(host)) return false;
+    if (!dieHits(roll, defenceOf(state, host), state.rules.combatDieBonus)) return false;
+    setHits((current) => ({ ...current, [id]: (current[id] ?? 0) + 1 }));
+    return true;
+  };
   const tapHost = (id: string) => {
     const host = state.hosts.find((h) => h.id === id);
     if (!host) return;
@@ -727,7 +748,11 @@ export function App() {
               hold={stage.hold}
               focus={stage.focus}
             />
-            <DiceTray state={state} />
+            <DiceTray
+              state={state}
+              hits={hits}
+              {...(state.pendingAttack && !stage.busy ? { onAssign: dropOnHost } : {})}
+            />
             <Announce spot={stage.spot} state={stage.view} ms={stage.hold} />
           </main>
 

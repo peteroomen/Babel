@@ -99,7 +99,9 @@ export function LeaderStrip({
           <div
             key={id}
             className={cn(
-              'min-w-0 flex-1 rounded-lg border px-1.5 py-1 transition-colors',
+              /* Capped: at two Leaders on a wide screen the chips would
+                 otherwise stretch half a metre across the table. */
+              'min-w-0 max-w-[22rem] flex-1 rounded-lg border px-1.5 py-1 transition-colors',
               isActive
                 ? 'bg-papyrus-light border-foreground/30 ring-ring/70 ring-2'
                 : 'bg-card/40 border-transparent',

@@ -1,10 +1,18 @@
-import { HOSTS, SERAPH_CHANCE_STAGE_III, type HostKind } from '@babel-game/game-data';
+import {
+  HOSTS,
+  SERAPH_CHANCE_STAGE_III,
+  type HostKind,
+  type RuleSet,
+  type Stage,
+} from '@babel-game/game-data';
 import { coordKey, type Coord } from '../map/edges.js';
 import type { Board } from '../map/placement.js';
 import { nextInt, type RngState } from '../rng/index.js';
 import { BABEL_COORD } from '../state/babel.js';
 import type { Host } from '../state/types.js';
 import { distancesToBabel, stepOptions } from './path.js';
+import { getConnectedFeature } from '../features/index.js';
+import { hostDefence } from './beacons.js';
 
 /** GDD §10: a Host anywhere in a feature shuts the whole feature down. */
 export const occupiedKeys = (hosts: readonly Host[]): string[] =>
@@ -81,4 +89,35 @@ export function isLegalRoute(board: Board, host: Host, route: readonly Coord[]):
     if (coordKey(at) === coordKey(BABEL_COORD) && index !== route.length - 1) return false;
   }
   return true;
+}
+
+/**
+ * The Defence a particular Host has on the board right now.
+ *
+ * `hostDefence` knows about the player count, the Stage and the kind. It does
+ * not know about the Herald, whose whole effect is to raise the Defence of
+ * everything standing in a feature with it — and the aura never applies to the
+ * Herald itself, or a pair of them would be unkillable.
+ *
+ * This lived inside the Attack command, which meant the screen could not say
+ * what a Host was actually worth without working the rule out a second time.
+ * Both read it here now, so what a player is shown and what the dice are
+ * measured against cannot drift apart.
+ */
+export function defenceOf(
+  state: {
+    readonly board: Board;
+    readonly hosts: readonly Host[];
+    readonly order: readonly string[];
+    readonly stage: Stage;
+    readonly rules: RuleSet;
+  },
+  host: Host,
+): number {
+  const aura = state.hosts
+    .filter((other) => other.id !== host.id && HOSTS[other.kind].aura > 0)
+    .filter((other) => getConnectedFeature(state.board, other.at).includes(coordKey(host.at)))
+    .reduce((sum, other) => sum + HOSTS[other.kind].aura, 0);
+
+  return hostDefence(state.order.length, state.stage, state.rules, host.kind) + aura;
 }
