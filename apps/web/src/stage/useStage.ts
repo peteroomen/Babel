@@ -33,6 +33,8 @@ export type Stage = {
   readonly spot: Spotlight | null;
   /** True while the screen is behind the rules. */
   readonly busy: boolean;
+  /** How long this beat is being held, so a transition can match it. */
+  readonly hold: number;
   /** Give up on the story and show the present. */
   readonly skip: () => void;
   /** Hand the stage a transition to play. */
@@ -90,5 +92,12 @@ export function useStage(live: GameState, tempo: Tempo = STILL): Stage {
     [],
   );
 
-  return { view: current?.frame ?? live, spot: current?.spot ?? null, busy, skip, play };
+  return {
+    view: current?.frame ?? live,
+    spot: current?.spot ?? null,
+    hold: current?.hold ?? 0,
+    busy,
+    skip,
+    play,
+  };
 }

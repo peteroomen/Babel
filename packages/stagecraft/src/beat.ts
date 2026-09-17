@@ -143,4 +143,14 @@ export const NATURAL: Tempo = {
   shield: 560,
   slain: 460,
   split: 640,
+
+  /* The state that changes underneath a player rather than because of them.
+     Long enough to read a card that rewrites the round, because these arrive
+     once and are then lived with. */
+  confusion: 1500,
+  cancel: 1100,
+  stage: 1500,
+  scheme: 1100,
+  beacon: 800,
+  win: 1200,
 };

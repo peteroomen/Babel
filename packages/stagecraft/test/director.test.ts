@@ -10,7 +10,7 @@ import {
   type GameEvent,
   type GameState,
 } from '@babel-game/game-core';
-import { STILL, advance, direct, heldFor, reelFrom, sceneOf } from '../src/index.js';
+import { NATURAL, STILL, advance, direct, heldFor, reelFrom, sceneOf } from '../src/index.js';
 
 const SLOW = heldFor(200);
 
@@ -133,5 +133,49 @@ describe('the scene', () => {
     expect(beat.frame.turnStep).toBe(after.turnStep);
     expect(beat.frame.currentPlayerIndex).toBe(after.currentPlayerIndex);
     expect(sceneOf(beat.frame).board).not.toEqual(sceneOf(state).board);
+  });
+});
+
+describe('the state that changes underneath you', () => {
+  /* These move nothing on the board, which is exactly why they were missable:
+     before Milestone 7 a whole round's rule change could arrive as one line in
+     a panel that was hidden at anything under a desktop width. */
+  it('stops on every announcement, long enough to read it', () => {
+    const state = setupGame(['Ada', 'Peter'], 'stagecraft-3');
+    const events: GameEvent[] = [
+      { type: 'confusionRevealed', card: 'lost-ledgers' },
+      { type: 'confusionCancelled', card: 'lost-ledgers', player: state.order[0]! },
+      { type: 'stageEscalated', from: 1, to: 2 },
+      { type: 'schemePlayed', player: state.order[0]!, scheme: 'frenzied-works' },
+      { type: 'beaconPlaced', at: { x: 1, y: 0 }, total: 1 },
+    ];
+
+    /* Only the Beacon touches the board, so that is the only difference the
+       world after is allowed to have — and the fold has to land on it. */
+    const after: GameState = { ...state, beacons: [{ x: 1, y: 0 }] };
+    const script = direct(state, events, after, NATURAL);
+
+    expect(script.degraded).toBe(false);
+    expect(script.beats.slice(0, -1).map((beat) => beat.spot!.kind)).toEqual([
+      'confusion',
+      'cancel',
+      'stage',
+      'scheme',
+      'beacon',
+    ]);
+    for (const beat of script.beats.slice(0, -1)) {
+      expect(beat.hold, `${beat.spot!.kind} is too quick to read`).toBeGreaterThanOrEqual(700);
+    }
+  });
+
+  it('says nothing at all about the quiet events', () => {
+    const state = setupGame(['Ada', 'Peter'], 'stagecraft-4');
+    const events: GameEvent[] = [
+      { type: 'roundStarted', round: 2 },
+      { type: 'actionTaken', player: state.order[0]!, action: 'pass' },
+      { type: 'turnEnded', player: state.order[0]! },
+    ];
+
+    expect(direct(state, events, state, NATURAL).beats).toHaveLength(1);
   });
 });

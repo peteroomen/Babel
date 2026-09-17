@@ -39,7 +39,7 @@ import {
 import { BookOpenIcon, PanelRightIcon, RotateCcwIcon, ScrollTextIcon, UsersIcon } from 'lucide-react';
 import { Board, HostIcon } from './Board';
 import { PaperFx } from './PaperFx';
-import { BabelCard, ConfusionCard, LeaderRow, LogCard, LogList } from './Panels';
+import { BabelCard, LeaderRow, LogCard, LogList } from './Panels';
 import { ActionButtons, Act } from './ActionBar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -60,6 +60,8 @@ import { aiSeatsFor, useAiTurns } from './useAi';
 import { useStage } from './stage/useStage';
 import { Curtain } from './stage/Curtain';
 import { DiceTray } from './stage/DiceTray';
+import { Announce } from './stage/Announce';
+import { ConfusionBanner } from './ConfusionBanner';
 
 const NAMES = ['Ada', 'Peter', 'Rook', 'Vex'];
 
@@ -236,7 +238,6 @@ export function App() {
   const rail = (
     <>
       <BabelCard state={state} />
-      <ConfusionCard state={state} />
       <div className="grid gap-1.5">
         {state.order.map((id, seat) => (
           <LeaderRow
@@ -616,6 +617,8 @@ export function App() {
           </div>
         </header>
 
+        <ConfusionBanner state={stage.view} />
+
         {/* ── Board + rail ───────────────────────────────────────── */}
         <div className="flex min-h-0 flex-1">
           <main className="relative min-w-0 flex-1 p-2">
@@ -686,6 +689,7 @@ export function App() {
               spot={stage.spot}
             />
             <DiceTray state={state} />
+            <Announce spot={stage.spot} state={stage.view} ms={stage.hold} />
           </main>
 
           <aside className="hidden w-[19rem] shrink-0 flex-col gap-2 border-l p-2 xl:flex">

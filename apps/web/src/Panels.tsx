@@ -1,6 +1,5 @@
 import { CONFUSION, RESOURCE_TYPES, SCHEMES, STAGE_LABEL } from '@babel-game/game-data';
 import {
-  activeConfusion,
   piecesPerStage,
   piecesToNextEscalation,
   totalPieces,
@@ -145,31 +144,6 @@ export function BabelCard({ state }: { state: GameState }) {
             Marks show Stage boundaries.
           </TooltipContent>
         </Tooltip>
-      </CardContent>
-    </Card>
-  );
-}
-
-/** GDD §19: the card that changes this round, in one sentence. */
-export function ConfusionCard({ state }: { state: GameState }) {
-  const card = state.confusion.card;
-  if (!card) return null;
-  const spec = CONFUSION[card];
-  const cancelled = activeConfusion(state) === null;
-
-  return (
-    <Card className={cn(!cancelled && 'border-destructive/40 bg-accent/10')}>
-      <CardHeader className="flex-row items-center justify-between">
-        <CardTitle>Confusion</CardTitle>
-        {cancelled && <span className="text-xs opacity-60">cancelled</span>}
-      </CardHeader>
-      <CardContent>
-        <div className={cn('text-sm font-medium', cancelled && 'line-through opacity-50')}>
-          {spec.label}
-        </div>
-        <div className={cn('text-muted-foreground mt-0.5 text-xs', cancelled && 'opacity-50')}>
-          {spec.text}
-        </div>
       </CardContent>
     </Card>
   );

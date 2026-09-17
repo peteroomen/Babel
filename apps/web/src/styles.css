@@ -168,6 +168,12 @@
     transform-origin: center;
   }
 
+  /* A card that turns over, holds long enough to be read, and settles away.
+     Its duration is the beat's own hold, set inline. */
+  .turning {
+    animation: turning 1s ease-out both;
+  }
+
   /* A Host arriving out of a Beacon, or three left behind by a Swarm. */
   .descending {
     animation: descend 320ms ease-out;
@@ -184,6 +190,25 @@
   100% {
     opacity: 0;
     transform: scale(1.35);
+  }
+}
+
+@keyframes turning {
+  0% {
+    opacity: 0;
+    transform: perspective(700px) rotateY(-84deg) scale(0.92);
+  }
+  20% {
+    opacity: 1;
+    transform: perspective(700px) rotateY(0deg) scale(1);
+  }
+  76% {
+    opacity: 1;
+    transform: perspective(700px) rotateY(0deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: perspective(700px) translateY(-10px) scale(0.97);
   }
 }
 
@@ -206,7 +231,8 @@
 @media (prefers-reduced-motion: reduce) {
   .marching,
   .spotlit,
-  .descending {
+  .descending,
+  .turning {
     transition: none;
     animation: none;
   }
