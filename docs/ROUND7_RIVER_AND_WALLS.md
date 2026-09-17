@@ -224,6 +224,45 @@ board almost never meet that condition.
 So the objection is real, quantified, and small. Walls are not being wasted by
 the bots. They are just not worth much.
 
+### At a table that actually likes Walls, they are a trap
+
+Every number above comes from the Architect / Commander / Industrialist table
+every earlier round was measured on — and none of those three is the archetype
+built around Walls. Asking whether Walls earn their place at a table with no
+Engineer at it answers a narrower question than it looks like it does. So the
+same comparison, at an Engineer / Commander / Architect table, 120 paired seeds:
+
+| | Control | No Walls |
+|---|---|---|
+| Shared win rate | **47.5%** | **81.7%** |
+| Timeouts | 17.5% | 0.0% |
+| Mean rounds | 70.4 | 43.2 |
+| Mean Babel pieces | 8.5 of 15 | 12.3 of 15 |
+| Walls' share of all actions | 15.7% | — |
+| Segments built per game | 65.7 | — |
+| Segments ever crossed | 34.8 (53.0%) | — |
+
+Thirty-four points, at a sample where that is roughly seven standard errors.
+This is not noise and it is not a rounding difference: **a table with a
+wall-builder at it loses the game half the time, and the same table with Walls
+deleted wins it four times in five.**
+
+What happens is legible in the action mix. The Engineer pours 15.7% of the
+table's actions into Walls. The delay is real — 34.8 segments a game actually get
+crossed, far more than the 2.9 at the other table — and it buys nothing, because
+what Heaven is delayed *from* is a Babel that never gets built. Eight and a half
+pieces of fifteen after seventy rounds, against twelve and a half after
+forty-three.
+
+And the Engineer is paid for it the whole time: +1 Prestige per Wall action, 33
+actions a game, 95.8 Prestige in a game humanity loses. That is the shape of a
+trap — individually rewarded, collectively fatal — and it is the weakest seat at
+its own table even so (8.8% of individual wins, against the Architect's 77.2%).
+
+A trap can be good design when the game tells you it is one. This one is
+disguised as the defensive option, it is named after the thing a besieged city
+obviously builds, and it pays Prestige on the turn you take it.
+
 ### What Walls would have to become to be worth keeping
 
 Three shapes were considered, and only one is interesting:
@@ -261,3 +300,85 @@ payout, 3 for the Merchant. That number is the experiment, so it is named in
 `policy.ts` rather than buried, and every river result has to be read against
 it. It is also why rotation is scored per candidate again: turning a tile never
 changed its payout, but it decides entirely where the river runs.
+
+---
+
+## Recommendations
+
+### Adopt the river at +1, per tile, on reach
+
+```ts
+riverPrestige: { perTile: 1, requireReach: true, milestone: null, cap: null }
+```
+
+**Why this shape and not another.** `requireReach` because "longer" should mean
+longer, not wider. Per tile rather than by milestone because a milestone is a
+prize somebody else's tiles pay for, and the model says nobody builds toward it.
++1 rather than +2 because the second point buys no more river (6.41 tiles against
+6.56) and no different game — it is inflation with extra steps. No cap, because
+the bag is already the cap.
+
+**What it is worth.** Babel's river goes from a 2.6-tile stub to 6.4 tiles.
+Prestige from the river is 2.4% of the total, about 1.8 points per Leader per
+game: real enough to notice on the score track, nowhere near enough to win on.
+
+**The thing to watch.** Not Prestige — difficulty. Water is the ground Heaven
+cannot walk, so this rule pays Leaders to build a moat, and the shared win rate
+drifts from 75.0% to 80.7% with four more rounds on the clock. That is a little
+over one standard error, so it is a direction rather than a fact, but the
+mechanism is real and the 60-70% band is not far below. If human tables confirm
+the drift, the answer is a Heaven knob (Defence, arrivals), not a smaller river
+reward — the reward is doing its job.
+
+**What the model cannot tell you.** Whether it *feels* like a decision. Payout
+per placement does not move (1.834 → 1.841), so the bots are not giving up
+income for it — but the bots score a square by what it pays this turn, so the
+kind of "non-optimal placement" a person actually makes is invisible to them.
+The rule is switchable in the browser's table settings for exactly this reason.
+
+### Remove Walls
+
+At the standard table they are inert: deleting the subsystem moves nothing that
+can be told from noise, two thirds of every segment built is never touched, and
+playing them correctly instead of by luck is worth about a point. At a table with
+a wall-builder in it they are worse than inert — 47.5% shared wins against 81.7%
+without them, while paying the wall-builder 95.8 Prestige for losing the game.
+
+The alternatives do not rescue them. More segments and free Walls both make the
+subsystem *bigger* at the same ratio. Making Walls reroute Heaven rather than
+merely delay it is the one change that would matter, and GDD §17 rules it out on
+purpose — "temporary barricades, not permanent pathfinding blockers" — because a
+Host that can be sealed out is a Host that can be sealed out forever.
+
+**The two proposals fit together, which is the real argument.** Walls and rivers
+are the same idea: ground Heaven cannot simply walk over. The river does it
+better on every axis — permanent rather than one crossing, on a tile a Leader was
+placing anyway rather than a whole action, free rather than 1 Wood, and under the
+rule above it pays Prestige for the same act. Walls are the weaker sibling of a
+system the game already has. Cutting them removes an action from the action bar
+and a paragraph from the rulebook, and loses nothing the river does not cover.
+
+**What removal costs.** GDD §20's "Defender / fortified Commander" identity keeps
+both of its other legs — Prestige for raising a Tower, and Prestige when a Tower
+support die hits — so the style survives; it stops being a thing you can do
+badly forever. The `engineer` archetype needs rewriting around Towers and river
+shaping rather than Walls, which is a policy change, not a rules change.
+
+### Not adopted, and why they are worth keeping on the shelf
+
+| | |
+|---|---|
+| `riverPrestige.milestone` | The better-sounding rule that measures worse. Kept so the next person who has the idea can see the run instead of repeating it. |
+| `riverPrestige.cap` | Unnecessary while the bag limits supply. It becomes interesting if a Reserve or a tile-choice rule ever lets a Leader pick river tiles on demand. |
+| `walls-4`, `walls-cheap` | Both tested. Both scale the subsystem without changing its ratio. |
+
+## What would change these answers
+
+- **A human table taking worse squares for the river.** The one claim the model
+  cannot make, and the one that decides whether this is a good rule or merely a
+  harmless one.
+- **A Wall that reroutes.** If GDD §17's "no pathfinding blockers" is ever
+  reopened, everything above about Walls is void and needs re-running.
+- **A tile-choice rule.** Every river number here assumes a blind draw. A Reserve,
+  or any rule that lets a Leader pick terrain, uncaps the river strategy and the
+  cap stops being decorative.
