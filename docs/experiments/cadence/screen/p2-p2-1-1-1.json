@@ -1,0 +1,357 @@
+{
+  "experimental": true,
+  "players": 2,
+  "rosterMode": "fixed",
+  "games": [
+    {
+      "variant": "p2-1-1-1",
+      "seed": "screen-20260917-p2-0",
+      "roster": [
+        "architect",
+        "commander"
+      ],
+      "outcome": "loss",
+      "rounds": 69,
+      "winningRound": null,
+      "turns": 138,
+      "stageReached": 3,
+      "lossStage": 3,
+      "hostsSpawned": 66,
+      "hostsKilled": 67,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 12,
+        "pass": 15,
+        "buildBabel": 14,
+        "muster": 6,
+        "attack": 73,
+        "buildTower": 18
+      }
+    },
+    {
+      "variant": "p2-1-1-1",
+      "seed": "screen-20260917-p2-1",
+      "roster": [
+        "commander",
+        "architect"
+      ],
+      "outcome": "win",
+      "rounds": 59,
+      "winningRound": 59,
+      "turns": 117,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 56,
+      "hostsKilled": 42,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildBabel": 21,
+        "buildHarvester": 8,
+        "pass": 10,
+        "attack": 59,
+        "buildTower": 13,
+        "muster": 6
+      }
+    },
+    {
+      "variant": "p2-1-1-1",
+      "seed": "screen-20260917-p2-2",
+      "roster": [
+        "architect",
+        "commander"
+      ],
+      "outcome": "loss",
+      "rounds": 33,
+      "winningRound": null,
+      "turns": 66,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 30,
+      "hostsKilled": 22,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 6,
+        "pass": 7,
+        "buildBabel": 6,
+        "muster": 6,
+        "attack": 30,
+        "buildTower": 11
+      }
+    },
+    {
+      "variant": "p2-1-1-1",
+      "seed": "screen-20260917-p2-3",
+      "roster": [
+        "commander",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 23,
+      "winningRound": null,
+      "turns": 46,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 20,
+      "hostsKilled": 15,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 6,
+        "muster": 3,
+        "pass": 7,
+        "buildBabel": 3,
+        "attack": 24,
+        "buildTower": 3
+      }
+    },
+    {
+      "variant": "p2-1-1-1",
+      "seed": "screen-20260917-p2-4",
+      "roster": [
+        "architect",
+        "commander"
+      ],
+      "outcome": "win",
+      "rounds": 51,
+      "winningRound": 51,
+      "turns": 102,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 48,
+      "hostsKilled": 43,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 11,
+        "pass": 9,
+        "attack": 46,
+        "muster": 6,
+        "buildBabel": 17,
+        "buildTower": 13
+      }
+    },
+    {
+      "variant": "p2-1-1-1",
+      "seed": "screen-20260917-p2-5",
+      "roster": [
+        "commander",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 41,
+      "winningRound": null,
+      "turns": 82,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 38,
+      "hostsKilled": 30,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 8,
+        "pass": 11,
+        "attack": 39,
+        "buildBabel": 6,
+        "muster": 6,
+        "buildTower": 12
+      }
+    },
+    {
+      "variant": "p2-1-1-1",
+      "seed": "screen-20260917-p2-6",
+      "roster": [
+        "architect",
+        "commander"
+      ],
+      "outcome": "win",
+      "rounds": 61,
+      "winningRound": 61,
+      "turns": 122,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 58,
+      "hostsKilled": 52,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 12,
+        "buildBabel": 17,
+        "pass": 11,
+        "attack": 61,
+        "buildTower": 15,
+        "muster": 6
+      }
+    },
+    {
+      "variant": "p2-1-1-1",
+      "seed": "screen-20260917-p2-7",
+      "roster": [
+        "commander",
+        "architect"
+      ],
+      "outcome": "win",
+      "rounds": 46,
+      "winningRound": 46,
+      "turns": 92,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 43,
+      "hostsKilled": 37,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 9,
+        "muster": 6,
+        "pass": 8,
+        "attack": 42,
+        "buildTower": 13,
+        "buildBabel": 14
+      }
+    },
+    {
+      "variant": "p2-1-1-1",
+      "seed": "screen-20260917-p2-8",
+      "roster": [
+        "architect",
+        "commander"
+      ],
+      "outcome": "loss",
+      "rounds": 17,
+      "winningRound": null,
+      "turns": 34,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 14,
+      "hostsKilled": 9,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 5,
+        "pass": 7,
+        "attack": 12,
+        "muster": 5,
+        "buildBabel": 3,
+        "buildTower": 2
+      }
+    },
+    {
+      "variant": "p2-1-1-1",
+      "seed": "screen-20260917-p2-9",
+      "roster": [
+        "commander",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 82,
+      "winningRound": null,
+      "turns": 164,
+      "stageReached": 3,
+      "lossStage": 3,
+      "hostsSpawned": 79,
+      "hostsKilled": 91,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 22,
+        "pass": 15,
+        "attack": 74,
+        "muster": 6,
+        "buildBabel": 21,
+        "buildTower": 26
+      }
+    },
+    {
+      "variant": "p2-1-1-1",
+      "seed": "screen-20260917-p2-10",
+      "roster": [
+        "architect",
+        "commander"
+      ],
+      "outcome": "loss",
+      "rounds": 38,
+      "winningRound": null,
+      "turns": 76,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 35,
+      "hostsKilled": 29,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "muster": 6,
+        "buildHarvester": 12,
+        "pass": 13,
+        "attack": 33,
+        "buildBabel": 4,
+        "buildTower": 8
+      }
+    },
+    {
+      "variant": "p2-1-1-1",
+      "seed": "screen-20260917-p2-11",
+      "roster": [
+        "commander",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 13,
+      "winningRound": null,
+      "turns": 26,
+      "stageReached": 1,
+      "lossStage": 1,
+      "hostsSpawned": 10,
+      "hostsKilled": 7,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 6,
+        "buildBabel": 1,
+        "pass": 3,
+        "attack": 8,
+        "muster": 5,
+        "buildTower": 3
+      }
+    }
+  ],
+  "summary": {
+    "variant": "p2-1-1-1",
+    "players": 2,
+    "games": 12,
+    "win": 4,
+    "loss": 8,
+    "timeout": 0,
+    "winRate": 0.3333333333333333,
+    "winRateWilson95": {
+      "low": 0.13811783989736134,
+      "high": 0.609382412602386
+    },
+    "meanWinningRounds": 54.25,
+    "medianWinningRounds": 55,
+    "meanPlayerTurns": 88.75,
+    "actionShares": {
+      "buildHarvester": 0.10985915492957747,
+      "pass": 0.10892018779342723,
+      "buildBabel": 0.11924882629107982,
+      "muster": 0.06291079812206572,
+      "attack": 0.4704225352112676,
+      "buildTower": 0.12863849765258217
+    },
+    "stageReachRate": {
+      "1": 1,
+      "2": 0.9166666666666666,
+      "3": 0.5
+    },
+    "lossStageRate": {
+      "1": 0.08333333333333333,
+      "2": 0.4166666666666667,
+      "3": 0.16666666666666666
+    },
+    "meanHostsSpawned": 41.416666666666664,
+    "meanHostsKilled": 37,
+    "meanBeaconDeferrals": 0,
+    "zeroHostGames": 0
+  }
+}

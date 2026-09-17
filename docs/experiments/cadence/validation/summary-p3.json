@@ -1,0 +1,89 @@
+{
+  "experimental": true,
+  "players": 3,
+  "rosterMode": "diverse",
+  "seedPrefix": "validate-20260917",
+  "games": 60,
+  "summaries": [
+    {
+      "variant": "p3-1-2-2",
+      "players": 3,
+      "games": 60,
+      "win": 2,
+      "loss": 55,
+      "timeout": 3,
+      "winRate": 0.03333333333333333,
+      "winRateWilson95": {
+        "low": 0.009189126490150246,
+        "high": 0.11363987528925378
+      },
+      "meanWinningRounds": 58,
+      "medianWinningRounds": 58,
+      "totalPlayerTurns": 7915,
+      "meanPlayerTurns": 131.91666666666666,
+      "actionShares": {
+        "buildHarvester": 0.11446620341124447,
+        "pass": 0.06531901452937461,
+        "buildBabel": 0.12065698041692988,
+        "attack": 0.4221099178774479,
+        "muster": 0.04712571067593178,
+        "buildTower": 0.14226152874289325,
+        "buyScheme": 0.08806064434617815
+      },
+      "stageReachRate": {
+        "1": 1,
+        "2": 0.95,
+        "3": 0.2
+      },
+      "lossStageRate": {
+        "1": 0.05,
+        "2": 0.7166666666666667,
+        "3": 0.15
+      },
+      "meanHostsSpawned": 70.56666666666666,
+      "meanHostsKilled": 53.833333333333336,
+      "meanBeaconDeferrals": 2.2666666666666666,
+      "zeroHostGames": 0
+    },
+    {
+      "variant": "p3-1-1.5-1.5",
+      "players": 3,
+      "games": 60,
+      "win": 20,
+      "loss": 34,
+      "timeout": 6,
+      "winRate": 0.3333333333333333,
+      "winRateWilson95": {
+        "low": 0.2272909421592783,
+        "high": 0.459433701333366
+      },
+      "meanWinningRounds": 60.5,
+      "medianWinningRounds": 53.5,
+      "totalPlayerTurns": 10006,
+      "meanPlayerTurns": 166.76666666666668,
+      "actionShares": {
+        "buildHarvester": 0.11063361982810314,
+        "pass": 0.053767739356386166,
+        "buildBabel": 0.14211473116130321,
+        "attack": 0.4037577453527883,
+        "muster": 0.03957625424745153,
+        "buildTower": 0.1396162302618429,
+        "buyScheme": 0.11053367979212472
+      },
+      "stageReachRate": {
+        "1": 1,
+        "2": 0.95,
+        "3": 0.55
+      },
+      "lossStageRate": {
+        "1": 0.05,
+        "2": 0.38333333333333336,
+        "3": 0.13333333333333333
+      },
+      "meanHostsSpawned": 73.15,
+      "meanHostsKilled": 58.916666666666664,
+      "meanBeaconDeferrals": 2.0833333333333335,
+      "zeroHostGames": 0
+    }
+  ]
+}

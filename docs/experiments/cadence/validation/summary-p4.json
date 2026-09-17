@@ -1,0 +1,49 @@
+{
+  "experimental": true,
+  "players": 4,
+  "rosterMode": "diverse",
+  "seedPrefix": "validate-20260917",
+  "games": 60,
+  "summaries": [
+    {
+      "variant": "p4-1-2-2.5",
+      "players": 4,
+      "games": 60,
+      "win": 12,
+      "loss": 44,
+      "timeout": 4,
+      "winRate": 0.2,
+      "winRateWilson95": {
+        "low": 0.11828389736858964,
+        "high": 0.31782046091817007
+      },
+      "meanWinningRounds": 64.66666666666667,
+      "medianWinningRounds": 56.5,
+      "totalPlayerTurns": 14823,
+      "meanPlayerTurns": 247.05,
+      "actionShares": {
+        "buildHarvester": 0.12109559468393713,
+        "buyScheme": 0.09458274303447345,
+        "buildBabel": 0.13978277001956418,
+        "pass": 0.050664507859407674,
+        "attack": 0.4165823382581124,
+        "buildTower": 0.13944545638534708,
+        "muster": 0.03784658975915806
+      },
+      "stageReachRate": {
+        "1": 1,
+        "2": 1,
+        "3": 0.7166666666666667
+      },
+      "lossStageRate": {
+        "1": 0,
+        "2": 0.26666666666666666,
+        "3": 0.4666666666666667
+      },
+      "meanHostsSpawned": 120.91666666666667,
+      "meanHostsKilled": 105.2,
+      "meanBeaconDeferrals": 1.1333333333333333,
+      "zeroHostGames": 0
+    }
+  ]
+}

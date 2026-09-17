@@ -1,0 +1,165 @@
+{
+  "experimental": true,
+  "players": 3,
+  "rosterMode": "fixed",
+  "seedPrefix": "screen-20260917",
+  "games": 12,
+  "summaries": [
+    {
+      "variant": "p3-1-2-2",
+      "players": 3,
+      "games": 12,
+      "win": 4,
+      "loss": 8,
+      "timeout": 0,
+      "winRate": 0.3333333333333333,
+      "winRateWilson95": {
+        "low": 0.13811783989736134,
+        "high": 0.609382412602386
+      },
+      "meanWinningRounds": 61,
+      "medianWinningRounds": 56,
+      "meanPlayerTurns": 157.16666666666666,
+      "actionShares": {
+        "buildHarvester": 0.11611876988335101,
+        "pass": 0.06786850477200425,
+        "muster": 0.04612937433722163,
+        "attack": 0.42152704135737007,
+        "buildBabel": 0.20625662778366913,
+        "buildTower": 0.1256627783669141,
+        "buyScheme": 0.016436903499469777
+      },
+      "stageReachRate": {
+        "1": 1,
+        "2": 1,
+        "3": 0.75
+      },
+      "lossStageRate": {
+        "1": 0,
+        "2": 0.25,
+        "3": 0.4166666666666667
+      },
+      "meanHostsSpawned": 85.75,
+      "meanHostsKilled": 65.25,
+      "meanBeaconDeferrals": 5.25,
+      "zeroHostGames": 1
+    },
+    {
+      "variant": "p3-1-1-1",
+      "players": 3,
+      "games": 12,
+      "win": 12,
+      "loss": 0,
+      "timeout": 0,
+      "winRate": 1,
+      "winRateWilson95": {
+        "low": 0.7574992425007574,
+        "high": 0.9999999999999998
+      },
+      "meanWinningRounds": 38.166666666666664,
+      "medianWinningRounds": 35.5,
+      "meanPlayerTurns": 113.91666666666667,
+      "actionShares": {
+        "buildHarvester": 0.1528895391367959,
+        "pass": 0.10095098756400878,
+        "muster": 0.06656912948061448,
+        "attack": 0.324067300658376,
+        "buildBabel": 0.19312362838332114,
+        "buildTower": 0.14703730797366496,
+        "buyScheme": 0.015362106803218726
+      },
+      "stageReachRate": {
+        "1": 1,
+        "2": 1,
+        "3": 1
+      },
+      "lossStageRate": {
+        "1": 0,
+        "2": 0,
+        "3": 0
+      },
+      "meanHostsSpawned": 33.166666666666664,
+      "meanHostsKilled": 29,
+      "meanBeaconDeferrals": 5.25,
+      "zeroHostGames": 1
+    },
+    {
+      "variant": "p3-1-1.5-1.5",
+      "players": 3,
+      "games": 12,
+      "win": 9,
+      "loss": 3,
+      "timeout": 0,
+      "winRate": 0.75,
+      "winRateWilson95": {
+        "low": 0.4676896608793401,
+        "high": 0.9110599603710388
+      },
+      "meanWinningRounds": 52.666666666666664,
+      "medianWinningRounds": 42,
+      "meanPlayerTurns": 151.25,
+      "actionShares": {
+        "buildHarvester": 0.11790633608815428,
+        "pass": 0.07548209366391184,
+        "muster": 0.048484848484848485,
+        "attack": 0.40606060606060607,
+        "buildBabel": 0.21763085399449036,
+        "buildTower": 0.12121212121212122,
+        "buyScheme": 0.013223140495867768
+      },
+      "stageReachRate": {
+        "1": 1,
+        "2": 1,
+        "3": 0.8333333333333334
+      },
+      "lossStageRate": {
+        "1": 0,
+        "2": 0.16666666666666666,
+        "3": 0.08333333333333333
+      },
+      "meanHostsSpawned": 63.583333333333336,
+      "meanHostsKilled": 52.666666666666664,
+      "meanBeaconDeferrals": 5.25,
+      "zeroHostGames": 1
+    },
+    {
+      "variant": "p3-1-1.5-2",
+      "players": 3,
+      "games": 12,
+      "win": 5,
+      "loss": 7,
+      "timeout": 0,
+      "winRate": 0.4166666666666667,
+      "winRateWilson95": {
+        "low": 0.19325746190524654,
+        "high": 0.6804926643446271
+      },
+      "meanWinningRounds": 34.6,
+      "medianWinningRounds": 32,
+      "meanPlayerTurns": 112.5,
+      "actionShares": {
+        "buildHarvester": 0.1474074074074074,
+        "pass": 0.09407407407407407,
+        "muster": 0.06518518518518518,
+        "attack": 0.3562962962962963,
+        "buildBabel": 0.1814814814814815,
+        "buildTower": 0.14444444444444443,
+        "buyScheme": 0.011111111111111112
+      },
+      "stageReachRate": {
+        "1": 1,
+        "2": 1,
+        "3": 0.8333333333333334
+      },
+      "lossStageRate": {
+        "1": 0,
+        "2": 0.16666666666666666,
+        "3": 0.4166666666666667
+      },
+      "meanHostsSpawned": 49.666666666666664,
+      "meanHostsKilled": 36.25,
+      "meanBeaconDeferrals": 5.25,
+      "zeroHostGames": 1
+    }
+  ]
+}

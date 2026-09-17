@@ -179,6 +179,8 @@ export type RuleSet = {
   readonly heavenSpawn: {
     readonly table: Record<Stage, readonly SpawnEntry[]>;
     readonly arrivals: readonly [number, number, number];
+    /** Optional repeating per-Phase arrival cycles for cadence experiments. */
+    readonly cadenceByStage?: readonly [readonly number[], readonly number[], readonly number[]];
   } | null;
   /**
    * Added to every Host's Defence, by Stage.
