@@ -11,6 +11,7 @@ import {
   type TileDraw,
 } from '@babel-game/game-core';
 import { STAGE_LABEL, type HostKind } from '@babel-game/game-data';
+import type { Spotlight } from '@babel-game/stagecraft';
 import {
   BEACON_LIGHT,
   BUILDING_GLYPH,
@@ -379,6 +380,8 @@ type Props = {
    * against a board that has since moved on.
    */
   live?: boolean;
+  /** What the moment on screen is about, when the stage is playing one. */
+  spot?: Spotlight | null;
 };
 
 /** Half-edge segments, drawn from the tile centre out to each river edge. */
@@ -435,6 +438,7 @@ export function Board({
   onHost,
   selectedHosts = {},
   live = true,
+  spot = null,
 }: Props) {
   const options =
     live && state.drawnTile
@@ -783,37 +787,52 @@ export function Board({
         );
       })()}
 
-      {/* Heavenly Hosts */}
-      {state.hosts.map((host, index) => {
-        const { x, y } = px(host.at);
-        /* Stacked Hosts fan out slightly so they stay countable. */
-        const offset = index % 3 === 0 ? 0 : index % 3 === 1 ? -9 : 9;
-        const chosen = selectedHosts[host.id] ?? 0;
-        return (
-          <g
-            key={`host-${host.id}`}
-            data-host-kind={host.kind}
-            transform={`translate(${x + offset} ${y})`}
-            onClick={() => onHost?.(host.id)}
-            style={{ cursor: onHost ? 'pointer' : 'default' }}
-          >
-            <HostGlyph kind={host.kind} shieldUp={host.shieldUp} />
-            {chosen > 0 && (
-              <text
-                x={CELL / 2}
-                y={CELL / 2 + 4}
-                textAnchor="middle"
-                fontSize={12}
-                fontWeight={700}
-                fill="#a33"
-                fontFamily="system-ui"
-              >
-                {chosen}
-              </text>
-            )}
-          </g>
-        );
-      })}
+      {/*
+        Heavenly Hosts.
+
+        Keyed on the sheet's origin as well as the Host, because the whole map
+        shifts when a tile extends it: without this, placing a tile at the edge
+        would read as every Host on the board sliding one square sideways. A
+        new origin is a new group, and a new group does not travel.
+      */}
+      <g key={`hosts-${minX},${minY}`}>
+        {state.hosts.map((host, index) => {
+          const { x, y } = px(host.at);
+          /* Stacked Hosts fan out slightly so they stay countable. */
+          const offset = index % 3 === 0 ? 0 : index % 3 === 1 ? -9 : 9;
+          const chosen = selectedHosts[host.id] ?? 0;
+          const arriving = spot?.kind === 'spawn' || spot?.kind === 'split';
+          return (
+            <g
+              key={`host-${host.id}`}
+              data-host-kind={host.kind}
+              className={
+                arriving && spot?.hostIds.includes(host.id) ? 'descending' : 'marching'
+              }
+              style={{
+                transform: `translate(${x + offset}px, ${y}px)`,
+                cursor: onHost ? 'pointer' : 'default',
+              }}
+              onClick={() => onHost?.(host.id)}
+            >
+              <HostGlyph kind={host.kind} shieldUp={host.shieldUp} />
+              {chosen > 0 && (
+                <text
+                  x={CELL / 2}
+                  y={CELL / 2 + 4}
+                  textAnchor="middle"
+                  fontSize={12}
+                  fontWeight={700}
+                  fill="#a33"
+                  fontFamily="system-ui"
+                >
+                  {chosen}
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </g>
 
       {/* Legal placements for the drawn tile */}
       {options.map((option) => {
@@ -844,6 +863,31 @@ export function Board({
               </g>
             )}
           </g>
+        );
+      })}
+
+      {/* What this moment is about */}
+      {spot?.at.map((at, i) => {
+        const { x, y } = px(at);
+        const grave =
+          spot.kind === 'babelLost' ||
+          spot.kind === 'razed' ||
+          spot.kind === 'foundation' ||
+          spot.kind === 'wallBroken';
+        return (
+          <rect
+            key={`spot-${i}-${coordKey(at)}`}
+            className="spotlit"
+            x={x + 2}
+            y={y + 2}
+            width={CELL - 4}
+            height={CELL - 4}
+            rx={4}
+            fill="none"
+            stroke={grave ? '#9c3a22' : HEAVEN_GOLD}
+            strokeWidth={5}
+            pointerEvents="none"
+          />
         );
       })}
 

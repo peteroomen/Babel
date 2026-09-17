@@ -19,6 +19,7 @@ import {
   type ResourceType,
   type RuleSet,
 } from '@babel-game/game-data';
+import { NATURAL } from '@babel-game/stagecraft';
 import {
   applyMove,
   coordKey,
@@ -57,6 +58,7 @@ import { HOST_BLURB, HOST_LABEL, RESOURCE_LABEL, TERRAIN_LABEL } from './theme';
 import { ARCHETYPE_BLURB, ARCHETYPE_LABEL } from '@babel-game/game-ai';
 import { aiSeatsFor, useAiTurns } from './useAi';
 import { useStage } from './stage/useStage';
+import { Curtain } from './stage/Curtain';
 
 const NAMES = ['Ada', 'Peter', 'Rook', 'Vex'];
 
@@ -175,7 +177,7 @@ export function App() {
    * every question of legality. Under a still tempo the two are the same
    * object and this costs nothing.
    */
-  const stage = useStage(state);
+  const stage = useStage(state, NATURAL);
 
   const reset = () => {
     setSelected(null);
@@ -680,6 +682,7 @@ export function App() {
               onHost={state.pendingAttack && !stage.busy ? tapHost : undefined}
               selectedHosts={hits}
               live={!stage.busy}
+              spot={stage.spot}
             />
           </main>
 
@@ -690,7 +693,9 @@ export function App() {
 
         {/* ── Action bar ─────────────────────────────────────────── */}
         <footer className="bg-papyrus-light/70 min-h-14 shrink-0 border-t px-3 py-2">
-          {isBot && state.phase !== 'gameOver' && state.phase !== 'heaven' && !state.pendingBeacon ? (
+          {stage.busy ? (
+            <Curtain spot={stage.spot} state={stage.view} onSkip={stage.skip} />
+          ) : isBot && state.phase !== 'gameOver' && state.phase !== 'heaven' && !state.pendingBeacon ? (
             <Bar
               title={
                 <>

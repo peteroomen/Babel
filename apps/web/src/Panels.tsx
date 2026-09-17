@@ -178,6 +178,13 @@ export function ConfusionCard({ state }: { state: GameState }) {
 /** Human-readable log. Every complex transition emits a structured event. */
 export function describe(event: GameEvent, state: GameState): string {
   const who = (id: string) => state.leaders[id]?.name ?? id;
+  /* Named from the board where it can be: with five kinds on the map at once,
+     "a Host advances" is the one thing a player cannot act on. A Host that has
+     since died is no longer there to ask, and stays anonymous. */
+  const which = (id: string) => {
+    const host = state.hosts.find((h) => h.id === id);
+    return host ? HOST_LABEL[host.kind] : 'Host';
+  };
   switch (event.type) {
     case 'roundStarted':
       return `Round ${event.round}`;
@@ -222,11 +229,11 @@ export function describe(event: GameEvent, state: GameState): string {
     case 'hostSpawned':
       return `${HOST_LABEL[event.kind]} descends at ${event.at.x}, ${event.at.y}`;
     case 'hostMoved':
-      return `Host advances to ${event.to.x}, ${event.to.y}`;
+      return `${which(event.id)} advances to ${event.to.x}, ${event.to.y}`;
     case 'babelPieceLost':
       return `Heaven smashes Babel's newest piece — ${event.remaining} left, and the Host is spent`;
     case 'foundationOccupied':
-      return `A Host stands on the bare Foundation`;
+      return `${which(event.hostId)} stands on the bare Foundation`;
     case 'humanityLoses':
       return `The Foundation is breached twice. Humanity falls.`;
     case 'attackRolled':
@@ -238,9 +245,9 @@ export function describe(event: GameEvent, state: GameState): string {
     case 'hostHit':
       return event.shieldBroken
         ? `${who(event.player)} shatters a Seraph's shield`
-        : `${who(event.player)} hits a Host`;
+        : `${who(event.player)} hits a ${which(event.id)}`;
     case 'hostKilled':
-      return `${who(event.player)} destroys a Host`;
+      return `${who(event.player)} destroys a ${which(event.id)}`;
     case 'mustered':
       return `${who(event.player)} musters — Army ${event.army}`;
     case 'wallsBuilt':
@@ -248,7 +255,7 @@ export function describe(event: GameEvent, state: GameState): string {
         event.edges.length === 1 ? '' : 's'
       }`;
     case 'wallBroken':
-      return `A Wall is smashed down — the Host spent its movement`;
+      return `${which(event.hostId)} smashes a Wall down, and spends its movement`;
     case 'towerSupport':
       return `Tower fires — ${event.roll} + 2 vs ${event.defence}, ${event.hit ? 'hit' : 'miss'}`;
     case 'confusionRevealed':

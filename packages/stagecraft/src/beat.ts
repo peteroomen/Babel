@@ -109,3 +109,30 @@ export const heldFor = (ms: number): Tempo => ({
  * plumbing on its own.
  */
 export const STILL: Tempo = heldFor(0);
+
+/**
+ * What the screen currently takes its time over.
+ *
+ * Only the Heaven Phase, so far. It is the moment players have the least
+ * information about and the most at stake in, and until now the whole of it —
+ * every step, every Wall, every piece knocked off Babel — arrived as a single
+ * changed picture.
+ *
+ * The numbers are the milestone's own: short enough to stay informative rather
+ * than theatrical, longer where the thing that happened is worse. A Host
+ * walking is a quarter of a second because there may be a dozen of them; Babel
+ * losing a piece is nearly a second because it happens once and it hurts.
+ *
+ * Everything else is still zero and will be raised by the slice that earns it.
+ */
+export const NATURAL: Tempo = {
+  ...STILL,
+  heaven: 420,
+  march: 260,
+  spawn: 340,
+  wallBroken: 480,
+  razed: 560,
+  babelLost: 720,
+  foundation: 780,
+  loss: 900,
+};

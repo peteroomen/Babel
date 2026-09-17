@@ -146,3 +146,68 @@
     border-radius: 6px 13px 5px 12px / 12px 5px 14px 6px;
   }
 }
+
+/*
+ * Motion. ADR-002: the frames are already discrete, so all the screen has to
+ * do is travel between two of them.
+ *
+ * Every duration here is paired with a hold in `@babel-game/stagecraft`'s
+ * tempo, and is shorter than it, so a move always finishes before the beat it
+ * belongs to ends.
+ */
+@layer components {
+  /* A Host walking from one square to the next. */
+  .marching {
+    transition: transform 220ms cubic-bezier(0.34, 0.8, 0.4, 1);
+  }
+
+  /* Something the beat wants looked at. */
+  .spotlit {
+    animation: spotlight 640ms ease-out;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  /* A Host arriving out of a Beacon, or three left behind by a Swarm. */
+  .descending {
+    animation: descend 320ms ease-out;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+}
+
+@keyframes spotlight {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.82);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@keyframes descend {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) translateY(-14px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/*
+ * Milestone 7: every transition collapses to its end state. The stage stops
+ * queueing beats at all under this preference, so this is only the second line
+ * of defence — nothing should be mid-move to begin with.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .marching,
+  .spotlit,
+  .descending {
+    transition: none;
+    animation: none;
+  }
+}
