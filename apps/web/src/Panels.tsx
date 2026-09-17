@@ -185,6 +185,8 @@ export function describe(event: GameEvent, state: GameState): string {
     const host = state.hosts.find((h) => h.id === id);
     return host ? HOST_LABEL[host.kind] : 'Host';
   };
+  /* Ophanim and Ophanim Host both take "an"; Colossus and Warded do not. */
+  const a = (label: string) => `${/^[aeiou]/i.test(label) ? 'an' : 'a'} ${label}`;
   switch (event.type) {
     case 'roundStarted':
       return `Round ${event.round}`;
@@ -245,9 +247,9 @@ export function describe(event: GameEvent, state: GameState): string {
     case 'hostHit':
       return event.shieldBroken
         ? `${who(event.player)} shatters a Seraph's shield`
-        : `${who(event.player)} hits a ${which(event.id)}`;
+        : `${who(event.player)} hits ${a(which(event.id))}`;
     case 'hostKilled':
-      return `${who(event.player)} destroys a ${which(event.id)}`;
+      return `${who(event.player)} destroys ${a(HOST_LABEL[event.kind])}`;
     case 'mustered':
       return `${who(event.player)} musters — Army ${event.army}`;
     case 'wallsBuilt':

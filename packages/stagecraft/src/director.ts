@@ -1,10 +1,20 @@
 import { BABEL_COORD, type Coord, type GameEvent, type GameState } from '@babel-game/game-core';
 import { STILL, type Beat, type Script, type Spotlight, type Tempo } from './beat.js';
-import { advance, frameOf, reelFrom, sceneDiff, sceneOf } from './scene.js';
+import { advance, frameOf, reelFrom, sceneDiff, sceneOf, type Reel } from './scene.js';
 
-/** Which events are worth stopping on, and where to look when they happen. */
-function spotFor(event: GameEvent): Omit<Spotlight, 'cause'> | null {
+/**
+ * Which events are worth stopping on, and where to look when they happen.
+ *
+ * Read against the reel as it stood *before* the event, because half of these
+ * are about something that is no longer there afterwards: a Host that has just
+ * died is not on the board to be pointed at.
+ */
+function spotFor(event: GameEvent, before: Reel): Omit<Spotlight, 'cause'> | null {
   const here = (...at: readonly Coord[]) => at;
+  const standing = (id: string): readonly Coord[] => {
+    const host = before.scene.hosts.find((h) => h.id === id);
+    return host ? [host.at] : [];
+  };
 
   switch (event.type) {
     case 'tilePlaced':
@@ -44,13 +54,15 @@ function spotFor(event: GameEvent): Omit<Spotlight, 'cause'> | null {
     /* A hit that leaves the Host standing is a Shield coming off; every other
        hit the core resolves as a kill, which gets its own beat. */
     case 'hostHit':
-      return event.shieldBroken ? { kind: 'shield', at: [], hostIds: [event.id] } : null;
+      return event.shieldBroken
+        ? { kind: 'shield', at: standing(event.id), hostIds: [event.id] }
+        : null;
     case 'hostKilled':
-      return { kind: 'slain', at: [], hostIds: [event.id] };
+      return { kind: 'slain', at: standing(event.id), hostIds: [event.id] };
     case 'hostSplit':
       return { kind: 'split', at: here(event.at), hostIds: [...event.into] };
     case 'foundationOccupied':
-      return { kind: 'foundation', at: [], hostIds: [event.hostId] };
+      return { kind: 'foundation', at: here(BABEL_COORD), hostIds: [event.hostId] };
     case 'confusionRevealed':
       return { kind: 'confusion', at: [], hostIds: [] };
     case 'confusionCancelled':
@@ -92,8 +104,8 @@ export function direct(
   const beats: Beat[] = [];
 
   for (const event of events) {
+    const spot = spotFor(event, reel);
     reel = advance(reel, event);
-    const spot = spotFor(event);
     if (!spot) continue;
     const hold = tempo[spot.kind];
     if (hold <= 0) continue;

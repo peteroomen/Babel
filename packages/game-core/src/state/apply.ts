@@ -1023,7 +1023,12 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         const outcome = applyHit(target);
         const index = hosts.findIndex((host) => host.id === target.id);
         if (outcome.killed) {
-          events.push({ type: 'hostKilled', player: command.player, id: target.id });
+          events.push({
+            type: 'hostKilled',
+            player: command.player,
+            id: target.id,
+            kind: target.kind,
+          });
           hosts.splice(index, 1);
           /* A Tower kill leaves the same wreckage an Army kill would. */
           const spec = HOSTS[target.kind].splitsInto;
@@ -1221,7 +1226,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
           const dying = hosts[index] as GameState['hosts'][number];
           const outcome = applyHit(dying);
           if (outcome.killed) {
-            events.push({ type: 'hostKilled', player: command.player, id });
+            events.push({ type: 'hostKilled', player: command.player, id, kind: dying.kind });
             hosts.splice(index, 1);
             split(dying);
             killed += 1;

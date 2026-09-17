@@ -102,7 +102,7 @@ describe('the scene', () => {
     const state: GameState = { ...base, hosts: [swarm] };
 
     const events: GameEvent[] = [
-      { type: 'hostKilled', player: currentPlayer(state), id: 'h9' },
+      { type: 'hostKilled', player: currentPlayer(state), id: 'h9', kind: 'swarm' },
       { type: 'hostSplit', from: 'h9', into: ['h10', 'h11', 'h12'], at },
     ];
 

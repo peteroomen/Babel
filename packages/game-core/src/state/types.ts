@@ -318,7 +318,17 @@ export type GameEvent =
       readonly id: string;
       readonly shieldBroken: boolean;
     }
-  | { readonly type: 'hostKilled'; readonly player: PlayerId; readonly id: string }
+  /**
+   * A Host destroyed. It carries its own kind because by the time anything
+   * reads this — a caption, or the log an hour later — the Host is gone from
+   * the board and there is nothing left to ask.
+   */
+  | {
+      readonly type: 'hostKilled';
+      readonly player: PlayerId;
+      readonly id: string;
+      readonly kind: HostKind;
+    }
   | { readonly type: 'mustered'; readonly player: PlayerId; readonly army: number }
   | { readonly type: 'confusionRevealed'; readonly card: ConfusionId }
   | {

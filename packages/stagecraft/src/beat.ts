@@ -135,4 +135,12 @@ export const NATURAL: Tempo = {
   babelLost: 720,
   foundation: 780,
   loss: 900,
+
+  /* An Attack: the dice land, the Towers fire one at a time, and each hit is
+     spent on something you can see it being spent on. */
+  tower: 520,
+  dice: 560,
+  shield: 560,
+  slain: 460,
+  split: 640,
 };

@@ -59,6 +59,7 @@ import { ARCHETYPE_BLURB, ARCHETYPE_LABEL } from '@babel-game/game-ai';
 import { aiSeatsFor, useAiTurns } from './useAi';
 import { useStage } from './stage/useStage';
 import { Curtain } from './stage/Curtain';
+import { DiceTray } from './stage/DiceTray';
 
 const NAMES = ['Ada', 'Peter', 'Rook', 'Vex'];
 
@@ -617,7 +618,7 @@ export function App() {
 
         {/* ── Board + rail ───────────────────────────────────────── */}
         <div className="flex min-h-0 flex-1">
-          <main className="min-w-0 flex-1 p-2">
+          <main className="relative min-w-0 flex-1 p-2">
             <Board
               className="size-full"
               state={stage.view}
@@ -684,6 +685,7 @@ export function App() {
               live={!stage.busy}
               spot={stage.spot}
             />
+            <DiceTray state={state} />
           </main>
 
           <aside className="hidden w-[19rem] shrink-0 flex-col gap-2 border-l p-2 xl:flex">
@@ -813,7 +815,7 @@ export function App() {
           ) : state.pendingAttack ? (
             <Bar
               title={`${assigned}/${successes} hits assigned`}
-              hint={`Rolled ${state.pendingAttack.rolls.join(', ')} vs Defence ${state.pendingAttack.defence}. A Seraph needs two — the first breaks its shield.`}
+              hint="The dice are on the table: every face, and the Defence each one had to beat. A Seraph needs two hits — the first only breaks its shield."
             >
               {state.hosts.map((host) => (
                 <Act
