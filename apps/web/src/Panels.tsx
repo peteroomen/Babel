@@ -1,113 +1,16 @@
-import {
-  CONFUSION,
-  RESOURCE_TYPES,
-  SCHEMES,
-  STAGE_LABEL,
-  type SchemeId,
-} from '@babel-game/game-data';
+import { CONFUSION, SCHEMES, STAGE_LABEL, type SchemeId } from '@babel-game/game-data';
 import {
   piecesPerStage,
   piecesToNextEscalation,
   totalPieces,
   type GameEvent,
   type GameState,
-  type LeaderState,
 } from '@babel-game/game-core';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { BUILDING_LABEL, HOST_LABEL, LEADER_COLOUR, RESOURCE_LABEL, TERRAIN_LABEL } from './theme';
-
-export function LeaderRow({
-  leader,
-  isActive,
-  seat,
-  buildings,
-}: {
-  leader: LeaderState;
-  isActive: boolean;
-  seat: number;
-  buildings: number;
-}) {
-  return (
-    <div
-      className={cn(
-        'rounded-lg border px-2.5 py-2 transition-colors',
-        isActive ? 'bg-secondary/70 border-foreground/25' : 'bg-card',
-      )}
-    >
-      <div className="flex items-center gap-1.5">
-        <span
-          className="size-2.5 shrink-0 rounded-sm"
-          style={{ background: LEADER_COLOUR[seat % LEADER_COLOUR.length] }}
-        />
-        <span className="truncate text-sm font-semibold">{leader.name}</span>
-        <span className="ml-auto flex items-center gap-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Badge variant="default" className="tabular-nums">
-                {leader.prestige}
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent>
-              Prestige. Only decides the winner if humanity survives.
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Badge variant="outline" className="tabular-nums">
-                {leader.army}d
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent>
-              {leader.army} Army {leader.army === 1 ? 'die' : 'dice'}, each d6 + 2 versus Host
-              Defence.
-            </TooltipContent>
-          </Tooltip>
-        </span>
-      </div>
-
-      <div className="mt-1.5 grid grid-cols-4 gap-1">
-        {RESOURCE_TYPES.map((resource) => (
-          <Tooltip key={resource}>
-            <TooltipTrigger asChild>
-              <div
-                className={cn(
-                  'flex items-baseline justify-center gap-1 rounded border px-1 py-0.5 text-xs',
-                  leader.resources[resource] > 0 ? 'bg-card' : 'bg-secondary/40 opacity-50',
-                )}
-              >
-                {/* A bare number is unreadable at a glance: which one is Metal?
-                    The initials are unique across Food/Wood/Brick/Metal. */}
-                <span className="text-[10px] opacity-55">
-                  {RESOURCE_LABEL[resource].charAt(0)}
-                </span>
-                <span className="font-medium tabular-nums">{leader.resources[resource]}</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>{RESOURCE_LABEL[resource]}</TooltipContent>
-          </Tooltip>
-        ))}
-      </div>
-
-      {(buildings > 0 || leader.schemeHand.length > 0) && (
-        <div className="text-muted-foreground mt-1.5 flex items-center gap-2 text-xs">
-          {buildings > 0 && <span>{buildings} built</span>}
-          {leader.schemeHand.length > 0 &&
-            (isActive ? (
-              <span className="truncate">
-                {leader.schemeHand.map((id) => SCHEMES[id]?.label ?? id).join(', ')}
-              </span>
-            ) : (
-              <span>{leader.schemeHand.length} Scheme face down</span>
-            ))}
-        </div>
-      )}
-    </div>
-  );
-}
+import { BUILDING_LABEL, HOST_LABEL, RESOURCE_LABEL, TERRAIN_LABEL } from './theme';
 
 /** GDD §12: pieces built, and how close the next permanent escalation is. */
 export function BabelCard({ state }: { state: GameState }) {

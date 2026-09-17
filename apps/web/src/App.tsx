@@ -39,7 +39,8 @@ import {
 import { BookOpenIcon, PanelRightIcon, RotateCcwIcon, ScrollTextIcon, UsersIcon } from 'lucide-react';
 import { Board, HostIcon } from './Board';
 import { PaperFx } from './PaperFx';
-import { BabelCard, LeaderRow, LogCard, LogList, SchemeCard } from './Panels';
+import { BabelCard, LogCard, LogList, SchemeCard } from './Panels';
+import { LeaderStrip } from './Leaders';
 import { ActionButtons, Act } from './ActionBar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -268,17 +269,6 @@ export function App() {
   const rail = (
     <>
       <BabelCard state={state} />
-      <div className="grid gap-1.5">
-        {state.order.map((id, seat) => (
-          <LeaderRow
-            key={id}
-            leader={state.leaders[id]!}
-            isActive={id === active}
-            seat={seat}
-            buildings={Object.values(state.buildings).filter((b) => b.owner === id).length}
-          />
-        ))}
-      </div>
       <LogCard state={state} />
     </>
   );
@@ -664,6 +654,7 @@ export function App() {
         </header>
 
         <ConfusionBanner state={stage.view} />
+        <LeaderStrip state={stage.view} active={active} seats={aiSeats} />
 
         {/* ── Board + rail ───────────────────────────────────────── */}
         <div className="flex min-h-0 flex-1">
