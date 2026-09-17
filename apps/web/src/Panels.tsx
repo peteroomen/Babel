@@ -224,7 +224,7 @@ export function describe(event: GameEvent, state: GameState): string {
     case 'hostMoved':
       return `Host advances to ${event.to.x}, ${event.to.y}`;
     case 'babelPieceLost':
-      return `Heaven smashes Babel's newest piece — ${event.remaining} left`;
+      return `Heaven smashes Babel's newest piece — ${event.remaining} left, and the Host is spent`;
     case 'foundationOccupied':
       return `A Host stands on the bare Foundation`;
     case 'humanityLoses':

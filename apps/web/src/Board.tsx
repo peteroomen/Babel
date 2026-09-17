@@ -371,6 +371,14 @@ type Props = {
   /** Hosts singled out while assigning Attack hits. */
   onHost?: ((id: string) => void) | undefined;
   selectedHosts?: Readonly<Record<string, number>>;
+  /**
+   * False while the board is showing a moment that has already passed.
+   *
+   * A frame is a whole world, and the world it shows is behind the rules, so
+   * nothing on it may be clicked: the squares a tile could go in were computed
+   * against a board that has since moved on.
+   */
+  live?: boolean;
 };
 
 /** Half-edge segments, drawn from the tile centre out to each river edge. */
@@ -426,10 +434,12 @@ export function Board({
   onBeaconSite,
   onHost,
   selectedHosts = {},
+  live = true,
 }: Props) {
-  const options = state.drawnTile
-    ? getLegalTilePlacements(state.board, state.drawnTile, state.rules)
-    : [];
+  const options =
+    live && state.drawnTile
+      ? getLegalTilePlacements(state.board, state.drawnTile, state.rules)
+      : [];
 
   /* GDD §10: a Host anywhere in a feature shuts the whole feature down, so the
      shading has to cover the feature rather than the single occupied tile. */
@@ -837,7 +847,7 @@ export function Board({
         );
       })}
 
-      {legalKeys.size === 0 && state.drawnTile && (
+      {live && legalKeys.size === 0 && state.drawnTile && (
         <text x={12} y={24} fontSize={14} fill="#a33">
           No legal placement for this tile.
         </text>

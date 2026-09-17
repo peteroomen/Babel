@@ -11,6 +11,9 @@
       "path": "./packages/game-ai"
     },
     {
+      "path": "./packages/stagecraft"
+    },
+    {
       "path": "./packages/harness"
     }
   ]

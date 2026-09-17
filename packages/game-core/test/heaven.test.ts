@@ -182,30 +182,55 @@ describe('Beacons (GDD §13)', () => {
     expect(second.state.hosts).toHaveLength(2);
   });
 
-  it('spawns only Ophanim before Stage III', () => {
+  /**
+   * What a Beacon sends, over many rounds, without letting the world end.
+   *
+   * These read the `hostSpawned` events rather than the surviving Hosts, and
+   * clear the board between phases so nothing ever reaches Babel. Running a
+   * doomed board for sixty phases measures the loss path, not the spawn table.
+   */
+  const kindsSpawned = (state: GameState, phases: number): string[] => {
+    const kinds: string[] = [];
+    let current = state;
+    for (let i = 0; i < phases; i++) {
+      const result = resolveHeavenPhase(current);
+      for (const event of result.events) {
+        if (event.type === 'hostSpawned') kinds.push(event.kind);
+      }
+      current = { ...result.state, hosts: [] };
+    }
+    return kinds;
+  };
+
+  it('spawns only Ophanim before Stage III, under the one-per-Beacon spawn', () => {
     const board: Board = { '1,0': land(), '2,0': land() };
-    let state = game(board, { beacons: [{ x: 2, y: 0 }], stage: 2 });
-    for (let i = 0; i < 20; i++) state = resolveHeavenPhase(state).state;
-    expect(state.hosts.length).toBeGreaterThan(0);
-    expect(state.hosts.every((h) => h.kind === 'ophanim')).toBe(true);
+    /* GDD §14's Stage III Seraph roll belongs to the one-per-Beacon spawn,
+       which v0.3 replaced with a rolled table that sends Warded from Stage II.
+       V02_RULES is where this rule still lives. */
+    const state = game(board, { beacons: [{ x: 2, y: 0 }], stage: 2, rules: V02_RULES });
+    const kinds = kindsSpawned(state, 20);
+
+    expect(kinds.length).toBeGreaterThan(0);
+    expect(kinds.every((kind) => kind === 'ophanim')).toBe(true);
   });
 
   it('mixes Seraphs in at Stage III, under the one-per-Beacon spawn', () => {
     const board: Board = { '1,0': land(), '2,0': land() };
-    /* GDD §14's Seraph roll belongs to the one-per-Beacon spawn, which v0.3
-       replaced with a rolled table. V02_RULES is where this rule still lives. */
-    let state = game(board, { beacons: [{ x: 2, y: 0 }], stage: 3, rules: V02_RULES });
-    const kinds: string[] = [];
-    for (let i = 0; i < 60; i++) {
-      const result = resolveHeavenPhase(state);
-      state = result.state;
-      for (const event of result.events) {
-        if (event.type === 'hostSpawned') kinds.push(event.kind);
-      }
-    }
+    const state = game(board, { beacons: [{ x: 2, y: 0 }], stage: 3, rules: V02_RULES });
+    const kinds = kindsSpawned(state, 60);
+
     /* GDD §14 puts this at roughly 25%; assert the mix exists, not its rate. */
     expect(kinds).toContain('seraph');
     expect(kinds).toContain('ophanim');
+  });
+
+  it('sends the rolled table what the Stage prints, under canon', () => {
+    const board: Board = { '1,0': land(), '2,0': land() };
+    const state = game(board, { beacons: [{ x: 2, y: 0 }], stage: 2 });
+    const kinds = kindsSpawned(state, 40);
+
+    /* Canon v0.3 opens the Warded gate at Stage II, and nothing else yet. */
+    expect(new Set(kinds)).toEqual(new Set(['ophanim', 'warded']));
   });
 });
 
@@ -221,7 +246,12 @@ describe('striking Babel (GDD §2)', () => {
 
     expect(after.babel.stack).toEqual(['p0']);
     expect(after.hosts).toHaveLength(0);
-    expect(events).toContainEqual({ type: 'babelPieceLost', builtBy: 'p1', remaining: 1 });
+    expect(events).toContainEqual({
+      type: 'babelPieceLost',
+      hostId: 'h1',
+      builtBy: 'p1',
+      remaining: 1,
+    });
   });
 
   it('occupies the Foundation when Babel has no pieces', () => {
@@ -243,6 +273,20 @@ describe('striking Babel (GDD §2)', () => {
     expect(after.phase).toBe('gameOver');
     expect(after.lossReason).toBe('foundationBreached');
     expect(events).toContainEqual({ type: 'humanityLoses', reason: 'foundationBreached' });
+  });
+
+  it('leaves every Host standing on the board when the Foundation breaks', () => {
+    /* Board order decides who is resolved first, and the arriving Host can
+       easily come before the one already sitting on the Foundation. The phase
+       stops the moment it loses, so the occupier must not vanish with it. */
+    const state = game(approach, {
+      hosts: [ophanim('h2', 1, 0), ophanim('h1', 0, 0)],
+      babel: { stack: [] },
+    });
+    const { state: after } = resolveHeavenPhase(state);
+
+    expect(after.lossReason).toBe('foundationBreached');
+    expect([...after.hosts].map((h) => h.id).sort()).toEqual(['h1', 'h2']);
   });
 
   it('lets the occupying Host sit on the Foundation without re-triggering', () => {

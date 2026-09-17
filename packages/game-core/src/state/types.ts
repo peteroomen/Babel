@@ -276,9 +276,13 @@ export type GameEvent =
       /** True when several equally short routes existed and one was chosen. */
       readonly hadChoice: boolean;
     }
-  /** GDD §2: a Host reached Babel and knocked off its newest piece. */
+  /**
+   * GDD §2: a Host reached Babel and knocked off its newest piece. The strike
+   * consumes the Host, so `hostId` is the one that is gone from the board.
+   */
   | {
       readonly type: 'babelPieceLost';
+      readonly hostId: string;
       readonly builtBy: PlayerId;
       readonly remaining: number;
     }

@@ -149,7 +149,7 @@ export function resolveHeavenPhase(
   let occupier = hostAtBabel(state.hosts) ?? null;
   const survivors = [...moved];
 
-  for (const host of arrivals) {
+  for (const [index, host] of arrivals.entries()) {
     /* A Host already occupying the Foundation simply stays put. */
     if (occupier && occupier.id === host.id) {
       survivors.push(host);
@@ -159,7 +159,7 @@ export function resolveHeavenPhase(
     if (stack.length > 0) {
       /* Remove the newest piece and the Host that struck it. */
       const builtBy = stack.pop() as string;
-      events.push({ type: 'babelPieceLost', builtBy, remaining: stack.length });
+      events.push({ type: 'babelPieceLost', hostId: host.id, builtBy, remaining: stack.length });
       continue;
     }
 
@@ -170,7 +170,14 @@ export function resolveHeavenPhase(
       continue;
     }
 
-    /* GDD §2: a second Host at an already occupied Foundation loses the game. */
+    /**
+     * GDD §2: a second Host at an already occupied Foundation loses the game.
+     *
+     * The phase stops here, so the Hosts this loop has not reached yet — the
+     * Foundation's own occupier among them, since it is processed in board
+     * order like everyone else — still have to be on the board. They are
+     * standing right there in the last thing anybody sees.
+     */
     events.push({ type: 'humanityLoses', reason: 'foundationBreached' });
     return {
       state: {
@@ -178,7 +185,7 @@ export function resolveHeavenPhase(
         rng,
         walls,
         babel: { stack },
-        hosts: [...survivors, host],
+        hosts: [...survivors, host, ...arrivals.slice(index + 1)],
         phase: 'gameOver',
         winner: null,
         lossReason: 'foundationBreached',

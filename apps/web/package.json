@@ -9,8 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@babel-game/game-ai": "*",
     "@babel-game/game-core": "*",
     "@babel-game/game-data": "*",
+    "@babel-game/stagecraft": "*",
     "@fontsource-variable/caveat": "^5.3.0",
     "@fontsource/patrick-hand": "^5.3.0",
     "@radix-ui/react-dialog": "^1.1.23",
@@ -27,8 +29,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^3.7.0",
-    "tailwindcss": "^4.3.3",
-    "@babel-game/game-ai": "*"
+    "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

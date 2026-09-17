@@ -56,6 +56,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { HOST_BLURB, HOST_LABEL, RESOURCE_LABEL, TERRAIN_LABEL } from './theme';
 import { ARCHETYPE_BLURB, ARCHETYPE_LABEL } from '@babel-game/game-ai';
 import { aiSeatsFor, useAiTurns } from './useAi';
+import { useStage } from './stage/useStage';
 
 const NAMES = ['Ada', 'Peter', 'Rook', 'Vex'];
 
@@ -167,6 +168,15 @@ export function App() {
   const monumentAction = legal.find((a) => a.type === 'buildMonument');
   const wallsAction = legal.find((a) => a.type === 'buildWalls');
 
+  /**
+   * The screen, which is allowed to be a moment behind the rules.
+   *
+   * `stage.view` is what the board draws; `state` stays the authority for
+   * every question of legality. Under a still tempo the two are the same
+   * object and this costs nothing.
+   */
+  const stage = useStage(state);
+
   const reset = () => {
     setSelected(null);
     setRotationIndex(0);
@@ -175,8 +185,14 @@ export function App() {
     setHits({});
     setWallPicks([]);
   };
+  /** Apply a command, then hand the transition to the stage to play out. */
+  const advance = (command: Command) => {
+    const { state: next, events } = applyMove(state, command);
+    stage.play(state, events, next);
+    setState(next);
+  };
   const dispatch = (command: Command) => {
-    setState(applyMove(state, command).state);
+    advance(command);
     reset();
   };
   const restart = (next: Partial<Table> = {}) => {
@@ -187,6 +203,8 @@ export function App() {
     setTable(settings);
     setSeed(fresh);
     setState(setupGame(NAMES.slice(0, settings.leaders), fresh, settings.rules));
+    /* Nothing from the old world should still be playing over the new one. */
+    stage.skip();
     reset();
   };
 
@@ -195,7 +213,7 @@ export function App() {
     () => aiSeatsFor(state.order, table.ai),
     [state.order, table.ai],
   );
-  useAiTurns(state, aiSeats, seed, setState);
+  useAiTurns(state, aiSeats, seed, advance, !stage.busy);
 
   const isBot = Boolean(aiSeats[active]);
   const sameKind = state.rules.barterMode === 'sameKind';
@@ -600,21 +618,23 @@ export function App() {
           <main className="min-w-0 flex-1 p-2">
             <Board
               className="size-full"
-              state={state}
-              selected={selected}
+              state={stage.view}
+              selected={stage.busy ? null : selected}
               rotation={rotation}
               onSelect={(at) => {
                 setSelected(at);
                 setRotationIndex(0);
               }}
               buildSites={
-                mode.kind === 'build' && buildAction
-                  ? buildAction.sites.map((s) => s.at)
-                  : mode.kind === 'tower' && towerAction
-                    ? towerAction.sites
-                    : mode.kind === 'monument' && monumentAction
-                      ? monumentAction.sites
-                      : []
+                stage.busy
+                  ? []
+                  : mode.kind === 'build' && buildAction
+                    ? buildAction.sites.map((s) => s.at)
+                    : mode.kind === 'tower' && towerAction
+                      ? towerAction.sites
+                      : mode.kind === 'monument' && monumentAction
+                        ? monumentAction.sites
+                        : []
               }
               onBuildSite={(at) => {
                 if (mode.kind === 'tower') {
@@ -635,7 +655,7 @@ export function App() {
                   });
                 }
               }}
-              wallEdges={mode.kind === 'walls' && wallsAction ? wallsAction.edges : []}
+              wallEdges={!stage.busy && mode.kind === 'walls' && wallsAction ? wallsAction.edges : []}
               onWallEdge={
                 mode.kind === 'walls'
                   ? (edge) =>
@@ -655,10 +675,11 @@ export function App() {
                   : undefined
               }
               chosenWalls={wallPicks.map((p) => `${p.a.x},${p.a.y}|${p.b.x},${p.b.y}`)}
-              beaconSites={state.pendingBeacon?.sites ?? []}
+              beaconSites={stage.busy ? [] : (state.pendingBeacon?.sites ?? [])}
               onBeaconSite={(at) => dispatch({ type: 'placeBeacon', player: active, at })}
-              onHost={state.pendingAttack ? tapHost : undefined}
+              onHost={state.pendingAttack && !stage.busy ? tapHost : undefined}
               selectedHosts={hits}
+              live={!stage.busy}
             />
           </main>
 
