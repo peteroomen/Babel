@@ -225,6 +225,59 @@ and what is about to.
 - Motion is short (150–400ms) and informative. Nothing moves that is not
   telling the player something they would otherwise have to work out.
 
+### How it is built
+
+See `docs/ADR-002-animation.md`. In one line: **a command produces events,
+events produce frames, and a frame is a `GameState`.**
+
+`applyMove` already returns `{ state, events }` and both UI call sites throw
+the events away. A pure director in `packages/stagecraft` folds
+`(before, events, after)` into a list of **beats**, each carrying a whole frame
+plus a small `Spotlight` saying what to emphasise and what to call it. The
+board is handed a frame exactly where it used to be handed the live state, so
+no component learns a new prop type.
+
+The invariant that makes it trustworthy: **folding every beat over `before`
+reproduces the visible fields of `after`, exactly.** It is property-tested in
+Node against the headless harness. An event the director does not understand
+degrades to a single cut straight to `after` — never a wrong picture — and the
+test asserts that cut is never taken, so a new event type in `game-core` fails
+a test rather than silently desynchronising the screen.
+
+### The slices
+
+Each is one commit that stands alone, ordered by information gained per unit of
+risk. **A to D is the minimum that meets the exit condition**; E to G are what
+make it good.
+
+- **A — the stage.** `packages/stagecraft`, the director, the invariant test,
+  the scheduling hook, and both call sites threading events. Ships with every
+  beat at zero milliseconds: no visible change, all tests green. The risky
+  refactor, deliberately boring and isolated.
+- **B — Heaven moves in sequence.** Hosts step tile by tile in spawn order,
+  Walls break where they break, a Colossus stops at the building it pulls
+  down, arrivals strike Babel, then Beacons send the next wave.
+- **C — dice that land.** Army and Tower dice roll, settle on their faces, and
+  are measured one at a time against the Defence they beat; then hits fly to
+  the Hosts they are assigned to, and a Seraph's shield shatters on its own
+  beat.
+- **D — the permanent fixtures.** Confusion leaves the rail for the header at
+  every width. Its reveal plays once, then settles. Stage escalation, a Scheme
+  coming into force and a Beacon opening get the same treatment.
+- **E — placement and provenance.** The tile drops, the tiles that paid pulse,
+  and the resources travel to the Leader who earned them. Needs one additive
+  pure query in `game-core` — which tiles a payout counted — so the rule and
+  the view cannot disagree.
+- **F — Babel becomes the hero.** A tower that grows piece by piece with a
+  silhouette per Stage, and a strike that knocks the newest piece off with
+  weight and comedy.
+- **G — the motion system.** Duration and easing tokens, a skip control, a
+  speed setting, `prefers-reduced-motion` honoured throughout, and captions
+  drawn from the same words as the log.
+- **H — the log becomes a timeline.** *Stretch.* Click any log line to see the
+  board as it was. Nearly free once frames are cheap; replay from seed stays in
+  Milestone 9.
+
 Exit: a player who has not read the rulebook can name the active Confusion
 card, say why their last Attack scored what it scored, and follow a whole
 Heaven Phase, without opening a panel.
