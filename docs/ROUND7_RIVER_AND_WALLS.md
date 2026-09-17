@@ -1,8 +1,13 @@
 # Round seven — Babel's river, and whether Walls earn their place
 
 **Date:** 2026-09-17
-**Run:** `npm run model -- --river` and `-- --walls`, 3 Leaders (Architect,
-Commander, Industrialist), round cap 120.
+**Runs:** `npm run model -- --river`, `-- --walls`, and the `--river-confirm` /
+`--walls-confirm` arms at 140-160 paired seeds each. 3 Leaders (Architect,
+Commander, Industrialist) unless a table is named, round cap 120.
+
+At 140 games a win rate carries about 3.5 points of standard error, so a gap
+under about 10 points between two arms is not a result on its own. Every
+difference below is labelled with whether it clears that.
 
 Two questions came out of a play session, and they turn out to be the same
 question asked twice: **what is the terrain for?**
@@ -35,8 +40,8 @@ Leader is paid for what they added rather than for what was already there.
 
 ### The first thing the model found has nothing to do with Prestige
 
-Under canon, **Babel's river is a stub**: 2.35 tiles long, reaching 2.17 tiles
-upstream, at the end of a whole game. The fixed start tile plus, usually,
+Under canon, **Babel's river is a stub**: about 2.8 tiles long, reaching 2.6
+tiles upstream, at the end of a whole game. The fixed start tile plus, usually,
 nothing. Rivers appear all over the board and essentially never connect to the
 one piece of water the fiction cares about.
 
@@ -48,17 +53,31 @@ Paying for it changes that immediately:
 | Tiles in Babel's river | 2.35 | 6.80 | 5.17 | 8.47 |
 | Placements paid | — | 4.5% | 3.0% | 4.9% |
 
+(First pass, 40 seeds. The confirmation below puts reach at 6.41 under
+`reach, +1`; the effect is larger with more seeds, not smaller.)
+
 This is not the Reserve: the agents respond to it, and the board looks different
 at the end of the game. That is the first bar a candidate rule has to clear.
 
 ### It is not overpowered. It is barely a Prestige rule at all
 
-| | Control | Any join, +1 | Reach, +1 | Reach, +2 |
-|---|---|---|---|---|
-| River Prestige per game (whole table) | 0.0 | 5.7 | **3.9** | 13.6 |
-| Share of all Prestige earned | — | 2.9% | **1.9%** | 5.8% |
+Confirmed over 140 paired seeds per arm:
 
-At +1 a Leader takes about 1.3 Prestige from the river across a game in which
+| | Control | Reach, +1 | Reach, +2 |
+|---|---|---|---|
+| River Prestige per game (whole table) | 0.0 | **5.3** | 11.1 |
+| Share of all Prestige earned | — | **2.4%** | 5.0% |
+| Reach from Babel | 2.59 | **6.41** | 6.56 |
+| Shared win rate | 75.0% | 80.7% | 80.7% |
+| Mean rounds | 41.1 | 45.4 | 45.5 |
+
+Note what doubling the price does *not* buy: the river comes out the same length
+(6.41 against 6.56) and the table wins at the same rate. Past +1 the extra
+Prestige is inflation — the bots were already taking every river square they
+could reach, so the second point pays for behaviour the first point had already
+bought.
+
+At +1 a Leader takes about 1.8 Prestige from the river across a game in which
 they will score 60 to 80. Nobody wins on it and nobody can farm it, because the
 supply is the bag: you can only extend the river on a turn the bag deals you a
 river tile that fits.
@@ -68,9 +87,9 @@ river tile that fits.
 The hoped-for effect was a Leader taking a worse square for the Prestige. The
 metric for that is payout per placement, and it does not fall:
 
-| | Control | Reach, +1 |
-|---|---|---|
-| Payout per placement | 1.812 | 1.867 |
+| | Control | Reach, +1 | Reach, +2 |
+|---|---|---|---|
+| Payout per placement | 1.834 | 1.841 | 1.833 |
 
 Two honest readings, and the truth is probably both:
 
@@ -94,12 +113,14 @@ where you would expect:
 
 | | Control | Reach, +1 | Reach, +2 |
 |---|---|---|---|
-| Shared win rate | 70.0% | 70.0% | 82.5% |
-| Mean rounds | 39.2 | 44.1 | 46.2 |
+| Shared win rate | 75.0% | 80.7% | 80.7% |
+| Mean rounds | 41.1 | 45.4 | 45.5 |
 
-At +1 the win rate does not move and the game runs about five rounds longer. At
-+2 the table is winning 82.5% of the time, which is outside the 60-70% band the
-difficulty round settled on. **The price is the lever, and 1 is the price.**
+Both arms give up about 5.7 points of difficulty and four rounds of length, which
+at 140 games is a little over one standard error of the difference — suggestive
+rather than proven, and in the direction the mechanism predicts. It is the number
+to watch if the rule is adopted, because it is the one that could quietly push
+the table out of the 60-70% band the difficulty round settled on.
 
 This is the thing to watch in human play, not Prestige inflation: the rule's
 real cost is paid in Heaven's mobility, and a table that leans into it is buying
@@ -155,9 +176,23 @@ value:
 - **A Wall's value is positional**, and positional value is exactly what these
   agents cannot see.
 
-The first one is fixable and was fixed: `heavenPlan` now steers a Host into a
-Wall whenever the table has the choice, which is what a competent table would
-do. See the re-run below.
+The first one is fixable and was fixed. `heavenPlan` now spends the table's
+RD-008 route choice on walking Hosts into Walls whenever one of their equally
+short steps crosses one. Re-run, same 160 paired seeds:
+
+| | Walls, played by luck | Walls, played correctly | No Walls |
+|---|---|---|---|
+| Shared win rate | 74.4% | 75.6% | 79.4% |
+| Segments ever crossed | 33.9% | **35.1%** | — |
+
+Playing Walls properly is worth about one point of crossing rate and about one
+point of win rate. The reason it changes so little is structural: a Host only
+has a choice to steer at all when two of its steps are equally short, and only
+matters when one of those two carries a Wall. Eight segments on a hundred-tile
+board almost never meet that condition.
+
+So the objection is real, quantified, and small. Walls are not being wasted by
+the bots. They are just not worth much.
 
 ### What Walls would have to become to be worth keeping
 
