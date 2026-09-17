@@ -106,6 +106,24 @@ core's output and never writing to it.
 - **Scrubbing comes nearly free.** Once frames are cheap, showing the board as
   it was at any log line is a small addition rather than a project. Full
   replay-from-seed stays in Milestone 9.
+- **A moving camera and live SVG filters do not mix.** Added after the fact,
+  when the map was asked to zoom and pan on its own. Transforming a group that
+  contains a filter forces that filter to be re-rasterised at every scale it
+  is drawn at, and the papyrus is built out of turbulence: the torn edge of the
+  sheet, the fibre grain, the cartouche. Measured against an identical run with
+  the camera pinned wide, on a software rasteriser with no GPU:
+
+  | | 95th percentile frame | frames over 32ms | frames rendered in 80s |
+  | --- | --- | --- | --- |
+  | No camera | 16.8ms | 1.5% | 4724 |
+  | Camera, filters live | 66.7ms | 8.0% | 3659 |
+  | Camera, paper parked while moving | 16.8ms | 4.4% | 4224 |
+
+  `will-change: transform` does not help, because the problem is resolution
+  rather than compositing. The paper is therefore a property of the still shot:
+  plain while the camera moves, grain back when it settles. If the remaining
+  4.4% ever matters, the next step is to stop generating the grain at runtime
+  and tile a raster instead — a texture costs nothing to scale.
 
 ## Why not the alternatives
 

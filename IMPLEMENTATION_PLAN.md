@@ -181,8 +181,8 @@ Exit: choose whether same-kind Barter and `RESERVE_SLOTS = 0/1/2` should become 
 
 ## Milestone 7 — telegraphing the game state
 
-**Next.** The rules are close to right; the screen is not yet saying what they
-are doing. The last full playthrough surfaced this as the loudest remaining
+**In progress. Slices A to D are done; E to H are not.** The rules are close to
+right; the screen is not yet saying what they are doing. The last full playthrough surfaced this as the loudest remaining
 problem: the active Confusion card was only visible if you opened the panel, so
 a whole round's rule change could pass unnoticed. Nothing here changes a rule.
 The goal is that a player can look up at any moment and know what just happened
@@ -250,20 +250,21 @@ Each is one commit that stands alone, ordered by information gained per unit of
 risk. **A to D is the minimum that meets the exit condition**; E to G are what
 make it good.
 
-- **A — the stage.** `packages/stagecraft`, the director, the invariant test,
-  the scheduling hook, and both call sites threading events. Ships with every
-  beat at zero milliseconds: no visible change, all tests green. The risky
-  refactor, deliberately boring and isolated.
-- **B — Heaven moves in sequence.** Hosts step tile by tile in spawn order,
-  Walls break where they break, a Colossus stops at the building it pulls
-  down, arrivals strike Babel, then Beacons send the next wave.
-- **C — dice that land.** Army and Tower dice roll, settle on their faces, and
-  are measured one at a time against the Defence they beat; then hits fly to
-  the Hosts they are assigned to, and a Seraph's shield shatters on its own
-  beat.
-- **D — the permanent fixtures.** Confusion leaves the rail for the header at
-  every width. Its reveal plays once, then settles. Stage escalation, a Scheme
-  coming into force and a Beacon opening get the same treatment.
+- **A — the stage. Done.** `packages/stagecraft`, the director, the invariant
+  test, the scheduling hook, and both call sites threading events. Shipped with
+  every beat at zero milliseconds: no visible change, all tests green. The
+  risky refactor, deliberately boring and isolated.
+- **B — Heaven moves in sequence. Done.** Hosts step tile by tile in spawn
+  order, Walls break where they break, a Colossus stops at the building it
+  pulls down, arrivals strike Babel, then Beacons send the next wave.
+- **C — dice that land. Done.** Army and Tower dice tumble as actual cubes and
+  come to rest on the face they rolled, each measured against the Defence it
+  had to clear, misses left on the table. A hit is then carried out of the tray
+  and dropped onto a Host by hand.
+- **D — the permanent fixtures. Done.** Confusion leaves the rail for a band
+  under the header at every width. Its reveal plays once, then settles. Stage
+  escalation, a Scheme coming into force and a Beacon opening get the same
+  treatment.
 - **E — placement and provenance.** The tile drops, the tiles that paid pulse,
   and the resources travel to the Leader who earned them. Needs one additive
   pure query in `game-core` — which tiles a payout counted — so the rule and
@@ -278,14 +279,72 @@ make it good.
   board as it was. Nearly free once frames are cheap; replay from seed stays in
   Milestone 9.
 
+### What else landed with it
+
+Asked for during the pass, and outside the slices as planned:
+
+- **A camera that moves itself.** The plan said there would be no camera, on
+  the grounds that the board scales to fit and a spotlight is enough. Overruled
+  by the person playing it. The camera pushes in on whatever a beat points at,
+  pans with a Host as it walks, and pulls back when the screen stops talking;
+  every beat carries a `focus` that a beat with nowhere of its own to look
+  inherits from the last one that had somewhere, so a sequence is one sweep
+  rather than a series of lurches.
+- **A pace setting.** Brisk, Natural or Unhurried in Table settings, scaling
+  one tempo rather than a table of numbers, applied without restarting the game
+  and remembered in the browser. The same factor reaches the CSS through a
+  `--pace` custom property, so nothing gets out of step with the beats.
+- **Guards and simplifications.** Barter in two taps with resources you cannot
+  complete a Barter with disabled; Confirm saying "Waste 2 hits" when nothing
+  has been targeted; Schemes shown as cards with their effect on them; every
+  action bar carrying its explanation as plain text rather than behind a hover
+  a touchscreen cannot perform.
+- **Everyone at the table, above the map.** Portraits, turn indication,
+  resources, Prestige and Army at every width. It was previously in the rail
+  only, and the rail is hidden below 1280px, so on a phone none of it existed.
+
+### Loose ends
+
+Carried forward deliberately, so the next person does not have to rediscover
+them:
+
+- **The app has no automated UI tests.** `vitest.config.ts` looks in
+  `packages/*/test` and `spike/*/test` only, and `apps/web` has none. Every
+  behaviour above was checked by driving a real browser with throwaway scripts,
+  which is better than nothing and worse than a test: none of it is repeatable
+  and none of it runs in CI. Slice G should land a browser smoke test —
+  Playwright is the obvious choice, and the checks already written are the
+  obvious first cases: a tile can be placed, a Heaven Phase plays and can be
+  skipped, a die lands showing the face it claims, and `prefers-reduced-motion`
+  collapses everything to its end state.
+- **A refused drop says nothing.** Dragging a die onto a Host it cannot hurt
+  simply returns it. It should say why — the face, against that Host's
+  Defence — rather than leaving a player to guess whether the drag failed or
+  the game did.
+- **Per-button hints are still hover-only.** The action bar's own explanation
+  is plain text now, but each button's `hint` is a tooltip, so on a
+  touchscreen those remain unreachable. The bar carries the important ones; the
+  rest are a genuine gap.
+- **A Leader's Scheme hand is now only a count.** The rail used to name the
+  cards the active Leader held. The strip that replaced it has room for a
+  number, and `SchemeCard` already exists to show the rest.
+- **Babel is still a grey box with a number on it.** Slice F. More obvious now
+  than it was, because the camera pushes in on it every time Heaven knocks a
+  piece off.
+
 Exit: a player who has not read the rulebook can name the active Confusion
 card, say why their last Attack scored what it scored, and follow a whole
 Heaven Phase, without opening a panel.
 
 ## Milestone 8 — the five-Stage Babel
 
-**Followup to Milestone 7.** Three Stages of five or six pieces gives Heaven
-only two escalation points, which is why the v0.3 spawn table has to introduce
+**Followup to Milestone 7. Blocked on D-001** — see `docs/DEFECTS.md`. This
+milestone's whole purpose is to introduce one new kind of Host per Stage, and
+four of the eight kinds currently die to a single hit regardless of what their
+spec says. Measuring a new escalation curve against that measures the wrong
+thing.
+
+Three Stages of five or six pieces gives Heaven only two escalation points, which is why the v0.3 spawn table has to introduce
 three new Host kinds at once at Stage III. Five Stages of two pieces each gives
 the same tower a slower, finer clock: **one new kind of Host arrives with each
 new Stage**, so the table meets one new problem at a time and has a round or

@@ -13,7 +13,6 @@ import {
   CONFUSION,
   RESOURCE_TYPES,
   ROLLED_HEAVEN,
-  SCHEMES,
   type BuildingType,
   type HostKind,
   type ResourceType,

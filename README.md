@@ -13,6 +13,7 @@ BABEL is a digital-first solo / 2–4 leader cooperative-competitive board game.
 5. `IMPLEMENTATION_PLAN.md` — milestone order.
 6. `ART_DIRECTION.md` — visual/tone brief.
 7. `docs/FINAL_BALANCE_PASS_2026-09-15.md` and `docs/MODEL_NOTES.md` — modelling evidence and tuning context.
+8. `docs/DEFECTS.md` — known bugs, with evidence. Read before planning balance work.
 
 ## Canon versus tuning
 
@@ -93,13 +94,17 @@ npm run dev       # hot-seat app
   d6 table rather than one Host per Beacon — with Herald, Colossus, Swarm and
   Warded arriving with it. See `docs/MILESTONE_6_BASELINE.md` for every round of
   results.
-- **Milestone 7 — telegraphing the game state.** In progress. The rules are
-  close to right; the screen was not yet saying what they were doing. A pure
-  director in `packages/stagecraft` turns each command's events into held
-  frames, so the Heaven Phase plays out step by step instead of arriving as one
-  changed picture, an Attack shows its dice and the Defence each one had to
-  beat, and the round's Confusion card announces itself and then stays on
-  screen at every width. See `docs/ADR-002-animation.md`.
+- **Milestone 7 — telegraphing the game state.** In progress; slices A to D are
+  done. The rules are close to right; the screen was not yet saying what they
+  were doing. A pure director in `packages/stagecraft` turns each command's
+  events into held frames, so the Heaven Phase plays out step by step instead
+  of arriving as one changed picture, and a camera follows it over the map. An
+  Attack rolls dice you can see and drag onto the Host you want dead, each
+  Host showing the number that die has to beat. The round's Confusion card
+  announces itself and then stays on screen at every width, as does everyone's
+  resources, Prestige and Army. See `docs/ADR-002-animation.md`, and
+  `IMPLEMENTATION_PLAN.md` for the slices still outstanding and the loose ends
+  left behind.
 - **Milestone 9 — playtest instrumentation.** Later: per-game telemetry and
   deterministic replay from seed plus command log.
 
