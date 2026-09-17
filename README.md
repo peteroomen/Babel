@@ -47,6 +47,9 @@ The art/tone target is a **cheerful, handmade civic project to murder God, besie
 ```text
 packages/game-core   pure deterministic rules; no framework imports
 packages/game-data   TUNEABLE values: terrain weights, player-count scaling
+packages/game-ai     the policy machine Leaders play, headless or in the browser
+packages/stagecraft  pure: turns a command's events into frames to play (ADR-002)
+packages/harness     headless games and factorial sweeps for balance evidence
 apps/web             hot-seat UI, drives game-core directly
 spike/boardgame-io   maintained multiplayer spike (see ADR-001)
 ```
@@ -84,7 +87,20 @@ npm run dev       # hot-seat app
 - **Milestone 5 — the compact card layer.** Complete. The three Schemes with
   hidden hands, and the six Confusion effects with the deck growing as Babel
   escalates. **Canon v0.1 is now fully playable.**
-- **Milestone 6 — playtest instrumentation.** Next: per-game telemetry and
+- **Milestone 6 — resource agency.** Complete, and canon is now v0.3. Same-kind
+  Barter at four cards, a Babel cost curve spread across three resources per
+  Stage, Barter freed from the turn's action, and Heaven arriving from a rolled
+  d6 table rather than one Host per Beacon — with Herald, Colossus, Swarm and
+  Warded arriving with it. See `docs/MILESTONE_6_BASELINE.md` for every round of
+  results.
+- **Milestone 7 — telegraphing the game state.** In progress. The rules are
+  close to right; the screen was not yet saying what they were doing. A pure
+  director in `packages/stagecraft` turns each command's events into held
+  frames, so the Heaven Phase plays out step by step instead of arriving as one
+  changed picture, an Attack shows its dice and the Defence each one had to
+  beat, and the round's Confusion card announces itself and then stays on
+  screen at every width. See `docs/ADR-002-animation.md`.
+- **Milestone 9 — playtest instrumentation.** Later: per-game telemetry and
   deterministic replay from seed plus command log.
 
 Interpretations of under-specified canon are recorded in
