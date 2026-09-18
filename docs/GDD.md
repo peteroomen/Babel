@@ -9,12 +9,12 @@
 This document freezes the core rules that survived the design conversation and software modelling pass. Numbers marked **TUNEABLE** are balance values, not unresolved mechanics.
 
 > **Canon has moved on in places.** The live rules are `CANON_RULES` in
-> `packages/game-data/src/rules.ts`, at v0.4, and
+> `packages/game-data/src/rules.ts`, at v0.5, and
 > `docs/RULES_QUICK_REFERENCE.md` is the digest of what it actually says.
 > Sections superseded since this document was frozen carry a note where they
 > begin: **§7** (Babel's river now scores), **§8** and **§11** (Barter is free
 > and does not spend the action), **§12** (the Babel cost curve is broad),
-> **§13** (Heaven is rolled from a table), **§17** (Walls are removed) and
+> **§13** (Heaven is rolled from a table with a v0.5 player-count cadence), **§17** (Walls are removed) and
 > **§20** (the Defender identity lost one of its three legs). Everything else
 > here still stands.
 

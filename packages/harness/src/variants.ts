@@ -1,6 +1,7 @@
 import {
   BROAD_PIECE_COST,
   CANON_RULES,
+  V04_RULES,
   CANON_WALLS,
   LEGACY_V01_RULES,
   MONUMENT_RULE,
@@ -31,7 +32,7 @@ const withRules = (id: string, label: string, note: string, rules: Partial<RuleS
 });
 
 export const VARIANTS: readonly Variant[] = [
-  withRules('control', 'Control', 'Canon v0.2: the live rules', {}),
+  withRules('control', 'Control', 'Canon v0.5: the live rules', {}),
   { id: 'v01', label: 'v0.1', note: 'The pre-Milestone-6 baseline', rules: LEGACY_V01_RULES },
   withRules('same-kind', 'Same-kind Barter', 'Blind draw, 3 of one resource', {
     barterMode: 'sameKind',
@@ -336,5 +337,5 @@ export const RIVER_MILESTONE_VARIANTS: readonly Variant[] = [
  */
 export const CANON_VARIANTS: readonly Variant[] = [
   { id: 'v03', label: 'v0.3', note: 'Walls in play, the river pays nothing', rules: V03_RULES },
-  { id: 'v04', label: 'v0.4', note: 'No Walls, Babel’s river scores', rules: CANON_RULES },
+  { id: 'v04', label: 'v0.4', note: 'No Walls, Babel’s river scores', rules: V04_RULES },
 ];

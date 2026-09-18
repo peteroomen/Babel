@@ -117,7 +117,13 @@ used, and no experiment ever needs a branch of the rules.
 setupGame(names, seed, { ...CANON_RULES, barterMode: 'sameKind', reserveSlots: 1 })
 ```
 
-`CANON_RULES` is canon v0.4 and is the default everywhere. Every earlier canon is kept frozen beside it — `LEGACY_V01_RULES`, `V02_RULES`, `V03_RULES` — so a round's evidence can always be re-read against the game it was proposed for.
+`CANON_RULES` is canon v0.5 and is the default for the browser, setup helpers,
+and generic live sweeps. `V04_RULES` is frozen beside it so the v0.3/v0.4
+comparison and the cadence experiment can be replayed bit-for-bit; the
+historical `rounds.ts` sets and `CANON_VARIANTS` explicitly use that frozen
+ruleset. Every earlier canon is kept frozen beside it — `LEGACY_V01_RULES`,
+`V02_RULES`, `V03_RULES`, and `V04_RULES` — so a round's evidence can always be
+re-read against the game it was proposed for.
 
 ## What the metrics mean
 

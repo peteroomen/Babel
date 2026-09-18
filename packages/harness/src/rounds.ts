@@ -1,7 +1,7 @@
 import {
-  CANON_RULES,
+  V04_ROLLED_HEAVEN,
+  V04_RULES,
   MUNITIONS_RULE,
-  ROLLED_HEAVEN,
   TIERED_BEACONS,
   type RuleSet,
 } from '@babel-game/game-data';
@@ -19,7 +19,7 @@ const on = (id: string, label: string, note: string, rules: Partial<RuleSet>): V
   id,
   label,
   note,
-  rules: { ...CANON_RULES, ...rules },
+  rules: { ...V04_RULES, ...rules },
 });
 
 /** Free Barter is taken as read; the question is what pays for it. */
@@ -86,19 +86,19 @@ export const ROSTER_VARIANTS: readonly Variant[] = [
   on('uniform', 'One per Beacon', 'v0.2: GDD §13 as written', FREE),
   on('rolled', 'Rolled, 1/2/2 by Stage', 'd6 table, arrivals by Stage', {
     ...FREE,
-    heavenSpawn: ROLLED_HEAVEN,
+    heavenSpawn: V04_ROLLED_HEAVEN,
   }),
   on('rolled-3', 'Rolled, 1/2/3', 'One more at Stage III', {
     ...FREE,
-    heavenSpawn: { ...ROLLED_HEAVEN!, arrivals: [1, 2, 3] },
+    heavenSpawn: { ...V04_ROLLED_HEAVEN!, arrivals: [1, 2, 3] },
   }),
   on('rolled-flat2', 'Rolled, 2 every Stage', 'Flat rate', {
     ...FREE,
-    heavenSpawn: { ...ROLLED_HEAVEN!, arrivals: [2, 2, 2] },
+    heavenSpawn: { ...V04_ROLLED_HEAVEN!, arrivals: [2, 2, 2] },
   }),
   on('rolled-munitions', 'Rolled 1/2/3 + Munitions', 'Can the table buy an answer?', {
     ...FREE,
-    heavenSpawn: ROLLED_HEAVEN,
+    heavenSpawn: V04_ROLLED_HEAVEN,
     munitions: MUNITIONS_RULE,
   }),
 ];

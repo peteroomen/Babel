@@ -1,11 +1,12 @@
-# BABEL — Quick Rules Reference (Canon v0.4)
+# BABEL — Quick Rules Reference (Canon v0.5)
 
 Written from `CANON_RULES` in `packages/game-data/src/rules.ts`, which is the
 source of truth. Where this page and the GDD disagree, the GDD is the older
 document: it describes v0.1, and §§7, 11, 17 and 20 have been overtaken.
 
 The historical balance measurements in this repository predate the repairs
-below and must be rerun before they are used to tune the canon.
+below and the v0.5 player-count Heaven cadence. They must be rerun before they
+are used to tune the canon.
 
 ## Turn
 **Draw 1 tile → Place → Resolve resources/buildings → Take 1 action.**
@@ -90,8 +91,20 @@ Tower.
 ## Heaven
 Existing Hosts move, resolve Babel impacts, then new Hosts arrive.
 
-**Arrivals per Heaven Phase, by Stage: 1 / 2 / 2.** Roll a d6 on the Stage's
-table for what comes; the open Beacons say where.
+**Rolled Heaven uses a count-specific cadence.** Roll a d6 on the Stage's table
+for what comes; the open Beacons say where. Stage I sends 1 Host each round
+once a Beacon is open. Arrival timing begins at the scheduled first Beacon
+round for the table size, uses one global round offset, and does not reset when
+a Beacon is deferred or the Stage changes:
+
+| Leaders | Stage I | Stage II | Stage III |
+|---:|---|---|---|
+| 2 | 1 | Skip rounds 3, 7, 11, …; 1 on other rounds | Skip rounds 3, 7, 11, …; 1 on other rounds |
+| 3 | 1 | 1 on even rounds, 2 on odd rounds | 1 on even rounds, 2 on odd rounds |
+| 4 | 1 | 2 | 2 |
+
+No Hosts spawn while no Beacon is open, and a deferred Beacon does not create
+stored spawn debt.
 
 | Stage | What a d6 sends |
 |---|---|

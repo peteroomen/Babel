@@ -5,6 +5,10 @@ These are experimental `RuleSet` candidates only. They do not change
 strategy. Historical balance measurements predate the canonical combat/rules
 repairs and should not be used as a direct baseline without rerunning them.
 
+Adoption status (2026-09-18): the validated schedule was adopted separately as
+canon v0.5. These runs remain historical measurements against frozen v0.4
+rules; no balance sweep was rerun after adoption.
+
 Run a screen with compact per-cell JSON and incremental writes:
 
 ```sh

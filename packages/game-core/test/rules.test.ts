@@ -5,7 +5,7 @@ import {
   DEEP_BEACONS,
   V02_RULES,
   HOSTS,
-  ROLLED_HEAVEN,
+  V04_ROLLED_HEAVEN,
   SPAWN_TABLE,
   LEGACY_V01_RULES,
   TIERED_BEACONS,
@@ -772,7 +772,7 @@ describe('Heaven rolled from a table', () => {
   it('sends the Stage\'s number of Hosts however many Beacons are open', () => {
     /* The point of the change: how much Heaven arrives is a printed number per
        Stage, not a side effect of the player-count Beacon table. */
-    const rolled = rules({ heavenSpawn: ROLLED_HEAVEN });
+    const rolled = rules({ heavenSpawn: V04_ROLLED_HEAVEN });
     for (const beacons of [1, 2, 3, 4]) {
       const base = setupGame(['Ada', 'Peter'], `spawn${beacons}`, rolled);
       const board: Record<string, { terrain: 'forest'; river: 'none'; rotation: 0 }> = {};
@@ -799,7 +799,7 @@ describe('Heaven rolled from a table', () => {
   });
 
   it('only sends what the Stage has unlocked', () => {
-    const rolled = rules({ heavenSpawn: ROLLED_HEAVEN });
+    const rolled = rules({ heavenSpawn: V04_ROLLED_HEAVEN });
     const base = setupGame(['Ada', 'Peter'], 'unlock', rolled);
     let state: GameState = {
       ...base,

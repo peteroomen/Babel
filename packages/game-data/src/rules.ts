@@ -1,5 +1,6 @@
 import { TERRAIN_WEIGHTS, type ResourceType, type TerrainType } from './terrain.js';
 import { BABEL_PIECE_COST, type Stage } from './babel.js';
+import type { LeaderCount } from './scaling.js';
 import {
   MONUMENT_COST,
   MONUMENT_PRESTIGE,
@@ -27,7 +28,7 @@ import { RIVER_WEIGHTS, type RiverShape } from './rivers.js';
  * `setupGame` takes a RuleSet, the state keeps it, and a replay from seed plus
  * command log reproduces exactly the variant it was recorded under.
  *
- * Everything here is TUNEABLE in the GDD's sense. `CANON_RULES` is canon v0.1
+ * Everything here is TUNEABLE in the GDD's sense. `CANON_RULES` is canon v0.5
  * and is what the game uses unless a caller asks for something else.
  */
 
@@ -40,6 +41,16 @@ import { RIVER_WEIGHTS, type RiverShape } from './rivers.js';
  *   being the primary way to obtain a precise resource.
  */
 export type BarterMode = 'mixed' | 'sameKind';
+
+/** Repeating arrivals for Stages I, II and III respectively. */
+export type HeavenCadence = readonly [
+  readonly number[],
+  readonly number[],
+  readonly number[],
+];
+
+/** Optional player-count cadence table; omitted counts use fixed arrivals. */
+export type HeavenCadenceByLeaderCount = Partial<Record<LeaderCount, HeavenCadence>>;
 
 export type RuleSet = {
   readonly barterMode: BarterMode;
@@ -179,8 +190,10 @@ export type RuleSet = {
   readonly heavenSpawn: {
     readonly table: Record<Stage, readonly SpawnEntry[]>;
     readonly arrivals: readonly [number, number, number];
-    /** Optional repeating per-Phase arrival cycles for cadence experiments. */
-    readonly cadenceByStage?: readonly [readonly number[], readonly number[], readonly number[]];
+    /** Explicit per-Stage override, reserved for experiments and scenarios. */
+    readonly cadenceByStage?: HeavenCadence;
+    /** Canonical optional cadence table selected by Leader count. */
+    readonly cadenceByLeaderCount?: HeavenCadenceByLeaderCount;
   } | null;
   /**
    * Added to every Host's Defence, by Stage.
@@ -386,7 +399,7 @@ export const V03_RULES: RuleSet = {
 };
 
 /**
- * Canon v0.4 — what the game plays under now.
+ * Canon v0.4 — frozen historical rules.
  *
  * Round seven asked two questions about the same thing, which is what the
  * terrain is *for*, and answered both. See `docs/ROUND7_RIVER_AND_WALLS.md`.
@@ -418,10 +431,32 @@ export const V03_RULES: RuleSet = {
  * other thing slowing Heaven down. Net, v0.4 is the same game three rounds
  * shorter, with a river in it.
  */
-export const CANON_RULES: RuleSet = {
+export const V04_RULES: RuleSet = {
   ...V03_RULES,
   riverPrestige: { perTile: 1, requireReach: true, cap: null, milestone: null },
   walls: null,
+};
+
+/**
+ * v0.5's validated Heaven cadence. The first entry is deliberately explicit
+ * even though all counts begin at one: only Stages II and III are eased or
+ * held at their count-specific rates.
+ */
+export const CANON_HEAVEN_CADENCE: HeavenCadenceByLeaderCount = {
+  2: [[1], [0, 1, 1, 1], [0, 1, 1, 1]],
+  3: [[1], [1, 2], [1, 2]],
+  4: [[1], [2], [2]],
+};
+
+/** Canon v0.5 — v0.4 plus the adopted player-count Heaven cadence. */
+export const CANON_RULES: RuleSet = {
+  ...V04_RULES,
+  heavenSpawn: V04_RULES.heavenSpawn
+    ? {
+        ...V04_RULES.heavenSpawn,
+        cadenceByLeaderCount: CANON_HEAVEN_CADENCE,
+      }
+    : null,
 };
 
 /** At most this many Reserve slots. A guard, not a design statement. */
@@ -452,8 +487,11 @@ export const TIERED_BEACONS = BEACON_TIERS;
 /** Heaven with the harder roster: Herald, Colossus, Swarm, Warded. */
 export const DEEP_BEACONS = DEEP_BEACON_TIERS;
 
-/** The d6 spawn table at its default rate — what canon v0.3 plays. */
+/** The d6 spawn table at the v0.5 default player-count cadence. */
 export const ROLLED_HEAVEN: RuleSet['heavenSpawn'] = CANON_RULES.heavenSpawn;
+
+/** The fixed-arrival d6 table used by v0.4 and all historical experiments. */
+export const V04_ROLLED_HEAVEN: RuleSet['heavenSpawn'] = V04_RULES.heavenSpawn;
 
 /** Two of one resource buys one more Attack die, up to three. */
 export const MUNITIONS_RULE: RuleSet['munitions'] = {
