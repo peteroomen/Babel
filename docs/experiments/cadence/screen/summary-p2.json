@@ -1,0 +1,199 @@
+{
+  "experimental": true,
+  "players": 2,
+  "rosterMode": "fixed",
+  "seedPrefix": "screen-20260917",
+  "games": 12,
+  "summaries": [
+    {
+      "variant": "p2-1-2-2",
+      "players": 2,
+      "games": 12,
+      "win": 0,
+      "loss": 12,
+      "timeout": 0,
+      "winRate": 0,
+      "winRateWilson95": {
+        "low": 0,
+        "high": 0.2425007574992425
+      },
+      "meanWinningRounds": null,
+      "medianWinningRounds": null,
+      "meanPlayerTurns": 47.833333333333336,
+      "actionShares": {
+        "buildHarvester": 0.11672473867595819,
+        "pass": 0.11846689895470383,
+        "buildBabel": 0.09407665505226481,
+        "muster": 0.1132404181184669,
+        "attack": 0.44947735191637633,
+        "buildTower": 0.10801393728222997
+      },
+      "stageReachRate": {
+        "1": 1,
+        "2": 0.9166666666666666,
+        "3": 0
+      },
+      "lossStageRate": {
+        "1": 0.08333333333333333,
+        "2": 0.9166666666666666,
+        "3": 0
+      },
+      "meanHostsSpawned": 30.333333333333332,
+      "meanHostsKilled": 23.166666666666668,
+      "meanBeaconDeferrals": 0,
+      "zeroHostGames": 0
+    },
+    {
+      "variant": "p2-1-1-1",
+      "players": 2,
+      "games": 12,
+      "win": 4,
+      "loss": 8,
+      "timeout": 0,
+      "winRate": 0.3333333333333333,
+      "winRateWilson95": {
+        "low": 0.13811783989736134,
+        "high": 0.609382412602386
+      },
+      "meanWinningRounds": 54.25,
+      "medianWinningRounds": 55,
+      "meanPlayerTurns": 88.75,
+      "actionShares": {
+        "buildHarvester": 0.10985915492957747,
+        "pass": 0.10892018779342723,
+        "buildBabel": 0.11924882629107982,
+        "muster": 0.06291079812206572,
+        "attack": 0.4704225352112676,
+        "buildTower": 0.12863849765258217
+      },
+      "stageReachRate": {
+        "1": 1,
+        "2": 0.9166666666666666,
+        "3": 0.5
+      },
+      "lossStageRate": {
+        "1": 0.08333333333333333,
+        "2": 0.4166666666666667,
+        "3": 0.16666666666666666
+      },
+      "meanHostsSpawned": 41.416666666666664,
+      "meanHostsKilled": 37,
+      "meanBeaconDeferrals": 0,
+      "zeroHostGames": 0
+    },
+    {
+      "variant": "p2-1-1-1.5",
+      "players": 2,
+      "games": 12,
+      "win": 1,
+      "loss": 10,
+      "timeout": 1,
+      "winRate": 0.08333333333333333,
+      "winRateWilson95": {
+        "low": 0.014864709450773488,
+        "high": 0.35388592179859524
+      },
+      "meanWinningRounds": 47,
+      "medianWinningRounds": 47,
+      "meanPlayerTurns": 97.66666666666667,
+      "actionShares": {
+        "buildHarvester": 0.10580204778156997,
+        "pass": 0.09044368600682594,
+        "buildBabel": 0.12286689419795221,
+        "muster": 0.05716723549488054,
+        "attack": 0.48890784982935154,
+        "buildTower": 0.1348122866894198
+      },
+      "stageReachRate": {
+        "1": 1,
+        "2": 0.9166666666666666,
+        "3": 0.5
+      },
+      "lossStageRate": {
+        "1": 0.08333333333333333,
+        "2": 0.4166666666666667,
+        "3": 0.3333333333333333
+      },
+      "meanHostsSpawned": 52.666666666666664,
+      "meanHostsKilled": 45.916666666666664,
+      "meanBeaconDeferrals": 0,
+      "zeroHostGames": 0
+    },
+    {
+      "variant": "p2-1-1.5-1.5",
+      "players": 2,
+      "games": 12,
+      "win": 0,
+      "loss": 12,
+      "timeout": 0,
+      "winRate": 0,
+      "winRateWilson95": {
+        "low": 0,
+        "high": 0.2425007574992425
+      },
+      "meanWinningRounds": null,
+      "medianWinningRounds": null,
+      "meanPlayerTurns": 53.666666666666664,
+      "actionShares": {
+        "buildHarvester": 0.13975155279503104,
+        "pass": 0.11024844720496894,
+        "buildBabel": 0.07763975155279502,
+        "muster": 0.09782608695652174,
+        "attack": 0.4332298136645963,
+        "buildTower": 0.14130434782608695
+      },
+      "stageReachRate": {
+        "1": 1,
+        "2": 0.9166666666666666,
+        "3": 0.08333333333333333
+      },
+      "lossStageRate": {
+        "1": 0.08333333333333333,
+        "2": 0.8333333333333334,
+        "3": 0.08333333333333333
+      },
+      "meanHostsSpawned": 30,
+      "meanHostsKilled": 24,
+      "meanBeaconDeferrals": 0,
+      "zeroHostGames": 0
+    },
+    {
+      "variant": "p2-0.75-1-1",
+      "players": 2,
+      "games": 12,
+      "win": 3,
+      "loss": 9,
+      "timeout": 0,
+      "winRate": 0.25,
+      "winRateWilson95": {
+        "low": 0.08894003962896137,
+        "high": 0.53231033912066
+      },
+      "meanWinningRounds": 57,
+      "medianWinningRounds": 59,
+      "meanPlayerTurns": 70.16666666666667,
+      "actionShares": {
+        "buildHarvester": 0.13182897862232779,
+        "pass": 0.13539192399049882,
+        "buildBabel": 0.10688836104513064,
+        "muster": 0.07600950118764846,
+        "attack": 0.41092636579572445,
+        "buildTower": 0.13895486935866982
+      },
+      "stageReachRate": {
+        "1": 1,
+        "2": 1,
+        "3": 0.25
+      },
+      "lossStageRate": {
+        "1": 0,
+        "2": 0.75,
+        "3": 0
+      },
+      "meanHostsSpawned": 28.916666666666668,
+      "meanHostsKilled": 23.5,
+      "meanBeaconDeferrals": 0,
+      "zeroHostGames": 0
+    }
+  ]
+}

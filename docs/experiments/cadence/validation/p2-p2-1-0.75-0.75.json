@@ -1,0 +1,1632 @@
+{
+  "experimental": true,
+  "players": 2,
+  "rosterMode": "diverse",
+  "games": [
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-0",
+      "roster": [
+        "architect",
+        "commander"
+      ],
+      "outcome": "win",
+      "rounds": 53,
+      "winningRound": 53,
+      "turns": 105,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 41,
+      "hostsKilled": 30,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 11,
+        "pass": 16,
+        "attack": 39,
+        "buildBabel": 19,
+        "muster": 6,
+        "buildTower": 14
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-1",
+      "roster": [
+        "architect",
+        "industrialist"
+      ],
+      "outcome": "win",
+      "rounds": 54,
+      "winningRound": 54,
+      "turns": 108,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 41,
+      "hostsKilled": 30,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 11,
+        "pass": 12,
+        "attack": 47,
+        "muster": 4,
+        "buildBabel": 19,
+        "buildTower": 13,
+        "buyScheme": 2
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-2",
+      "roster": [
+        "architect",
+        "engineer"
+      ],
+      "outcome": "win",
+      "rounds": 78,
+      "winningRound": 78,
+      "turns": 156,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 60,
+      "hostsKilled": 47,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 18,
+        "pass": 19,
+        "buildBabel": 22,
+        "attack": 70,
+        "muster": 4,
+        "buildTower": 23
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-3",
+      "roster": [
+        "architect",
+        "merchant"
+      ],
+      "outcome": "win",
+      "rounds": 87,
+      "winningRound": 87,
+      "turns": 174,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 65,
+      "hostsKilled": 47,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 10,
+        "pass": 14,
+        "buildBabel": 28,
+        "attack": 70,
+        "muster": 4,
+        "buildTower": 21,
+        "buyScheme": 27
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-4",
+      "roster": [
+        "commander",
+        "industrialist"
+      ],
+      "outcome": "win",
+      "rounds": 54,
+      "winningRound": 54,
+      "turns": 107,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 41,
+      "hostsKilled": 34,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 14,
+        "buildBabel": 15,
+        "pass": 10,
+        "attack": 44,
+        "muster": 6,
+        "buyScheme": 2,
+        "buildTower": 16
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-5",
+      "roster": [
+        "commander",
+        "engineer"
+      ],
+      "outcome": "win",
+      "rounds": 33,
+      "winningRound": 33,
+      "turns": 66,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 28,
+      "hostsKilled": 26,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 10,
+        "pass": 10,
+        "muster": 6,
+        "attack": 25,
+        "buildTower": 5,
+        "buildBabel": 10
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-6",
+      "roster": [
+        "commander",
+        "merchant"
+      ],
+      "outcome": "loss",
+      "rounds": 43,
+      "winningRound": null,
+      "turns": 86,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 33,
+      "hostsKilled": 25,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 7,
+        "pass": 15,
+        "muster": 6,
+        "buildBabel": 6,
+        "attack": 32,
+        "buyScheme": 7,
+        "buildTower": 13
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-7",
+      "roster": [
+        "industrialist",
+        "engineer"
+      ],
+      "outcome": "win",
+      "rounds": 46,
+      "winningRound": 46,
+      "turns": 92,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 35,
+      "hostsKilled": 30,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 13,
+        "pass": 10,
+        "attack": 36,
+        "buildTower": 12,
+        "buildBabel": 13,
+        "muster": 4,
+        "buyScheme": 4
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-8",
+      "roster": [
+        "industrialist",
+        "merchant"
+      ],
+      "outcome": "loss",
+      "rounds": 47,
+      "winningRound": null,
+      "turns": 94,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 34,
+      "hostsKilled": 27,
+      "beaconDeferrals": 3,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 10,
+        "pass": 18,
+        "buildBabel": 5,
+        "attack": 35,
+        "buyScheme": 8,
+        "muster": 2,
+        "buildTower": 16
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-9",
+      "roster": [
+        "engineer",
+        "merchant"
+      ],
+      "outcome": "loss",
+      "rounds": 66,
+      "winningRound": null,
+      "turns": 132,
+      "stageReached": 3,
+      "lossStage": 3,
+      "hostsSpawned": 56,
+      "hostsKilled": 46,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 9,
+        "pass": 11,
+        "attack": 56,
+        "muster": 4,
+        "buildTower": 19,
+        "buyScheme": 22,
+        "buildBabel": 11
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-10",
+      "roster": [
+        "commander",
+        "architect"
+      ],
+      "outcome": "timeout",
+      "rounds": 121,
+      "winningRound": null,
+      "turns": 240,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 92,
+      "hostsKilled": 93,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 27,
+        "muster": 6,
+        "pass": 21,
+        "attack": 121,
+        "buildTower": 33,
+        "buildBabel": 32
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-11",
+      "roster": [
+        "industrialist",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 19,
+      "winningRound": null,
+      "turns": 38,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 14,
+      "hostsKilled": 8,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildBabel": 3,
+        "buildHarvester": 8,
+        "pass": 6,
+        "attack": 12,
+        "buildTower": 6,
+        "muster": 3
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-12",
+      "roster": [
+        "engineer",
+        "architect"
+      ],
+      "outcome": "win",
+      "rounds": 84,
+      "winningRound": 84,
+      "turns": 168,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 67,
+      "hostsKilled": 64,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 15,
+        "buildBabel": 26,
+        "pass": 19,
+        "attack": 80,
+        "muster": 4,
+        "buildTower": 24
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-13",
+      "roster": [
+        "merchant",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 55,
+      "winningRound": null,
+      "turns": 110,
+      "stageReached": 3,
+      "lossStage": 3,
+      "hostsSpawned": 43,
+      "hostsKilled": 35,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 13,
+        "pass": 8,
+        "buildBabel": 10,
+        "buyScheme": 27,
+        "attack": 33,
+        "muster": 3,
+        "buildTower": 16
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-14",
+      "roster": [
+        "industrialist",
+        "commander"
+      ],
+      "outcome": "win",
+      "rounds": 116,
+      "winningRound": 116,
+      "turns": 231,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 87,
+      "hostsKilled": 82,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 17,
+        "muster": 6,
+        "pass": 24,
+        "attack": 99,
+        "buildBabel": 41,
+        "buildTower": 33,
+        "buyScheme": 11
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-15",
+      "roster": [
+        "engineer",
+        "commander"
+      ],
+      "outcome": "win",
+      "rounds": 54,
+      "winningRound": 54,
+      "turns": 108,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 41,
+      "hostsKilled": 44,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 16,
+        "pass": 8,
+        "muster": 6,
+        "attack": 48,
+        "buildTower": 17,
+        "buildBabel": 13
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-16",
+      "roster": [
+        "merchant",
+        "commander"
+      ],
+      "outcome": "timeout",
+      "rounds": 121,
+      "winningRound": null,
+      "turns": 240,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 94,
+      "hostsKilled": 108,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 11,
+        "pass": 8,
+        "attack": 89,
+        "buildTower": 33,
+        "buyScheme": 83,
+        "muster": 6,
+        "buildBabel": 10
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-17",
+      "roster": [
+        "engineer",
+        "industrialist"
+      ],
+      "outcome": "win",
+      "rounds": 23,
+      "winningRound": 23,
+      "turns": 46,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 0,
+      "hostsKilled": 0,
+      "beaconDeferrals": 28,
+      "zeroHostGame": true,
+      "actionCounts": {
+        "buildHarvester": 10,
+        "pass": 22,
+        "buildBabel": 9,
+        "buyScheme": 5
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-18",
+      "roster": [
+        "merchant",
+        "industrialist"
+      ],
+      "outcome": "loss",
+      "rounds": 112,
+      "winningRound": null,
+      "turns": 224,
+      "stageReached": 3,
+      "lossStage": 3,
+      "hostsSpawned": 85,
+      "hostsKilled": 91,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 18,
+        "pass": 5,
+        "buyScheme": 61,
+        "buildBabel": 24,
+        "attack": 76,
+        "muster": 4,
+        "buildTower": 36
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-19",
+      "roster": [
+        "merchant",
+        "engineer"
+      ],
+      "outcome": "timeout",
+      "rounds": 121,
+      "winningRound": null,
+      "turns": 240,
+      "stageReached": 2,
+      "lossStage": null,
+      "hostsSpawned": 95,
+      "hostsKilled": 79,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 19,
+        "buildBabel": 17,
+        "pass": 11,
+        "attack": 92,
+        "buyScheme": 64,
+        "muster": 4,
+        "buildTower": 33
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-20",
+      "roster": [
+        "architect",
+        "commander"
+      ],
+      "outcome": "win",
+      "rounds": 77,
+      "winningRound": 77,
+      "turns": 154,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 57,
+      "hostsKilled": 47,
+      "beaconDeferrals": 1,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 14,
+        "pass": 27,
+        "muster": 6,
+        "attack": 65,
+        "buildTower": 20,
+        "buildBabel": 22
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-21",
+      "roster": [
+        "architect",
+        "industrialist"
+      ],
+      "outcome": "loss",
+      "rounds": 28,
+      "winningRound": null,
+      "turns": 56,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 21,
+      "hostsKilled": 15,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 13,
+        "pass": 7,
+        "buildBabel": 4,
+        "attack": 21,
+        "buildTower": 7,
+        "muster": 4
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-22",
+      "roster": [
+        "architect",
+        "engineer"
+      ],
+      "outcome": "loss",
+      "rounds": 23,
+      "winningRound": null,
+      "turns": 46,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 19,
+      "hostsKilled": 13,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 8,
+        "pass": 8,
+        "attack": 15,
+        "buildBabel": 4,
+        "muster": 4,
+        "buildTower": 7
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-23",
+      "roster": [
+        "architect",
+        "merchant"
+      ],
+      "outcome": "loss",
+      "rounds": 84,
+      "winningRound": null,
+      "turns": 168,
+      "stageReached": 3,
+      "lossStage": 3,
+      "hostsSpawned": 64,
+      "hostsKilled": 47,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 12,
+        "pass": 4,
+        "buyScheme": 39,
+        "buildBabel": 26,
+        "attack": 56,
+        "muster": 4,
+        "buildTower": 27
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-24",
+      "roster": [
+        "commander",
+        "industrialist"
+      ],
+      "outcome": "loss",
+      "rounds": 35,
+      "winningRound": null,
+      "turns": 70,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 27,
+      "hostsKilled": 18,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 10,
+        "pass": 12,
+        "muster": 6,
+        "attack": 24,
+        "buildBabel": 7,
+        "buyScheme": 1,
+        "buildTower": 10
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-25",
+      "roster": [
+        "commander",
+        "engineer"
+      ],
+      "outcome": "win",
+      "rounds": 44,
+      "winningRound": 44,
+      "turns": 87,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 36,
+      "hostsKilled": 31,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 12,
+        "pass": 11,
+        "attack": 37,
+        "muster": 6,
+        "buildBabel": 14,
+        "buildTower": 7
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-26",
+      "roster": [
+        "commander",
+        "merchant"
+      ],
+      "outcome": "timeout",
+      "rounds": 121,
+      "winningRound": null,
+      "turns": 240,
+      "stageReached": 1,
+      "lossStage": null,
+      "hostsSpawned": 118,
+      "hostsKilled": 115,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 10,
+        "pass": 5,
+        "buyScheme": 97,
+        "muster": 6,
+        "attack": 95,
+        "buildBabel": 2,
+        "buildTower": 25
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-27",
+      "roster": [
+        "industrialist",
+        "engineer"
+      ],
+      "outcome": "loss",
+      "rounds": 27,
+      "winningRound": null,
+      "turns": 54,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 18,
+      "hostsKilled": 12,
+      "beaconDeferrals": 3,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 10,
+        "pass": 13,
+        "buildBabel": 4,
+        "attack": 20,
+        "muster": 2,
+        "buildTower": 5
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-28",
+      "roster": [
+        "industrialist",
+        "merchant"
+      ],
+      "outcome": "loss",
+      "rounds": 21,
+      "winningRound": null,
+      "turns": 42,
+      "stageReached": 1,
+      "lossStage": 1,
+      "hostsSpawned": 18,
+      "hostsKilled": 14,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 7,
+        "buyScheme": 4,
+        "pass": 5,
+        "attack": 17,
+        "buildBabel": 2,
+        "muster": 4,
+        "buildTower": 3
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-29",
+      "roster": [
+        "engineer",
+        "merchant"
+      ],
+      "outcome": "timeout",
+      "rounds": 121,
+      "winningRound": null,
+      "turns": 240,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 93,
+      "hostsKilled": 96,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildBabel": 21,
+        "buildHarvester": 13,
+        "pass": 10,
+        "buyScheme": 64,
+        "attack": 103,
+        "muster": 4,
+        "buildTower": 25
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-30",
+      "roster": [
+        "commander",
+        "architect"
+      ],
+      "outcome": "win",
+      "rounds": 64,
+      "winningRound": 64,
+      "turns": 128,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 48,
+      "hostsKilled": 64,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 15,
+        "pass": 12,
+        "attack": 52,
+        "buildBabel": 20,
+        "muster": 6,
+        "buildTower": 23
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-31",
+      "roster": [
+        "industrialist",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 23,
+      "winningRound": null,
+      "turns": 46,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 17,
+      "hostsKilled": 11,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 8,
+        "pass": 7,
+        "attack": 17,
+        "buildBabel": 4,
+        "buildTower": 6,
+        "muster": 3,
+        "buyScheme": 1
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-32",
+      "roster": [
+        "engineer",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 23,
+      "winningRound": null,
+      "turns": 46,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 16,
+      "hostsKilled": 11,
+      "beaconDeferrals": 2,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 9,
+        "pass": 7,
+        "attack": 17,
+        "buildBabel": 3,
+        "buildTower": 7,
+        "muster": 3
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-33",
+      "roster": [
+        "merchant",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 35,
+      "winningRound": null,
+      "turns": 70,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 28,
+      "hostsKilled": 22,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 8,
+        "pass": 10,
+        "attack": 31,
+        "buyScheme": 7,
+        "buildBabel": 4,
+        "muster": 4,
+        "buildTower": 6
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-34",
+      "roster": [
+        "industrialist",
+        "commander"
+      ],
+      "outcome": "win",
+      "rounds": 25,
+      "winningRound": 25,
+      "turns": 49,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 0,
+      "hostsKilled": 0,
+      "beaconDeferrals": 30,
+      "zeroHostGame": true,
+      "actionCounts": {
+        "buildHarvester": 11,
+        "pass": 20,
+        "muster": 3,
+        "buildBabel": 9,
+        "buyScheme": 6
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-35",
+      "roster": [
+        "engineer",
+        "commander"
+      ],
+      "outcome": "win",
+      "rounds": 29,
+      "winningRound": 29,
+      "turns": 58,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 0,
+      "hostsKilled": 0,
+      "beaconDeferrals": 34,
+      "zeroHostGame": true,
+      "actionCounts": {
+        "buildHarvester": 9,
+        "pass": 37,
+        "muster": 3,
+        "buildBabel": 9
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-36",
+      "roster": [
+        "merchant",
+        "commander"
+      ],
+      "outcome": "loss",
+      "rounds": 34,
+      "winningRound": null,
+      "turns": 68,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 27,
+      "hostsKilled": 21,
+      "beaconDeferrals": 1,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 10,
+        "pass": 11,
+        "buildBabel": 4,
+        "attack": 23,
+        "muster": 6,
+        "buildTower": 11,
+        "buyScheme": 3
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-37",
+      "roster": [
+        "engineer",
+        "industrialist"
+      ],
+      "outcome": "loss",
+      "rounds": 5,
+      "winningRound": null,
+      "turns": 10,
+      "stageReached": 1,
+      "lossStage": 1,
+      "hostsSpawned": 2,
+      "hostsKilled": 0,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 4,
+        "pass": 2,
+        "attack": 1,
+        "muster": 2,
+        "buildTower": 1
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-38",
+      "roster": [
+        "merchant",
+        "industrialist"
+      ],
+      "outcome": "loss",
+      "rounds": 32,
+      "winningRound": null,
+      "turns": 64,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 23,
+      "hostsKilled": 17,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 14,
+        "buildBabel": 4,
+        "buyScheme": 8,
+        "attack": 23,
+        "muster": 4,
+        "pass": 2,
+        "buildTower": 9
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-39",
+      "roster": [
+        "merchant",
+        "engineer"
+      ],
+      "outcome": "loss",
+      "rounds": 113,
+      "winningRound": null,
+      "turns": 226,
+      "stageReached": 3,
+      "lossStage": 3,
+      "hostsSpawned": 86,
+      "hostsKilled": 74,
+      "beaconDeferrals": 2,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 9,
+        "buyScheme": 52,
+        "pass": 15,
+        "attack": 98,
+        "buildTower": 29,
+        "muster": 4,
+        "buildBabel": 19
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-40",
+      "roster": [
+        "architect",
+        "commander"
+      ],
+      "outcome": "loss",
+      "rounds": 103,
+      "winningRound": null,
+      "turns": 206,
+      "stageReached": 3,
+      "lossStage": 3,
+      "hostsSpawned": 77,
+      "hostsKilled": 66,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 22,
+        "pass": 25,
+        "buildBabel": 29,
+        "attack": 95,
+        "muster": 6,
+        "buildTower": 29
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-41",
+      "roster": [
+        "architect",
+        "industrialist"
+      ],
+      "outcome": "loss",
+      "rounds": 40,
+      "winningRound": null,
+      "turns": 80,
+      "stageReached": 3,
+      "lossStage": 3,
+      "hostsSpawned": 21,
+      "hostsKilled": 21,
+      "beaconDeferrals": 12,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 17,
+        "pass": 18,
+        "buildBabel": 6,
+        "buyScheme": 3,
+        "muster": 4,
+        "attack": 21,
+        "buildTower": 11
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-42",
+      "roster": [
+        "architect",
+        "engineer"
+      ],
+      "outcome": "win",
+      "rounds": 60,
+      "winningRound": 60,
+      "turns": 120,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 48,
+      "hostsKilled": 42,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 12,
+        "pass": 20,
+        "attack": 45,
+        "buildBabel": 18,
+        "buildTower": 21,
+        "muster": 4
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-43",
+      "roster": [
+        "architect",
+        "merchant"
+      ],
+      "outcome": "win",
+      "rounds": 60,
+      "winningRound": 60,
+      "turns": 120,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 48,
+      "hostsKilled": 39,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 7,
+        "pass": 9,
+        "attack": 47,
+        "buildBabel": 16,
+        "buyScheme": 23,
+        "buildTower": 14,
+        "muster": 4
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-44",
+      "roster": [
+        "commander",
+        "industrialist"
+      ],
+      "outcome": "win",
+      "rounds": 50,
+      "winningRound": 50,
+      "turns": 100,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 41,
+      "hostsKilled": 33,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 13,
+        "pass": 10,
+        "attack": 38,
+        "buildBabel": 17,
+        "muster": 6,
+        "buildTower": 13,
+        "buyScheme": 3
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-45",
+      "roster": [
+        "commander",
+        "engineer"
+      ],
+      "outcome": "win",
+      "rounds": 37,
+      "winningRound": 37,
+      "turns": 73,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 0,
+      "hostsKilled": 0,
+      "beaconDeferrals": 41,
+      "zeroHostGame": true,
+      "actionCounts": {
+        "buildHarvester": 12,
+        "buildBabel": 9,
+        "pass": 49,
+        "muster": 3
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-46",
+      "roster": [
+        "commander",
+        "merchant"
+      ],
+      "outcome": "loss",
+      "rounds": 28,
+      "winningRound": null,
+      "turns": 56,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 19,
+      "hostsKilled": 13,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildBabel": 4,
+        "buildHarvester": 7,
+        "buyScheme": 4,
+        "pass": 4,
+        "attack": 26,
+        "muster": 5,
+        "buildTower": 6
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-47",
+      "roster": [
+        "industrialist",
+        "engineer"
+      ],
+      "outcome": "loss",
+      "rounds": 80,
+      "winningRound": null,
+      "turns": 160,
+      "stageReached": 3,
+      "lossStage": 3,
+      "hostsSpawned": 63,
+      "hostsKilled": 62,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 23,
+        "buildBabel": 16,
+        "pass": 17,
+        "attack": 71,
+        "buildTower": 28,
+        "muster": 4,
+        "buyScheme": 1
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-48",
+      "roster": [
+        "industrialist",
+        "merchant"
+      ],
+      "outcome": "loss",
+      "rounds": 16,
+      "winningRound": null,
+      "turns": 32,
+      "stageReached": 1,
+      "lossStage": 1,
+      "hostsSpawned": 13,
+      "hostsKilled": 10,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 9,
+        "pass": 5,
+        "attack": 10,
+        "buyScheme": 2,
+        "muster": 1,
+        "buildTower": 5
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-49",
+      "roster": [
+        "engineer",
+        "merchant"
+      ],
+      "outcome": "timeout",
+      "rounds": 121,
+      "winningRound": null,
+      "turns": 240,
+      "stageReached": 2,
+      "lossStage": null,
+      "hostsSpawned": 85,
+      "hostsKilled": 81,
+      "beaconDeferrals": 6,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildBabel": 6,
+        "buildHarvester": 14,
+        "pass": 8,
+        "buyScheme": 78,
+        "attack": 103,
+        "buildTower": 27,
+        "muster": 4
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-50",
+      "roster": [
+        "commander",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 11,
+      "winningRound": null,
+      "turns": 22,
+      "stageReached": 1,
+      "lossStage": 1,
+      "hostsSpawned": 8,
+      "hostsKilled": 5,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 4,
+        "pass": 4,
+        "buildBabel": 1,
+        "attack": 6,
+        "muster": 6,
+        "buildTower": 1
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-51",
+      "roster": [
+        "industrialist",
+        "architect"
+      ],
+      "outcome": "win",
+      "rounds": 53,
+      "winningRound": 53,
+      "turns": 106,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 39,
+      "hostsKilled": 24,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 15,
+        "pass": 11,
+        "buildBabel": 23,
+        "attack": 33,
+        "muster": 4,
+        "buyScheme": 3,
+        "buildTower": 17
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-52",
+      "roster": [
+        "engineer",
+        "architect"
+      ],
+      "outcome": "win",
+      "rounds": 46,
+      "winningRound": 46,
+      "turns": 92,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 29,
+      "hostsKilled": 22,
+      "beaconDeferrals": 5,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 14,
+        "pass": 15,
+        "buildBabel": 15,
+        "attack": 35,
+        "muster": 4,
+        "buildTower": 9
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-53",
+      "roster": [
+        "merchant",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 91,
+      "winningRound": null,
+      "turns": 182,
+      "stageReached": 3,
+      "lossStage": 3,
+      "hostsSpawned": 70,
+      "hostsKilled": 48,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 12,
+        "pass": 9,
+        "attack": 59,
+        "buildTower": 27,
+        "muster": 4,
+        "buyScheme": 49,
+        "buildBabel": 22
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-54",
+      "roster": [
+        "industrialist",
+        "commander"
+      ],
+      "outcome": "loss",
+      "rounds": 39,
+      "winningRound": null,
+      "turns": 78,
+      "stageReached": 2,
+      "lossStage": 2,
+      "hostsSpawned": 32,
+      "hostsKilled": 25,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildBabel": 4,
+        "buildHarvester": 12,
+        "pass": 14,
+        "attack": 26,
+        "muster": 6,
+        "buyScheme": 3,
+        "buildTower": 13
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-55",
+      "roster": [
+        "engineer",
+        "commander"
+      ],
+      "outcome": "win",
+      "rounds": 26,
+      "winningRound": 26,
+      "turns": 51,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 0,
+      "hostsKilled": 0,
+      "beaconDeferrals": 31,
+      "zeroHostGame": true,
+      "actionCounts": {
+        "buildHarvester": 11,
+        "pass": 28,
+        "buildBabel": 9,
+        "muster": 3
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-56",
+      "roster": [
+        "merchant",
+        "commander"
+      ],
+      "outcome": "timeout",
+      "rounds": 121,
+      "winningRound": null,
+      "turns": 240,
+      "stageReached": 2,
+      "lossStage": null,
+      "hostsSpawned": 103,
+      "hostsKilled": 97,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 8,
+        "pass": 7,
+        "muster": 6,
+        "attack": 105,
+        "buildBabel": 8,
+        "buildTower": 20,
+        "buyScheme": 86
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-57",
+      "roster": [
+        "engineer",
+        "industrialist"
+      ],
+      "outcome": "win",
+      "rounds": 44,
+      "winningRound": 44,
+      "turns": 88,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 33,
+      "hostsKilled": 28,
+      "beaconDeferrals": 2,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 12,
+        "pass": 8,
+        "muster": 4,
+        "attack": 32,
+        "buildTower": 14,
+        "buildBabel": 17,
+        "buyScheme": 1
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-58",
+      "roster": [
+        "merchant",
+        "industrialist"
+      ],
+      "outcome": "win",
+      "rounds": 67,
+      "winningRound": 67,
+      "turns": 133,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 53,
+      "hostsKilled": 43,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 17,
+        "pass": 8,
+        "attack": 34,
+        "buyScheme": 33,
+        "muster": 4,
+        "buildTower": 21,
+        "buildBabel": 16
+      }
+    },
+    {
+      "variant": "p2-1-0.75-0.75",
+      "seed": "validate-20260917-p2-59",
+      "roster": [
+        "merchant",
+        "engineer"
+      ],
+      "outcome": "timeout",
+      "rounds": 121,
+      "winningRound": null,
+      "turns": 240,
+      "stageReached": 3,
+      "lossStage": null,
+      "hostsSpawned": 98,
+      "hostsKilled": 80,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "actionCounts": {
+        "buildHarvester": 14,
+        "pass": 13,
+        "muster": 4,
+        "attack": 110,
+        "buildTower": 24,
+        "buildBabel": 26,
+        "buyScheme": 49
+      }
+    }
+  ],
+  "summary": {
+    "variant": "p2-1-0.75-0.75",
+    "players": 2,
+    "games": 60,
+    "win": 25,
+    "loss": 27,
+    "timeout": 8,
+    "winRate": 0.4166666666666667,
+    "winRateWilson95": {
+      "low": 0.30064086487871833,
+      "high": 0.5427214568676039
+    },
+    "meanWinningRounds": 54.56,
+    "medianWinningRounds": 53,
+    "totalPlayerTurns": 7106,
+    "meanPlayerTurns": 118.43333333333334,
+    "actionShares": {
+      "buildHarvester": 0.10244863495637489,
+      "pass": 0.10892203771460737,
+      "attack": 0.38207148888263437,
+      "buildBabel": 0.10934421615536166,
+      "muster": 0.03630734590486912,
+      "buildTower": 0.1282015198423867,
+      "buyScheme": 0.13270475654376584
+    },
+    "stageReachRate": {
+      "1": 1,
+      "2": 0.9166666666666666,
+      "3": 0.6333333333333333
+    },
+    "lossStageRate": {
+      "1": 0.06666666666666667,
+      "2": 0.23333333333333334,
+      "3": 0.15
+    },
+    "meanHostsSpawned": 44.166666666666664,
+    "meanHostsKilled": 38.55,
+    "meanBeaconDeferrals": 3.35,
+    "zeroHostGames": 5
+  }
+}

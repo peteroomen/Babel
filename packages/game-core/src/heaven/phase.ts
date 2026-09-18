@@ -1,4 +1,4 @@
-import { HOSTS, type HostKind } from '@babel-game/game-data';
+import { HOSTS, SCALING, type HostKind, type LeaderCount, type RuleSet, type Stage } from '@babel-game/game-data';
 import { confusionIs } from '../cards/index.js';
 import { isPassableAt } from './path.js';
 import { coordKey, type Coord } from '../map/edges.js';
@@ -11,6 +11,27 @@ import { beaconSpawnsThisRound, beaconTier, getLegalBeaconSites, requiredBeacons
 import { hostAtBabel, newHost, rollHostKind } from './hosts.js';
 
 export type HeavenPlan = Readonly<Record<string, readonly Coord[]>>;
+
+/**
+ * Pure arrival query for rolled Heaven. Cadence cycles are anchored to the
+ * absolute round of the scheduled first Beacon, so deferral and Stage changes
+ * never replay an opening grace period. Legacy rules without a cadence retain
+ * their fixed `arrivals` value exactly.
+ */
+export function heavenArrivalsForRound(
+  spawn: NonNullable<RuleSet['heavenSpawn']> | null,
+  leaderCount: number,
+  stage: Stage,
+  round: number,
+  beaconCount: number,
+): number {
+  if (!spawn || beaconCount <= 0) return 0;
+  const cadence = spawn.cadenceByStage?.[stage - 1];
+  if (!cadence) return spawn.arrivals[stage - 1] ?? 1;
+  const firstBeacon = SCALING[leaderCount as LeaderCount]?.firstBeaconRound ?? 1;
+  if (round < firstBeacon || cadence.length === 0) return 0;
+  return cadence[(round - firstBeacon) % cadence.length] ?? 0;
+}
 
 /**
  * Resolve one Heaven Phase. GDD §13 fixes the order:
@@ -217,7 +238,13 @@ export function resolveHeavenPhase(
      * per Beacon, so the amount of Heaven stops being a side effect of how many
      * people are playing.
      */
-    const arrivals = spawn.arrivals[state.stage - 1] ?? 1;
+    const arrivals = heavenArrivalsForRound(
+      spawn,
+      state.order.length,
+      state.stage,
+      state.round,
+      state.beacons.length,
+    );
     const weights = Object.fromEntries(
       (spawn.table[state.stage] ?? []).map((entry) => [entry.kind, entry.weight]),
     ) as Record<HostKind, number>;
