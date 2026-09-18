@@ -26,7 +26,12 @@ export function heavenArrivalsForRound(
   beaconCount: number,
 ): number {
   if (!spawn || beaconCount <= 0) return 0;
-  const cadence = spawn.cadenceByStage?.[stage - 1];
+  /* A caller's explicit Stage cadence is the experiment/scenario escape hatch.
+     Canonical count-specific pacing is only consulted when that override is
+     absent; old rules then retain their fixed arrivals exactly. */
+  const cadence =
+    spawn.cadenceByStage?.[stage - 1] ??
+    spawn.cadenceByLeaderCount?.[leaderCount as LeaderCount]?.[stage - 1];
   if (!cadence) return spawn.arrivals[stage - 1] ?? 1;
   const firstBeacon = SCALING[leaderCount as LeaderCount]?.firstBeaconRound ?? 1;
   if (round < firstBeacon || cadence.length === 0) return 0;

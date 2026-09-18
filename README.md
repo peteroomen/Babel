@@ -18,6 +18,10 @@ BABEL is a digital-first solo / 2–4 leader cooperative-competitive board game.
 
 Rules explicitly marked **TUNEABLE** in the GDD are balance values. Do not casually change structural rules during the first implementation milestone. If a rule blocks implementation or produces an obvious contradiction, document it rather than silently redesigning it.
 
+The live default is canon v0.5: rolled Heaven uses the adopted player-count
+cadence. `V04_RULES` remains available as the frozen fixed-arrival v0.4 ruleset
+for historical comparisons.
+
 ## First playable goal
 
 A complete local hot-seat game for 2–4 Leaders (solo controls two Leaders) with:
@@ -84,6 +88,10 @@ npm run dev       # hot-seat app
 - **Milestone 5 — the compact card layer.** Complete. The three Schemes with
   hidden hands, and the six Confusion effects with the deck growing as Babel
   escalates. **Canon v0.1 is now fully playable.**
+- **Canon v0.5 cadence adoption.** Complete. Heaven's Stage I/II/III arrival
+  cycles now scale by the 2/3/4-Leader table size from the scheduled first
+  Beacon round, while `V04_RULES` keeps historical fixed-arrival comparisons
+  reproducible.
 - **Milestone 6 — playtest instrumentation.** Next: per-game telemetry and
   deterministic replay from seed plus command log.
 

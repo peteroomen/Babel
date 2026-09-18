@@ -1,4 +1,4 @@
-import { CANON_RULES, ROLLED_HEAVEN } from '@babel-game/game-data';
+import { V04_ROLLED_HEAVEN, V04_RULES } from '@babel-game/game-data';
 import type { Variant } from './variants.js';
 
 type Cycle = readonly [readonly number[], readonly number[], readonly number[]];
@@ -11,8 +11,8 @@ const cadenceVariant = (id: string, label: string, note: string, cycle: Cycle): 
   label,
   note,
   rules: {
-    ...CANON_RULES,
-    heavenSpawn: { ...ROLLED_HEAVEN!, cadenceByStage: cycle },
+    ...V04_RULES,
+    heavenSpawn: { ...V04_ROLLED_HEAVEN!, cadenceByStage: cycle },
   },
 });
 
@@ -31,7 +31,7 @@ const candidate = (players: number, rates: readonly [number, number, number]): V
         id: `p${players}-1-2-2`,
         label: `${players}p 1/2/2 canon`,
         note: 'Canon control; no cadence override. Historical balance stats predate repairs.',
-        rules: CANON_RULES,
+        rules: V04_RULES,
       }
     : cadenceVariant(
         `p${players}-${rates.join('-')}`,

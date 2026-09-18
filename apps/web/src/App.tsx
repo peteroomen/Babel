@@ -28,6 +28,7 @@ import {
   getTowerSupportGroups,
   getLegalActions,
   getLegalTilePlacements,
+  heavenArrivalsForRound,
   hitsRemaining,
   isPassableAt,
   neighbours,
@@ -212,6 +213,15 @@ export function App() {
 
   const isBot = Boolean(aiSeats[active]);
   const sameKind = state.rules.barterMode === 'sameKind';
+  const scheduledArrivals = state.rules.heavenSpawn
+    ? heavenArrivalsForRound(
+        state.rules.heavenSpawn,
+        state.order.length,
+        state.stage,
+        state.round,
+        state.beacons.length,
+      )
+    : state.beacons.length;
 
   const assigned = Object.values(hits).reduce((sum, n) => sum + n, 0);
   const successes = state.pendingAttack?.successes ?? 0;
@@ -499,7 +509,7 @@ export function App() {
                   />
                   <Choice
                     label="Heaven arrives"
-                    hint="v0.3 rolls a d6 on the Stage's table for what comes and a die among the Beacons for where — one, then two a round. Canon sent one Host out of every Beacon, so the amount of Heaven was a side effect of how many people were playing."
+                    hint="v0.5 rolls a d6 for what comes and uses the Beacons for where. With 2 Leaders, Stages II and III skip one round in every four; with 3, they alternate one and two Hosts; with 4, they send two. The timing never resets when the Stage changes."
                     options={[
                       { value: 'rolled', label: 'Rolled' },
                       { value: 'perBeacon', label: 'One per Beacon' },
@@ -732,7 +742,7 @@ export function App() {
           ) : state.pendingBeacon ? (
             <Bar
               title="Where does Heaven land?"
-              hint={`${state.pendingBeacon.sites.length} legal frontier tiles are lit. Every Beacon spawns a Host each Heaven Phase, for the rest of the game.`}
+              hint={`${state.pendingBeacon.sites.length} legal frontier tiles are lit. Beacons determine where Hosts arrive; the round, Stage, and table size determine how many.`}
             />
           ) : state.phase === 'confusion' && state.confusion.card ? (
             <Bar title={`${CONFUSION[state.confusion.card].label} revealed`} hint={CONFUSION[state.confusion.card].text}>
@@ -783,8 +793,16 @@ export function App() {
               title={`Heaven Phase · round ${state.round}`}
               hint={
                 state.hosts.length === 0
-                  ? 'Nothing stirs yet.'
-                  : `${state.hosts.length} Host${state.hosts.length === 1 ? '' : 's'} advance, then every Beacon spawns another.`
+                  ? `Nothing stirs yet. ${
+                      state.rules.heavenSpawn
+                        ? `${scheduledArrivals} Host${scheduledArrivals === 1 ? '' : 's'} scheduled after movement.`
+                        : 'Open Beacons spawn after movement.'
+                    }`
+                  : `${state.hosts.length} Host${state.hosts.length === 1 ? '' : 's'} advance, then ${
+                      state.rules.heavenSpawn
+                        ? `${scheduledArrivals} Host${scheduledArrivals === 1 ? '' : 's'} arrive from the open Beacons.`
+                        : 'every Beacon spawns another.'
+                    }`
               }
             >
               {mode.kind === 'prophet' ? (

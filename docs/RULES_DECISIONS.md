@@ -273,3 +273,27 @@ selected Tower's owner receives Prestige for a successful support hit.
 
 **Status:** adopted for implementation review 2026-09-17. The UI asks only when
 a feature has multiple Towers; other callers use the deterministic fallback.
+
+---
+
+## RD-015 — Heaven cadence scales by player count from one absolute anchor
+
+**Canon:** The v0.4 rolled table printed fixed arrivals of 1 / 2 / 2 by Stage.
+The cadence experiment tested repeating integer cycles while preserving the
+same d6 composition and Beacon geography.
+
+**Decision:** v0.5 keeps Stage I at one Host for every supported table size.
+For two Leaders, Stages II and III repeat `[0, 1, 1, 1]`; for three Leaders,
+they repeat `[1, 2]`; for four Leaders, they remain `[2]`. The index is the
+absolute round offset from the scheduled first Beacon round in `SCALING`, so a
+deferred Beacon or a Stage transition never grants a new grace period or stores
+spawn debt. With no open Beacon, no Hosts spawn.
+
+An explicit `cadenceByStage` on a scenario or experiment takes precedence over
+the canonical count table; when neither is present, `arrivals` remains the
+legacy fallback. `V04_RULES` and `V04_ROLLED_HEAVEN` remain frozen for the
+historical comparisons and cadence measurements.
+
+**Status:** adopted 2026-09-18 as canon v0.5. Implemented in the shared Heaven
+query, browser setup, and regression tests. No Host statistics, Beacon policy,
+Babel costs/height, or AI strategy changed.

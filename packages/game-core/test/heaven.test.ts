@@ -172,7 +172,7 @@ describe('Beacons (GDD §13)', () => {
 
   it('spawns one Host per Beacon each phase', () => {
     const board: Board = { '1,0': land(), '2,0': land() };
-    const state = game(board, { beacons: [{ x: 2, y: 0 }] });
+    const state = game(board, { beacons: [{ x: 2, y: 0 }], rules: V02_RULES });
 
     const first = resolveHeavenPhase(state);
     expect(first.state.hosts).toHaveLength(1);
@@ -184,7 +184,7 @@ describe('Beacons (GDD §13)', () => {
 
   it('spawns only Ophanim before Stage III', () => {
     const board: Board = { '1,0': land(), '2,0': land() };
-    let state = game(board, { beacons: [{ x: 2, y: 0 }], stage: 2 });
+    let state = game(board, { beacons: [{ x: 2, y: 0 }], stage: 2, rules: V02_RULES });
     for (let i = 0; i < 20; i++) state = resolveHeavenPhase(state).state;
     expect(state.hosts.length).toBeGreaterThan(0);
     expect(state.hosts.every((h) => h.kind === 'ophanim')).toBe(true);
