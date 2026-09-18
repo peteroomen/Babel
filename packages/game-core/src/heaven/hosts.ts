@@ -28,7 +28,7 @@ export function rollHostKind(rng: RngState, stage: number): [HostKind, RngState]
 }
 
 export function newHost(id: string, kind: HostKind, at: Coord): Host {
-  return { id, kind, at, shieldUp: HOSTS[kind].shield };
+  return { id, kind, at, shieldUp: HOSTS[kind].shield, damage: 0 };
 }
 
 /**

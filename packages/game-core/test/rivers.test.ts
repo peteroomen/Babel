@@ -100,6 +100,12 @@ describe('Prestige for lengthening it', () => {
     expect(riverPrestigeFor(START, upstream, straight, 0, RIVER_RULES())).toBe(1);
   });
 
+  it('does not pay again when a shortcut reduced the current reach below its record', () => {
+    /* A saved high-water mark survives loops and shortcuts: growing from the
+       current reach 1 to 2 is still below the previously recorded reach 3. */
+    expect(riverPrestigeFor(START, upstream, straight, 0, RIVER_RULES(), 0, undefined, 3)).toBe(0);
+  });
+
   it('pays nothing for a river tile that never touches Babel’s water', () => {
     const away = { x: 1, y: -1 };
     const gain = riverGainFor(START, away, straight, 1);
@@ -156,10 +162,26 @@ describe('Prestige for lengthening it', () => {
     }).state;
 
     expect(after.leaders[me]!.prestige).toBe(before + 1);
+    expect(after.riverReachRecord).toBe(2);
     const awards = after.log.filter(
       (event) => event.type === 'prestigeGained' && event.source === 'river',
     );
     expect(awards).toHaveLength(1);
+  });
+
+  it('preserves a higher river record through a shortcut-era placement', () => {
+    let state: GameState = setupGame(['A', 'B'], 'river-record', RIVER_RULES());
+    state = {
+      ...state,
+      riverReachRecord: 3,
+      drawnTile: { terrain: 'farmland', river: 'straight' },
+    };
+    const me = state.order[0]!;
+    const after = applyMove(state, {
+      type: 'placeTile', player: me, at: upstream, rotation: 0,
+    }).state;
+    expect(after.leaders[me]!.prestige).toBe(state.leaders[me]!.prestige);
+    expect(after.riverReachRecord).toBe(3);
   });
 });
 

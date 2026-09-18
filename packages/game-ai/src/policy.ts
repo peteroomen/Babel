@@ -10,8 +10,10 @@ import {
 } from '@babel-game/game-data';
 import {
   babelRiverDistances,
+  babelRiverReach,
   coordKey,
   distancesToBabel,
+  hitsRemaining,
   getLegalTilePlacements,
   previewPlacement,
   riverPrestigeEarned,
@@ -239,6 +241,7 @@ export function bestPlacement(
           state.rules,
           riverEarned,
           riverBefore,
+          state.riverReachRecord ?? babelRiverReach(state.board),
         );
         if (reward > riverReward) {
           riverReward = reward;
@@ -493,10 +496,7 @@ export function chooseAction(
     const price = state.rules.attackDieCost;
     if (!price) return attack.dice;
 
-    const hitsNeeded = state.hosts.reduce(
-      (sum, host) => sum + (host.kind === 'seraph' && host.shieldUp ? 2 : 1),
-      0,
-    );
+    const hitsNeeded = state.hosts.reduce((sum, host) => sum + hitsRemaining(host), 0);
     const worthRolling = Math.min(attack.dice, Math.max(1, hitsNeeded * 2));
     const held = leader.resources[price.resource];
     const spare = besieged ? held : held - (goal(state, me, archetype)[price.resource] ?? 0);
@@ -517,10 +517,7 @@ export function chooseAction(
   const extraDice = ((): number => {
     const munitions = state.rules.munitions;
     if (!munitions || !attack) return 0;
-    const need = state.hosts.reduce(
-      (sum, host) => sum + (host.kind === 'seraph' && host.shieldUp ? 2 : 1),
-      0,
-    );
+    const need = state.hosts.reduce((sum, host) => sum + hitsRemaining(host), 0);
     const short = Math.max(0, need - attackDice);
     const plan = goal(state, me, archetype);
     let afford = munitions.maxExtraDice;

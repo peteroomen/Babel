@@ -1,6 +1,9 @@
 import { COMBAT_DIE_BONUS, HOSTS } from '@babel-game/game-data';
 import { rollD6, type RngState } from '../rng/index.js';
-import type { Host } from '../state/types.js';
+import { getConnectedFeature } from '../features/index.js';
+import { coordKey } from '../map/edges.js';
+import { hostDefence } from '../heaven/beacons.js';
+import type { GameState, Host } from '../state/types.js';
 
 export type AttackRoll = {
   readonly rolls: number[];
@@ -42,7 +45,59 @@ export function rollAttack(
 
 /** How many more hits this Host can take before it dies. */
 export const hitsRemaining = (host: Host): number =>
-  HOSTS[host.kind].hits - (HOSTS[host.kind].shield && !host.shieldUp ? 1 : 0);
+  Math.max(
+    0,
+    HOSTS[host.kind].hits -
+      (typeof host.damage === 'number'
+        ? host.damage
+        : HOSTS[host.kind].shield && !host.shieldUp
+          ? 1
+          : 0),
+  );
+
+/**
+ * Effective Defence for a Host, including additive Herald auras from other
+ * Hosts in the same connected feature. This is the sole aura calculation used
+ * by combat, AI and the UI.
+ */
+export function effectiveHostDefence(state: GameState, host: Host): number {
+  const feature = new Set(getConnectedFeature(state.board, host.at));
+  const aura = state.hosts
+    .filter((other) => other.id !== host.id && HOSTS[other.kind].aura > 0)
+    .filter((other) => feature.has(coordKey(other.at)))
+    .reduce((sum, other) => sum + HOSTS[other.kind].aura, 0);
+  return hostDefence(state.order.length, state.stage, state.rules, host.kind) + aura;
+}
+
+/** Numeric ordering keeps h2 ahead of h10 while retaining a stable fallback. */
+export function compareHostIds(a: string, b: string): number {
+  const am = /^h(\d+)$/.exec(a);
+  const bm = /^h(\d+)$/.exec(b);
+  if (am && bm) return Number(am[1]) - Number(bm[1]);
+  return a.localeCompare(b);
+}
+
+export type TowerSupportGroup = {
+  readonly feature: string;
+  readonly towers: readonly string[];
+};
+
+/** Occupied features where at least one non-Warded Host can receive support. */
+export function getTowerSupportGroups(state: GameState): TowerSupportGroup[] {
+  const groups = new Map<string, string[]>();
+  for (const [key, building] of Object.entries(state.buildings)) {
+    if (building.type !== 'tower') continue;
+    const [x, y] = key.split(',').map(Number) as [number, number];
+    const members = getConnectedFeature(state.board, { x, y });
+    const eligible = state.hosts.some(
+      (host) => members.includes(coordKey(host.at)) && !HOSTS[host.kind].wardedFromTowers,
+    );
+    if (!eligible) continue;
+    const feature = [...members].sort().join('|');
+    groups.set(feature, [...(groups.get(feature) ?? []), key]);
+  }
+  return [...groups.entries()].map(([feature, towers]) => ({ feature, towers }));
+}
 
 export type HitOutcome = {
   readonly host: Host | null;
@@ -55,10 +110,22 @@ export type HitOutcome = {
  * and the second kills it; a removed Shield stays removed between turns.
  */
 export function applyHit(host: Host): HitOutcome {
-  if (HOSTS[host.kind].shield && host.shieldUp) {
-    return { host: { ...host, shieldUp: false }, shieldBroken: true, killed: false };
+  const spec = HOSTS[host.kind];
+  const damage =
+    typeof host.damage === 'number'
+      ? host.damage
+      : spec.shield && !host.shieldUp
+        ? 1
+        : 0;
+  const shieldBroken = spec.shield && host.shieldUp;
+  if (damage + 1 >= spec.hits) {
+    return { host: null, shieldBroken: false, killed: true };
   }
-  return { host: null, shieldBroken: false, killed: true };
+  return {
+    host: { ...host, damage: damage + 1, shieldUp: shieldBroken ? false : host.shieldUp },
+    shieldBroken,
+    killed: false,
+  };
 }
 
 /**

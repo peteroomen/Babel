@@ -130,6 +130,7 @@ export function setupGame(
     freeBarterUsed: false,
     falseProphet: null,
     babel: { stack: [] },
+    riverReachRecord: 1,
     beacons: [],
     beaconCharge: [],
     hosts: [],

@@ -27,7 +27,15 @@ import {
   drawCard,
   isActionBlockedByConfusion,
 } from '../cards/index.js';
-import { applyHit, dieHits, rollAttack, validateAssignments } from '../combat/index.js';
+import {
+  applyHit,
+  compareHostIds,
+  dieHits,
+  effectiveHostDefence,
+  getTowerSupportGroups,
+  rollAttack,
+  validateAssignments,
+} from '../combat/index.js';
 import { affordableDice } from '../actions/legal.js';
 import { getLegalBeaconSites, hostDefence } from '../heaven/beacons.js';
 import { isPassableAt } from '../heaven/path.js';
@@ -49,7 +57,7 @@ import {
 } from '../buildings/index.js';
 import { getConnectedFeature } from '../features/index.js';
 import { rollD6 } from '../rng/index.js';
-import { riverPrestigeEarned, riverPrestigeFor } from '../rivers/index.js';
+import { babelRiverReach, riverPrestigeEarned, riverPrestigeFor } from '../rivers/index.js';
 import {
   canonicalWall,
   getLegalWallEdges,
@@ -58,7 +66,7 @@ import {
 } from '../walls/index.js';
 import { resolveHarvest } from '../economy/harvest.js';
 import { placementPayout } from '../economy/payout.js';
-import { coordKey, neighbours } from '../map/edges.js';
+import { coordKey, neighbours, type Coord } from '../map/edges.js';
 import { isLegalPlacement, type Board } from '../map/placement.js';
 import { nextInt } from '../rng/index.js';
 import { drawPlaceableTile, fillReserve } from './setup.js';
@@ -306,6 +314,7 @@ function categoryOf(type: Command['type']): ActionCategory | null {
     case 'buildBabel':
       return 'babel';
     case 'attack':
+    case 'assignHits':
       return 'attack';
     case 'muster':
       return 'muster';
@@ -437,6 +446,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
     case 'placeTile': {
       if (state.phase === 'gameOver') throw new Error('the game is over');
       if (state.phase === 'heaven') throw new Error('the Heaven Phase must be resolved');
+      if (state.phase !== 'turns') throw new Error('the Confusion decision must be resolved');
       if (state.pendingVote) throw new Error('a vote is open');
       if (state.pendingBeacon) throw new Error('a Beacon must be placed');
       if (command.player !== currentPlayer(state)) throw new Error('not your turn');
@@ -537,6 +547,8 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         command.rotation,
         state.rules,
         riverPrestigeEarned(state, command.player),
+        undefined,
+        state.riverReachRecord ?? babelRiverReach(state.board),
       );
       if (riverReward > 0) {
         events.push({
@@ -578,7 +590,15 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         }
       }
 
-      return commit({ ...next, drawnTile: null, turnStep: 'action' });
+      return commit({
+        ...next,
+        riverReachRecord: Math.max(
+          state.riverReachRecord ?? babelRiverReach(state.board),
+          babelRiverReach(board),
+        ),
+        drawnTile: null,
+        turnStep: 'action',
+      });
     }
 
     case 'buildHarvester': {
@@ -951,31 +971,40 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
     case 'attack': {
       requireActionPhase(state, command.player, 'attack');
       if (state.hosts.length === 0) throw new Error('there are no Hosts to attack');
-
-      /* The easiest target on the board sets the bar a die has to clear to
-         count at all; assignment then checks each hit against its own target. */
-      /**
-       * A Herald raises the Defence of everything standing with it, so the
-       * answer is to shoot the Herald first — a target-priority decision the
-       * table does not otherwise have to make. The aura never applies to the
-       * Herald itself, or a pair of them would be unkillable.
-       */
-      const auraAt = (host: GameState['hosts'][number]) =>
-        state.hosts
-          .filter((other) => other.id !== host.id && HOSTS[other.kind].aura > 0)
-          .filter((other) =>
-            getConnectedFeature(state.board, other.at).includes(coordKey(host.at)),
-          )
-          .reduce((sum, other) => sum + HOSTS[other.kind].aura, 0);
-      const defenceOf = (host: GameState['hosts'][number]) =>
-        hostDefence(state.order.length, state.stage, state.rules, host.kind) + auraAt(host);
-      const defence = Math.min(...state.hosts.map(defenceOf));
       const bonus = state.rules.combatDieBonus;
       let rng = state.rng;
       let hosts = [...state.hosts];
       let towerSeq = state.hostSeq;
       let leaders = state.leaders;
       let combatPrestige = 0;
+
+      const combatState = (): GameState => ({ ...state, hosts });
+      const defenceOf = (host: GameState['hosts'][number]) =>
+        effectiveHostDefence(combatState(), host);
+
+      /**
+       * Towers in one connected feature share one support die. A caller may
+       * choose the Tower key for each merged feature; absent a choice, object
+       * insertion order preserves the oldest surviving Tower fallback.
+       */
+      const featureKey = (at: Coord) => [...getConnectedFeature(state.board, at)].sort().join('|');
+      const groups = getTowerSupportGroups(state).map((group) =>
+        group.towers.map((key) => [key, state.buildings[key]] as const),
+      );
+      const selected = command.towerSupport ?? [];
+      const selectedFeatures = new Set<string>();
+      for (const key of selected) {
+        const building = state.buildings[key];
+        if (!building || building.type !== TOWER) throw new Error(`unknown Tower ${key}`);
+        const [x, y] = key.split(',').map(Number) as [number, number];
+        const groupKey = featureKey({ x, y });
+        const occupied = getTowerSupportGroups(state).some((group) => group.towers.includes(key));
+        if (!occupied) throw new Error(`Tower ${key} cannot provide support here`);
+        if (selectedFeatures.has(groupKey)) {
+          throw new Error('choose only one support Tower per feature');
+        }
+        selectedFeatures.add(groupKey);
+      }
 
       /**
        * GDD §16: Towers do not fire during Heaven's turn. When any player
@@ -988,8 +1017,11 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
        * result is deterministic and the attacker is not handed an extra
        * micro-decision every Attack.
        */
-      for (const [key, building] of Object.entries(state.buildings)) {
-        if (building.type !== TOWER) continue;
+      for (const group of groups) {
+        const chosenKey = selected.find((key) => group.some(([towerKey]) => towerKey === key)) ?? group[0]?.[0];
+        if (!chosenKey) continue;
+        const building = state.buildings[chosenKey] as (typeof state.buildings)[string];
+        const key = chosenKey;
         const [tx, ty] = key.split(',').map(Number) as [number, number];
         const feature = new Set(getConnectedFeature(state.board, { x: tx, y: ty }));
         const inFeature = hosts
@@ -997,7 +1029,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
           /* A Warded Host is beyond prepared ground: only an Army reaches it,
              so a table that has settled into Towers has to muster again. */
           .filter((host) => !HOSTS[host.kind].wardedFromTowers)
-          .sort((l, r) => l.id.localeCompare(r.id));
+          .sort((l, r) => compareHostIds(l.id, r.id));
         if (inFeature.length === 0) continue;
 
         const [roll, nextRng] = rollD6(rng);
@@ -1063,6 +1095,11 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         };
       }
 
+      /* Towers resolve first. Army Defence is computed from the surviving
+         state, so a Tower-killed Herald cannot continue protecting its targets. */
+      const defence = hosts.length > 0
+        ? Math.min(...hosts.map(defenceOf))
+        : hostDefence(state.order.length, state.stage, state.rules);
       const leader = leaders[command.player] as GameState['leaders'][string];
 
       /**
@@ -1184,8 +1221,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       const invalid = validateAssignments(state.hosts, command.assignments, pending.successes, {
         rolls: pending.rolls,
         bonus: state.rules.combatDieBonus,
-        defenceOf: (host) =>
-          hostDefence(state.order.length, state.stage, state.rules, host.kind),
+        defenceOf: (host) => effectiveHostDefence(state, host),
       });
       if (invalid) throw new Error(invalid);
 

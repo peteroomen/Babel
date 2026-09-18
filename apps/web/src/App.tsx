@@ -11,6 +11,7 @@ import {
   CANON_RULES,
   CANON_WALLS,
   CONFUSION,
+  HOSTS,
   RESOURCE_TYPES,
   ROLLED_HEAVEN,
   SCHEMES,
@@ -23,6 +24,8 @@ import {
   applyMove,
   coordKey,
   currentPlayer,
+  effectiveHostDefence,
+  getTowerSupportGroups,
   getLegalActions,
   getLegalTilePlacements,
   hitsRemaining,
@@ -30,6 +33,7 @@ import {
   neighbours,
   previewPlacement,
   setupGame,
+  validateAssignments,
   type Command,
   type Coord,
   type GameState,
@@ -66,7 +70,10 @@ type Mode =
   | { kind: 'monument' }
   | { kind: 'walls' }
   | { kind: 'barter' }
-  | { kind: 'prophet'; hostId: string | null };
+  | { kind: 'prophet'; hostId: string | null }
+  | { kind: 'attackTowers'; choices: readonly string[] };
+
+type TowerSupportGroup = { readonly feature: string; readonly towers: readonly string[] };
 
 /** A labelled row of mutually exclusive choices. */
 function Choice<T extends string | number>({
@@ -127,6 +134,7 @@ export function App() {
   const [mode, setMode] = useState<Mode>({ kind: 'idle' });
   const [spend, setSpend] = useState<ResourceType[]>([]);
   const [hits, setHits] = useState<Record<string, number>>({});
+  const [assignmentError, setAssignmentError] = useState<string | null>(null);
   const [wallPicks, setWallPicks] = useState<Coord extends never ? never : { a: Coord; b: Coord }[]>(
     [],
   );
@@ -151,6 +159,10 @@ export function App() {
   const active = currentPlayer(state);
   const leader = state.leaders[active];
   const legal = useMemo(() => getLegalActions(state, active), [state, active]);
+  const towerSupportGroups = useMemo<TowerSupportGroup[]>(
+    () => getTowerSupportGroups(state).filter((group) => group.towers.length > 1),
+    [state],
+  );
 
   const selectedOption = selected
     ? options.find((o) => coordKey(o.at) === coordKey(selected))
@@ -173,6 +185,7 @@ export function App() {
     setMode({ kind: 'idle' });
     setSpend([]);
     setHits({});
+    setAssignmentError(null);
     setWallPicks([]);
   };
   const dispatch = (command: Command) => {
@@ -205,11 +218,28 @@ export function App() {
   const tapHost = (id: string) => {
     const host = state.hosts.find((h) => h.id === id);
     if (!host) return;
-    setHits((current) => {
-      const now = current[id] ?? 0;
-      const max = Math.min(hitsRemaining(host), successes - assigned + now);
-      return { ...current, [id]: now >= max ? 0 : now + 1 };
-    });
+    const now = hits[id] ?? 0;
+    const max = Math.min(hitsRemaining(host), successes - assigned + now);
+    const pending = state.pendingAttack;
+    if (!pending) return;
+    const valid = (count: number) => {
+      const candidate = { ...hits, [id]: count };
+      return validateAssignments(state.hosts, candidate, pending.successes, {
+        rolls: pending.rolls,
+        bonus: state.rules.combatDieBonus,
+        defenceOf: (target) => effectiveHostDefence(state, target),
+      }) === null;
+    };
+    /* Cycle through legal counts so a low die cannot trap the picker at an
+       invalid nonzero value; zero is always available to clear a target. */
+    const candidates = Array.from({ length: max + 1 }, (_, i) => (now + i + 1) % (max + 1));
+    const nextCount = candidates.find(valid);
+    if (nextCount === undefined || nextCount === now) {
+      setAssignmentError(`No available assignment for ${HOST_LABEL[host.kind]} at this roll`);
+      return;
+    }
+    setHits({ ...hits, [id]: nextCount });
+    setAssignmentError(null);
   };
 
   const rail = (
@@ -784,11 +814,62 @@ export function App() {
                 </>
               )}
             </Bar>
+          ) : mode.kind === 'attackTowers' ? (
+            <Bar
+              title="Choose Tower support"
+              hint="One support die is rolled per occupied feature. Choose one Tower in each merged feature; untouched features use the oldest surviving Tower."
+            >
+              {towerSupportGroups.flatMap((group) =>
+                group.towers.map((key) => {
+                  const selected = mode.choices.includes(key);
+                  return (
+                    <Act
+                      key={key}
+                      label={`Tower ${key} · ${state.leaders[state.buildings[key]!.owner]?.name ?? state.buildings[key]!.owner}`}
+                      variant={selected ? 'default' : 'outline'}
+                      hint={selected ? 'Selected for this feature.' : 'Select this Tower for its feature.'}
+                      onClick={() =>
+                        setMode((current) => {
+                          if (current.kind !== 'attackTowers') return current;
+                          return {
+                            kind: 'attackTowers',
+                            choices: [
+                              ...current.choices.filter((choice) => !group.towers.includes(choice)),
+                              key,
+                            ],
+                          };
+                        })
+                      }
+                    />
+                  );
+                }),
+              )}
+              <Act
+                label="Attack"
+                variant="accent"
+                hint="Resolve support dice first, then roll your Army."
+                onClick={() =>
+                  dispatch({
+                    type: 'attack',
+                    player: active,
+                    towerSupport: mode.choices,
+                  })
+                }
+              />
+              <Act
+                label="Cancel"
+                hint="Return to the action bar."
+                onClick={() => setMode({ kind: 'idle' })}
+              />
+            </Bar>
           ) : state.pendingAttack ? (
             <Bar
               title={`${assigned}/${successes} hits assigned`}
-              hint={`Rolled ${state.pendingAttack.rolls.join(', ')} vs Defence ${state.pendingAttack.defence}. A Seraph needs two — the first breaks its shield.`}
+              hint={`Rolled ${state.pendingAttack.rolls.join(', ')}. Select targets with enough dice to meet each Host's effective Defence.`}
             >
+              {assignmentError && (
+                <span className="text-destructive text-xs" role="alert">{assignmentError}</span>
+              )}
               {state.hosts.map((host) => (
                 <Act
                   key={host.id}
@@ -797,9 +878,9 @@ export function App() {
                   }`}
                   variant={hits[host.id] ? 'default' : 'outline'}
                   hint={
-                    host.kind === 'seraph' && host.shieldUp
-                      ? 'Shielded: two hits to kill.'
-                      : 'One hit kills it.'
+                    `Effective Defence ${effectiveHostDefence(state, host)} · ${hitsRemaining(host)} of ${HOSTS[host.kind].hits} hit${HOSTS[host.kind].hits === 1 ? '' : 's'} remaining${
+                      host.kind === 'seraph' && host.shieldUp ? '; first hit breaks its shield' : ''
+                    }.`
                   }
                   onClick={() => tapHost(host.id)}
                 />
@@ -966,7 +1047,14 @@ export function App() {
                 onMonument={() => setMode({ kind: 'monument' })}
                 onWalls={() => setMode({ kind: 'walls' })}
                 onBabel={() => dispatch({ type: 'buildBabel', player: active })}
-                onAttack={() => dispatch({ type: 'attack', player: active })}
+                onAttack={() =>
+                  towerSupportGroups.length > 0
+                    ? setMode({
+                        kind: 'attackTowers',
+                        choices: towerSupportGroups.map((group) => group.towers[0]!),
+                      })
+                    : dispatch({ type: 'attack', player: active })
+                }
                 onMuster={() => dispatch({ type: 'muster', player: active })}
                 onScheme={() => dispatch({ type: 'buyScheme', player: active })}
                 onBarter={() => setMode({ kind: 'barter' })}

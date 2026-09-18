@@ -4,12 +4,14 @@ import {
   coordKey,
   getConnectedFeature,
   getLegalTilePlacements,
+  hitsRemaining,
   riverEdgesOf,
   type Coord,
   type GameState,
   type Rotation,
   type TileDraw,
 } from '@babel-game/game-core';
+import { HOSTS } from '@babel-game/game-data';
 import { STAGE_LABEL, type HostKind } from '@babel-game/game-data';
 import {
   BEACON_LIGHT,
@@ -788,6 +790,19 @@ export function Board({
             style={{ cursor: onHost ? 'pointer' : 'default' }}
           >
             <HostGlyph kind={host.kind} shieldUp={host.shieldUp} />
+            {HOSTS[host.kind].hits > 1 && (
+              <text
+                x={CELL - 7}
+                y={CELL - 7}
+                textAnchor="end"
+                fontSize={10}
+                fontWeight={700}
+                fill="#a33"
+                fontFamily="system-ui"
+              >
+                {hitsRemaining(host)}/{HOSTS[host.kind].hits}
+              </text>
+            )}
             {chosen > 0 && (
               <text
                 x={CELL / 2}

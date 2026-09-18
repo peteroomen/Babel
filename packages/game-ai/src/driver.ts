@@ -3,10 +3,10 @@ import {
   applyMove,
   coordKey,
   currentPlayer,
+  effectiveHostDefence,
   getLegalActions,
   hasWallBetween,
   hitsRemaining,
-  hostDefence,
   rollsBeating,
   stepOptions,
   type Command,
@@ -69,8 +69,7 @@ export function nextCommand(
      * unspent. Going easiest-first would strand them.
      */
     const bonus = state.rules.combatDieBonus;
-    const defenceOf = (host: (typeof state.hosts)[number]) =>
-      hostDefence(state.order.length, state.stage, state.rules, host.kind);
+    const defenceOf = (host: (typeof state.hosts)[number]) => effectiveHostDefence(state, host);
     const assignments: Record<string, number> = {};
     let spent = 0;
 

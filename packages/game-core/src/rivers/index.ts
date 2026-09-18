@@ -156,21 +156,22 @@ export function riverPrestigeFor(
   rules: RuleSet,
   earned = 0,
   before?: Record<string, number>,
+  recordedReach?: number,
 ): number {
   const rule = rules.riverPrestige;
   if (!rule || rule.perTile <= 0 || draw.river === 'none') return 0;
 
   const gain = riverGainFor(board, at, draw, rotation, before);
   if (!gain.joined) return 0;
-  if (rule.requireReach && gain.reachAfter <= gain.reachBefore) return 0;
+  const highWater = recordedReach ?? gain.reachBefore;
+  if (rule.requireReach && gain.reachAfter <= highWater) return 0;
 
   let award = rule.perTile;
   if (rule.milestone !== null && rule.milestone > 0) {
     /* How many multiples of `milestone` this placement carried the reach past.
        Usually one; more when the tile joins a chain that was already there. */
     const crossed =
-      Math.floor(gain.reachAfter / rule.milestone) -
-      Math.floor(gain.reachBefore / rule.milestone);
+      Math.floor(gain.reachAfter / rule.milestone) - Math.floor(highWater / rule.milestone);
     if (crossed <= 0) return 0;
     award = rule.perTile * crossed;
   }

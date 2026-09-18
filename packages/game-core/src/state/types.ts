@@ -55,6 +55,8 @@ export type Host = {
   readonly at: Coord;
   /** GDD §14: a Seraph's Shield, once broken, stays broken between turns. */
   readonly shieldUp: boolean;
+  /** Successful hits already applied. Optional for replay compatibility with pre-repair saves. */
+  readonly damage?: number;
 };
 
 /** An Attack that has rolled but not yet assigned its successful dice. */
@@ -101,6 +103,8 @@ export type GameState = {
   readonly board: Readonly<Record<string, PlacedTile>>;
   readonly buildings: Readonly<Record<string, Building>>;
   readonly babel: BabelState;
+  /** Furthest recorded upstream reach of Babel's river (high-water mark). */
+  readonly riverReachRecord?: number;
   /** GDD §13: where Heaven descends into the world. */
   /** GDD §17: temporary barricades on edges between land tiles. */
   readonly walls: readonly WallEdge[];
@@ -426,6 +430,8 @@ export type Command =
       readonly dice?: number;
       /** Extra dice bought with resources, where the rules allow Munitions. */
       readonly extraDice?: number;
+      /** Optional Tower keys, one selected support Tower per occupied feature. */
+      readonly towerSupport?: readonly string[];
     }
   /** Assign successful dice among Hosts after rolling. GDD §15. */
   | {

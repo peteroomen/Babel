@@ -254,3 +254,22 @@ action, and nobody converges on passing.
 
 **Status:** adopted 2026-09-15. Implemented in Milestone 5, and covered by a
 test that builds the deadlock case explicitly.
+
+---
+
+## RD-014 — One selected Tower supplies support per merged feature
+
+**Canon:** GDD §16 grants one targeted support die for each occupied feature
+containing a Tower.
+
+**Problem:** separate physical Towers can end up in one connected feature, but
+the text does not say whether each building fires or which owner receives the
+support Prestige.
+
+**Decision:** preserve every physical building, while allowing the attacker to
+select one Tower in each occupied feature. If no selection is supplied, the
+oldest surviving Tower (the first building in board state order) is used. The
+selected Tower's owner receives Prestige for a successful support hit.
+
+**Status:** adopted for implementation review 2026-09-17. The UI asks only when
+a feature has multiple Towers; other callers use the deterministic fallback.

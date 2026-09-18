@@ -4,6 +4,9 @@ Written from `CANON_RULES` in `packages/game-data/src/rules.ts`, which is the
 source of truth. Where this page and the GDD disagree, the GDD is the older
 document: it describes v0.1, and §§7, 11, 17 and 20 have been overtaken.
 
+The historical balance measurements in this repository predate the repairs
+below and must be rerun before they are used to tune the canon.
+
 ## Turn
 **Draw 1 tile → Place → Resolve resources/buildings → Take 1 action.**
 
@@ -67,9 +70,10 @@ a river tile that fits.
 ## Army
 Start with **1 Army die**. Muster: **1 Food + 1 Metal → +1 Army die**, max 5.
 
-Attack is free. Roll your Army dice: each is **d6 + 2 vs Host Defence**. Assign
-successful dice among any Hosts, hardest target first — a die that only beat a
-6 cannot be spent on a 7. One success = one hit.
+Attack costs the action but no resources. Roll your Army dice: each is **d6 + 2
+vs Host Defence**; a natural 6 always hits. Assign successful dice among any
+Hosts, hardest target first — a die that only beat a 6 cannot be spent on a 7.
+One success = one hit, and damage persists between turns.
 
 **+1 Prestige** per Host killed.
 
@@ -79,6 +83,9 @@ Cost: **2 Wood + 1 Metal**. One per connected feature. **+1 Prestige** to build.
 During any player's Attack action, each occupied Tower feature adds **1 targeted
 support die** against a Host in that feature. Same d6+2 test. Tower owner gets
 **+1 Prestige per successful support hit**. A Warded Host is immune to them.
+If a feature has multiple Towers, the attacker selects one Tower for that die;
+its owner receives the Prestige. Unselected features use the oldest surviving
+Tower.
 
 ## Heaven
 Existing Hosts move, resolve Babel impacts, then new Hosts arrive.
@@ -96,7 +103,7 @@ table for what comes; the open Beacons say where.
 |---|---|---|---|---|
 | Ophanim | 1 | 1 | base | The one everything else is measured against |
 | Warded | 1 | 3 | +2 | Tower dice cannot touch it |
-| Herald | 1 | 1 | base | +2 Defence to every Host beside it |
+| Herald | 1 | 1 | base | +2 Defence to every other Host in the same feature |
 | Colossus | 1 | 4 | +2 | Stops at the first building it reaches and razes it |
 | Swarm | 1 | 2 | base | Killing it leaves 3 Ophanim behind |
 

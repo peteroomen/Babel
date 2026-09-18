@@ -245,6 +245,33 @@ describe('striking Babel (GDD §2)', () => {
     expect(events).toContainEqual({ type: 'humanityLoses', reason: 'foundationBreached' });
   });
 
+  it('clears Foundation occupation when False Prophet redirects its occupier', () => {
+    const state = game(approach, {
+      hosts: [ophanim('h1', 0, 0), ophanim('h2', 1, 0)],
+      babel: { stack: [] },
+      falseProphet: { hostId: 'h1', to: { x: 1, y: 0 } },
+    });
+    const { state: after } = resolveHeavenPhase(state);
+    expect(after.phase).not.toBe('gameOver');
+    expect(after.hosts.find((host) => host.id === 'h2')?.at).toEqual({ x: 0, y: 0 });
+    expect(after.hosts.find((host) => host.id === 'h1')?.at).toEqual({ x: 1, y: 0 });
+  });
+
+  it('keeps Colossus building removals when the phase ends in loss', () => {
+    const state = game({ '1,0': land(), '2,0': land() }, {
+      hosts: [
+        { id: 'h1', kind: 'colossus', at: { x: 2, y: 0 }, shieldUp: false },
+        ophanim('h2', 0, 0),
+        ophanim('h3', 1, 0),
+      ],
+      babel: { stack: [] },
+      buildings: { '1,0': { type: 'tower', owner: 'p0' } },
+    });
+    const { state: after } = resolveHeavenPhase(state);
+    expect(after.phase).toBe('gameOver');
+    expect(after.buildings['1,0']).toBeUndefined();
+  });
+
   it('lets the occupying Host sit on the Foundation without re-triggering', () => {
     const state = game(approach, { hosts: [ophanim('h1', 0, 0)], babel: { stack: [] } });
     const { state: after } = resolveHeavenPhase(state);
