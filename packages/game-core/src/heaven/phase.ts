@@ -1,6 +1,7 @@
 import { HOSTS, SCALING, type HostKind, type LeaderCount, type RuleSet, type Stage } from '@babel-game/game-data';
 import { confusionIs } from '../cards/index.js';
 import { isPassableAt } from './path.js';
+import { babelDepartures, bankStepOptions, normalizeRegion, regionTransitions, type RegionCoord } from './banks.js';
 import { coordKey, type Coord } from '../map/edges.js';
 import { hasWallBetween, removeWallBetween, canonicalWall } from '../walls/index.js';
 import { nextInt, weightedPick } from '../rng/index.js';
@@ -10,7 +11,7 @@ import type { GameEvent, GameState, Host } from '../state/types.js';
 import { beaconSpawnsThisRound, beaconTier, getLegalBeaconSites, requiredBeacons } from './beacons.js';
 import { hostAtBabel, newHost, rollHostKind } from './hosts.js';
 
-export type HeavenPlan = Readonly<Record<string, readonly Coord[]>>;
+export type HeavenPlan = Readonly<Record<string, readonly RegionCoord[]>>;
 
 /**
  * Pure arrival query for rolled Heaven. Cadence cycles are anchored to the
@@ -79,15 +80,23 @@ export function resolveHeavenPhase(
      */
     if (state.falseProphet?.hostId === host.id) {
       const to = state.falseProphet.to;
-      if (isPassableAt(state.board, to, state.rules.impassableTerrain)) {
+      const bankOptions = state.rules.bankMode && !HOSTS[host.kind].flies
+        ? (coordKey(current.at) === coordKey(BABEL_COORD)
+          ? babelDepartures(state.board)
+          : regionTransitions(state.board, normalizeRegion(state.board, { ...current.at, ...(current.region === undefined ? {} : { region: current.region }) })))
+        : [];
+      if (state.rules.bankMode && !HOSTS[host.kind].flies
+        ? bankOptions.some((option) => coordKey(option) === coordKey(to) && (option.region ?? 0) === (to.region ?? 0))
+        : isPassableAt(state.board, to, state.rules.impassableTerrain)) {
         events.push({
           type: 'hostMoved',
           id: host.id,
           from: current.at,
           to,
+          ...(to.region === undefined ? {} : { region: to.region }),
           hadChoice: true,
         });
-        current = { ...current, at: to };
+        current = { ...current, at: { x: to.x, y: to.y }, ...(to.region === undefined ? {} : { region: to.region }) };
       }
       /* Occupation is physical: redirecting the Foundation's Host away clears
          the slot before later arrivals are resolved. */
@@ -106,14 +115,23 @@ export function resolveHeavenPhase(
       flies: HOSTS[host.kind].flies,
     };
     for (let point = 0; point < HOSTS[host.kind].movement + marching; point++) {
-      const options = stepOptions(state.board, current.at, undefined, how);
+      const bankOptions = state.rules.bankMode && !HOSTS[host.kind].flies
+        ? bankStepOptions(state.board, normalizeRegion(state.board, { ...current.at, ...(current.region === undefined ? {} : { region: current.region }) }))
+        : [];
+      const options = state.rules.bankMode && !HOSTS[host.kind].flies
+        ? bankOptions
+        : stepOptions(state.board, current.at, undefined, how);
       if (options.length === 0) break;
 
       /* Take the next square the players asked for, if it is a legal step. */
       const wanted = preferred.shift();
+      const wantedOption = wanted && options.find((option) => coordKey(option) === coordKey(wanted) &&
+        ((state.rules.bankMode && !HOSTS[host.kind].flies)
+          ? wanted.region !== undefined && (option as RegionCoord).region === wanted.region
+          : true));
       const chosen =
-        wanted && options.some((option) => coordKey(option) === coordKey(wanted))
-          ? wanted
+        wantedOption
+          ? wantedOption
           : (() => {
               const [pick, next] = nextInt(rng, options.length);
               rng = next;
@@ -140,9 +158,14 @@ export function resolveHeavenPhase(
         id: host.id,
         from: current.at,
         to: chosen,
+        ...((chosen as RegionCoord).region === undefined ? {} : { region: (chosen as RegionCoord).region }),
         hadChoice: options.length > 1,
       });
-      current = { ...current, at: chosen };
+      current = {
+        ...current,
+        at: { x: chosen.x, y: chosen.y },
+        ...((chosen as RegionCoord).region === undefined ? {} : { region: (chosen as RegionCoord).region }),
+      };
 
       /**
        * A Colossus goes after the economy rather than the Tower: it stops at
@@ -258,11 +281,11 @@ export function resolveHeavenPhase(
       const [kind, afterKind] = weightedPick(rng, weights);
       const [where, afterWhere] = nextInt(afterKind, state.beacons.length);
       rng = afterWhere;
-      const at = state.beacons[where] as Coord;
+      const at = state.beacons[where] as RegionCoord;
       hostSeq += 1;
       const host = newHost(`h${hostSeq}`, kind, at);
       spawned.push(host);
-      events.push({ type: 'hostSpawned', id: host.id, kind, at });
+      events.push({ type: 'hostSpawned', id: host.id, kind, at, ...(at.region === undefined ? {} : { region: at.region }) });
     }
   } else {
     /* GDD §13 as written: one Host per Beacon per round, subject to the gate's
@@ -281,7 +304,7 @@ export function resolveHeavenPhase(
       hostSeq += 1;
       const host = newHost(`h${hostSeq}`, kind, beacon);
       spawned.push(host);
-      events.push({ type: 'hostSpawned', id: host.id, kind, at: beacon });
+      events.push({ type: 'hostSpawned', id: host.id, kind, at: beacon, ...(beacon.region === undefined ? {} : { region: beacon.region }) });
     });
   }
 
@@ -356,7 +379,7 @@ export function openBeaconDecision(state: GameState): {
   const owed = beaconsOwed(state);
   if (owed <= 0) return { state: { ...state, pendingBeacon: null }, events: [] };
 
-  const sites = getLegalBeaconSites(state.board, state.beacons, state.rules.impassableTerrain);
+  const sites = getLegalBeaconSites(state.board, state.beacons, state.rules.impassableTerrain, state.rules.bankMode);
   if (sites.length === 0) {
     return {
       state: { ...state, pendingBeacon: null },

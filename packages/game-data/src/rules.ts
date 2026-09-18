@@ -52,7 +52,12 @@ export type HeavenCadence = readonly [
 /** Optional player-count cadence table; omitted counts use fixed arrivals. */
 export type HeavenCadenceByLeaderCount = Partial<Record<LeaderCount, HeavenCadence>>;
 
+/** Experimental river-bank model. Omitted means the live tile-wide rules. */
+export type BankMode = 'hosts' | 'resources';
+
 export type RuleSet = {
+  /** Experimental only; never set on CANON_RULES. */
+  readonly bankMode?: BankMode;
   readonly barterMode: BarterMode;
   /**
    * How many resource cards a Barter discards. GDD §8 says three.

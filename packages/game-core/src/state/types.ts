@@ -10,7 +10,7 @@ import type {
   Stage,
   TerrainType,
 } from '@babel-game/game-data';
-import type { Coord, Rotation } from '../map/edges.js';
+import type { Coord, RegionCoord, Rotation } from '../map/edges.js';
 import type { WallEdge } from '../walls/index.js';
 import type { RngState } from '../rng/index.js';
 
@@ -35,6 +35,8 @@ export type PlacedTile = TileDraw & { readonly rotation: Rotation };
 export type Building = {
   readonly type: StructureType;
   readonly owner: PlayerId;
+  /** Bank selected when this is a harvesting building; absent means region 0. */
+  readonly region?: number;
 };
 
 /**
@@ -53,6 +55,8 @@ export type Host = {
   readonly id: string;
   readonly kind: HostKind;
   readonly at: Coord;
+  /** Dry region occupied on river tiles in bank-aware variants. */
+  readonly region?: number;
   /** GDD §14: a Seraph's Shield, once broken, stays broken between turns. */
   readonly shieldUp: boolean;
   /** Successful hits already applied. Optional for replay compatibility with pre-repair saves. */
@@ -108,14 +112,14 @@ export type GameState = {
   /** GDD §13: where Heaven descends into the world. */
   /** GDD §17: temporary barricades on edges between land tiles. */
   readonly walls: readonly WallEdge[];
-  readonly beacons: readonly Coord[];
+  readonly beacons: readonly RegionCoord[];
   /**
    * Threat points each Beacon has saved, parallel to `beacons`. Empty unless
    * the rules pace Heaven by budget rather than one Host per Beacon per round.
    */
   readonly beaconCharge: readonly number[];
   readonly hosts: readonly Host[];
-  readonly pendingBeacon: { readonly sites: readonly Coord[] } | null;
+  readonly pendingBeacon: { readonly sites: readonly RegionCoord[] } | null;
   readonly pendingAttack: PendingAttack | null;
   /** GDD §19: the Confusion card in force this round, and who cancelled it. */
   readonly confusion: {
@@ -141,7 +145,7 @@ export type GameState = {
    */
   readonly freeBarterUsed: boolean;
   /** A Host redirected this Heaven Phase by False Prophet. GDD §18. */
-  readonly falseProphet: { readonly hostId: string; readonly to: Coord } | null;
+  readonly falseProphet: { readonly hostId: string; readonly to: RegionCoord } | null;
   /** Monotonic counter giving each spawned Host a unique id. */
   readonly hostSeq: number;
   /** The tile drawn at the start of the current turn, awaiting placement. */
@@ -218,6 +222,7 @@ export type GameEvent =
       readonly player: PlayerId;
       readonly at: Coord;
       readonly building: StructureType;
+      readonly region?: number;
     }
   | {
       readonly type: 'babelPieceBuilt';
@@ -263,7 +268,7 @@ export type GameEvent =
   | { readonly type: 'humanityWins'; readonly topPrestige: readonly PlayerId[] }
   | { readonly type: 'turnEnded'; readonly player: PlayerId }
   | { readonly type: 'heavenPhase'; readonly round: number }
-  | { readonly type: 'beaconPlaced'; readonly at: Coord; readonly total: number }
+  | { readonly type: 'beaconPlaced'; readonly at: Coord; readonly region?: number; readonly total: number }
   /** RD-009: a Beacon was owed but the map offered nowhere legal to put it. */
   | { readonly type: 'beaconDeferred'; readonly owed: number }
   | {
@@ -271,12 +276,14 @@ export type GameEvent =
       readonly id: string;
       readonly kind: HostKind;
       readonly at: Coord;
+      readonly region?: number;
     }
   | {
       readonly type: 'hostMoved';
       readonly id: string;
       readonly from: Coord;
       readonly to: Coord;
+      readonly region?: number;
       /** True when several equally short routes existed and one was chosen. */
       readonly hadChoice: boolean;
     }
@@ -398,6 +405,7 @@ export type Command =
       readonly player: PlayerId;
       readonly at: Coord;
       readonly building: StructureType;
+      readonly region?: number;
     }
   | { readonly type: 'buildTower'; readonly player: PlayerId; readonly at: Coord }
   | { readonly type: 'buildMonument'; readonly player: PlayerId; readonly at: Coord }
@@ -447,18 +455,18 @@ export type Command =
       readonly player: PlayerId;
       readonly scheme: SchemeId;
       readonly hostId?: string;
-      readonly to?: Coord;
+      readonly to?: RegionCoord;
     }
   /** Decline the Frenzied Works window, or the Confusion window. */
   | { readonly type: 'endTurn'; readonly player: PlayerId }
   | { readonly type: 'beginRound'; readonly player: PlayerId }
   /** Collective decisions, issuable by any Leader. See RD-008. */
-  | { readonly type: 'placeBeacon'; readonly player: PlayerId; readonly at: Coord }
+  | { readonly type: 'placeBeacon'; readonly player: PlayerId; readonly at: RegionCoord }
   | {
       readonly type: 'resolveHeaven';
       readonly player: PlayerId;
       /** Optional override of the default route for each Host. */
-      readonly plan?: Readonly<Record<string, readonly Coord[]>>;
+      readonly plan?: Readonly<Record<string, readonly RegionCoord[]>>;
     }
   | { readonly type: 'castVote'; readonly player: PlayerId; readonly option: number };
 

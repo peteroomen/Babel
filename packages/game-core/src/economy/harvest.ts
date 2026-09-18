@@ -1,10 +1,11 @@
 import { BUILDINGS, isHarvester, type ResourceType } from '@babel-game/game-data';
 import { buildingsInFeature, type Buildings } from '../buildings/index.js';
 import { isFeatureOccupied } from '../features/index.js';
+import { isDryFeatureOccupied, placementDryFeatureGroups } from '../features/banks.js';
 import type { Coord } from '../map/edges.js';
 import type { Board } from '../map/placement.js';
 import type { PlayerId, TileDraw } from '../state/types.js';
-import { basePayout } from './payout.js';
+import { basePayout, bankPlacementPayout } from './payout.js';
 
 export type HarvestTrigger = {
   /** Foreign owners paid, each receiving the placement's base payout. */
@@ -65,4 +66,31 @@ export function resolveHarvest(
     amount: base.amount,
     placerBonus: 1,
   };
+}
+
+/** Resource-bank variant of the foreign expansion trigger. River placements
+ * inspect both dry features, but each owner receives one placement payout. */
+export function resolveBankHarvest(
+  boardAfterPlacement: Board,
+  buildings: Buildings,
+  hosts: readonly import('../state/types.js').Host[],
+  at: Coord,
+  draw: TileDraw,
+  placer: PlayerId,
+): HarvestTrigger | null {
+  const base = bankPlacementPayout(boardAfterPlacement, hosts, at, draw);
+  if (!base) return null;
+  const clean = placementDryFeatureGroups(boardAfterPlacement, at)
+    .filter((group) => !isDryFeatureOccupied(boardAfterPlacement, group, hosts)).flat();
+  if (clean.length === 0) return null;
+  const owners = new Set<PlayerId>();
+  for (const feature of clean) {
+    const building = buildings[`${feature.x},${feature.y}`];
+    if (!building || building.owner === placer || !isHarvester(building.type)) continue;
+    if (BUILDINGS[building.type].resource !== base.resource) continue;
+    if ((building.region ?? 0) !== (feature.region ?? 0)) continue;
+    owners.add(building.owner);
+  }
+  if (owners.size === 0) return null;
+  return { owners: [...owners], resource: base.resource, amount: base.amount, placerBonus: 1 };
 }

@@ -9,6 +9,7 @@ export * from './economy/payout.js';
 export * from './economy/harvest.js';
 export * from './babel/index.js';
 export * from './heaven/path.js';
+export * from './heaven/banks.js';
 export * from './heaven/beacons.js';
 export * from './heaven/hosts.js';
 export * from './heaven/phase.js';

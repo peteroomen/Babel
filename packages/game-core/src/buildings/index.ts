@@ -8,6 +8,8 @@ import {
   type ResourceType,
 } from '@babel-game/game-data';
 import { getConnectedFeature } from '../features/index.js';
+import { getConnectedDryFeature } from '../features/banks.js';
+import { dryRegions } from '../heaven/banks.js';
 import { coordKey, type Coord } from '../map/edges.js';
 import { tileAt, type Board } from '../map/placement.js';
 import type { Building, LeaderState, PlayerId } from '../state/types.js';
@@ -51,11 +53,27 @@ export function buildingsInFeature(
     });
 }
 
+/** Bank-aware counterpart used only by the resource experiment. */
+export function buildingsInDryFeature(
+  board: Board,
+  buildings: Buildings,
+  at: Coord,
+  region = 0,
+): { key: string; building: Building }[] {
+  return getConnectedDryFeature(board, { ...at, region }).flatMap((node) => {
+    const building = buildings[coordKey(node)];
+    return building && (building.region ?? 0) === (node.region ?? 0)
+      ? [{ key: coordKey(node), building }]
+      : [];
+  });
+}
+
 export type BuildRejection =
   | 'noTile'
   | 'terrainMismatch'
   | 'tileOccupiedByBuilding'
   | 'alreadyOwnsInFeature'
+  | 'bankRequired'
   | 'cannotAfford';
 
 /**
@@ -72,13 +90,22 @@ export function canBuildHarvester(
   leader: LeaderState,
   at: Coord,
   type: BuildingType,
+  bankMode?: 'hosts' | 'resources',
+  region?: number,
 ): BuildRejection | null {
   const tile = tileAt(board, at);
   if (!tile) return 'noTile';
   if (BUILDINGS[type].terrain !== tile.terrain) return 'terrainMismatch';
   if (buildingAt(buildings, at)) return 'tileOccupiedByBuilding';
 
-  const owned = buildingsInFeature(board, buildings, at).some(
+  const selected = bankMode === 'resources' ? (region ?? 0) : undefined;
+  if (bankMode === 'resources' && dryRegions(board, at).length > 1 && region === undefined) return 'bankRequired';
+  if (bankMode === 'resources' && !dryRegions(board, at).some((candidate) => (candidate.region ?? 0) === selected)) {
+    return 'noTile';
+  }
+  const owned = (bankMode === 'resources'
+    ? buildingsInDryFeature(board, buildings, at, selected)
+    : buildingsInFeature(board, buildings, at)).some(
     ({ building }) => building.owner === leader.id && building.type === type,
   );
   if (owned) return 'alreadyOwnsInFeature';
@@ -92,15 +119,19 @@ export function getLegalBuildSites(
   board: Board,
   buildings: Buildings,
   leader: LeaderState,
-): { at: Coord; type: BuildingType }[] {
+  bankMode?: 'hosts' | 'resources',
+): { at: Coord; type: BuildingType; region?: number }[] {
   return Object.keys(board).flatMap((key) => {
     const [x, y] = key.split(',').map(Number) as [number, number];
     const at = { x, y };
     const type = BUILDING_FOR_TERRAIN[tileAt(board, at)!.terrain];
     if (!type) return [];
-    return canBuildHarvester(board, buildings, leader, at, type) === null
-      ? [{ at, type }]
-      : [];
+    if (bankMode === 'resources') {
+      return dryRegions(board, at).filter((region) => canBuildHarvester(
+        board, buildings, leader, at, type, bankMode, region.region,
+      ) === null).map((region) => ({ at, type, region: region.region }));
+    }
+    return canBuildHarvester(board, buildings, leader, at, type) === null ? [{ at, type }] : [];
   });
 }
 

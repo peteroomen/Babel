@@ -1,5 +1,5 @@
 import { HOSTS, SERAPH_CHANCE_STAGE_III, type HostKind } from '@babel-game/game-data';
-import { coordKey, type Coord } from '../map/edges.js';
+import { coordKey, type Coord, type RegionCoord } from '../map/edges.js';
 import type { Board } from '../map/placement.js';
 import { nextInt, type RngState } from '../rng/index.js';
 import { BABEL_COORD } from '../state/babel.js';
@@ -27,8 +27,8 @@ export function rollHostKind(rng: RngState, stage: number): [HostKind, RngState]
   return [roll < SERAPH_CHANCE_STAGE_III * 100 ? 'seraph' : 'ophanim', next];
 }
 
-export function newHost(id: string, kind: HostKind, at: Coord): Host {
-  return { id, kind, at, shieldUp: HOSTS[kind].shield, damage: 0 };
+export function newHost(id: string, kind: HostKind, at: RegionCoord): Host {
+  return { id, kind, at: { x: at.x, y: at.y }, ...(at.region === undefined ? {} : { region: at.region }), shieldUp: HOSTS[kind].shield, damage: 0 };
 }
 
 /**

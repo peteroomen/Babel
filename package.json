@@ -17,6 +17,7 @@
     "verify": "npm run typecheck && npm test",
     "model": "vite-node packages/harness/src/cli.ts",
     "cadence": "vite-node packages/harness/src/cadence-cli.ts",
+    "banks": "vite-node packages/harness/src/banks-cli.ts",
     "sweep": "vite-node packages/harness/src/sweep-cli.ts"
   },
   "devDependencies": {

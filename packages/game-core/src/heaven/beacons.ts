@@ -9,9 +9,10 @@ import {
   type Stage,
 } from '@babel-game/game-data';
 import { BABEL_COORD } from '../state/babel.js';
-import { coordKey, neighbours, type Coord } from '../map/edges.js';
+import { coordKey, neighbours, type Coord, type RegionCoord } from '../map/edges.js';
 import { isBabel, tileAt, type Board } from '../map/placement.js';
 import { distancesToBabel, isPassableAt } from './path.js';
+import { bankDistancesToBabel, dryRegions, regionKey } from './banks.js';
 
 /**
  * A frontier tile: a placed land tile touching at least one unexplored square.
@@ -36,23 +37,30 @@ export function getLegalBeaconSites(
   board: Board,
   beacons: readonly Coord[],
   impassable: readonly string[] = CANON_RULES.impassableTerrain,
+  bankMode?: RuleSet['bankMode'],
 ): Coord[] {
   const distance = distancesToBabel(board, impassable);
+  const bankDistance = bankMode ? bankDistancesToBabel(board) : null;
   const taken = new Set(beacons.map(coordKey));
 
   return Object.keys(board)
-    .map((key) => {
+    .map((key): RegionCoord => {
       const [x, y] = key.split(',').map(Number) as [number, number];
       return { x, y };
     })
-    .filter((at) => {
-      if (taken.has(coordKey(at))) return false;
+    .flatMap((at) => {
+      if (taken.has(coordKey(at))) return [];
+      if (!isFrontierTile(board, at)) return [];
+      if (bankMode) {
+        if (impassable.includes(board[coordKey(at)]!.terrain)) return [];
+        return dryRegions(board, at).filter((region) => regionKey(region) in (bankDistance ?? {}));
+      }
       /* Not a river or Lake tile, and reachable overland. */
-      if (!isPassableAt(board, at, impassable)) return false;
-      if (!(coordKey(at) in distance)) return false;
-      return isFrontierTile(board, at);
+      if (!isPassableAt(board, at, impassable)) return [];
+      if (!(coordKey(at) in distance)) return [];
+      return [at];
     })
-    .sort((a, b) => coordKey(a).localeCompare(coordKey(b)));
+    .sort((a, b) => `${coordKey(a)}@${a.region ?? 0}`.localeCompare(`${coordKey(b)}@${b.region ?? 0}`));
 }
 
 /**

@@ -41,6 +41,7 @@ import { getLegalBeaconSites, hostDefence } from '../heaven/beacons.js';
 import { isPassableAt } from '../heaven/path.js';
 import { beaconsOwed, openBeaconDecision, resolveHeavenPhase } from '../heaven/phase.js';
 import { isFoundationOccupied, newHost, occupiedKeys } from '../heaven/hosts.js';
+import { babelDepartures, normalizeRegion, regionTransitions } from '../heaven/banks.js';
 import {
   canBuildBabel,
   isBabelComplete,
@@ -57,19 +58,20 @@ import {
 } from '../buildings/index.js';
 import { getConnectedFeature } from '../features/index.js';
 import { rollD6 } from '../rng/index.js';
-import { babelRiverReach, riverPrestigeEarned, riverPrestigeFor } from '../rivers/index.js';
+import { babelRiverReach, babelRiverReachThroughBabel, riverPrestigeEarned, riverPrestigeFor } from '../rivers/index.js';
 import {
   canonicalWall,
   getLegalWallEdges,
   wallEdgeKey,
   type WallEdge,
 } from '../walls/index.js';
-import { resolveHarvest } from '../economy/harvest.js';
-import { placementPayout } from '../economy/payout.js';
+import { resolveBankHarvest, resolveHarvest } from '../economy/harvest.js';
+import { bankPlacementPayout, placementPayout } from '../economy/payout.js';
 import { coordKey, neighbours, type Coord } from '../map/edges.js';
 import { isLegalPlacement, type Board } from '../map/placement.js';
 import { nextInt } from '../rng/index.js';
 import { drawPlaceableTile, fillReserve } from './setup.js';
+import { BABEL_COORD } from './babel.js';
 import type {
   ApplyResult,
   Command,
@@ -480,21 +482,18 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       /* GDD §19 Silent Workshops: harvesting buildings do not trigger at all. */
       const harvest = confusionIs(state, 'silent-workshops')
         ? null
-        : resolveHarvest(
-            board,
-            state.buildings,
-            occupied,
-            command.at,
-            draw,
-            command.player,
-          );
+        : state.rules.bankMode === 'resources'
+          ? resolveBankHarvest(board, state.buildings, state.hosts, command.at, draw, command.player)
+          : resolveHarvest(board, state.buildings, occupied, command.at, draw, command.player);
 
       /* GDD §6 payout, suppressed inside an occupied feature by GDD §10, and
          denied to the placer by GDD §19 Lost Ledgers. */
       const lostLedgers = confusionIs(state, 'lost-ledgers');
       const payout = lostLedgers
         ? null
-        : placementPayout(board, occupied, command.at, draw);
+        : state.rules.bankMode === 'resources'
+          ? bankPlacementPayout(board, state.hosts, command.at, draw)
+          : placementPayout(board, occupied, command.at, draw);
 
       /**
        * RD-012: Lost Ledgers removes the "normal base terrain payout" but says
@@ -548,7 +547,8 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         state.rules,
         riverPrestigeEarned(state, command.player),
         undefined,
-        state.riverReachRecord ?? babelRiverReach(state.board),
+        state.riverReachRecord ?? (state.rules.bankMode ? babelRiverReachThroughBabel(state.board) : babelRiverReach(state.board)),
+        state.rules.bankMode !== undefined,
       );
       if (riverReward > 0) {
         events.push({
@@ -594,7 +594,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         ...next,
         riverReachRecord: Math.max(
           state.riverReachRecord ?? babelRiverReach(state.board),
-          babelRiverReach(board),
+          state.rules.bankMode ? babelRiverReachThroughBabel(board) : babelRiverReach(board),
         ),
         drawnTile: null,
         turnStep: 'action',
@@ -611,6 +611,8 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         leader,
         command.at,
         command.building,
+        state.rules.bankMode,
+        command.region,
       );
       if (rejection) throw new Error(`cannot build: ${rejection}`);
 
@@ -619,6 +621,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         player: command.player,
         at: command.at,
         building: command.building,
+        ...(state.rules.bankMode === 'resources' ? { region: command.region ?? 0 } : {}),
       });
       /* GDD §9: constructing a harvesting building gives +1 Prestige. */
       events.push({
@@ -633,7 +636,11 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
           ...state,
           buildings: {
             ...state.buildings,
-            [coordKey(command.at)]: { type: command.building, owner: command.player },
+            [coordKey(command.at)]: {
+              type: command.building,
+              owner: command.player,
+              ...(state.rules.bankMode === 'resources' ? { region: command.region ?? 0 } : {}),
+            },
           },
           leaders: {
             ...state.leaders,
@@ -1064,7 +1071,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
             for (let i = 0; i < spec.count; i++) {
               towerSeq += 1;
               const id = `h${towerSeq}`;
-              hosts.push(newHost(id, spec.kind, target.at));
+              hosts.push(newHost(id, spec.kind, { ...target.at, ...(target.region === undefined ? {} : { region: target.region }) }));
               born.push(id);
             }
             events.push({ type: 'hostSplit', from: target.id, into: born, at: target.at });
@@ -1244,7 +1251,7 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
         for (let i = 0; i < spec.count; i++) {
           hostSeq += 1;
           const id = `h${hostSeq}`;
-          hosts.push(newHost(id, spec.kind, dead.at));
+          hosts.push(newHost(id, spec.kind, { ...dead.at, ...(dead.region === undefined ? {} : { region: dead.region }) }));
           born.push(id);
         }
         events.push({ type: 'hostSplit', from: dead.id, into: born, at: dead.at });
@@ -1405,11 +1412,17 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
           const host = state.hosts.find((h) => h.id === command.hostId);
           if (!host) throw new Error('unknown Host');
           /* Any adjacent legal tile, including sideways or away from Babel. */
-          const legal = neighbours(host.at).some(
-            (candidate) =>
-              coordKey(candidate) === coordKey(command.to as GameState['hosts'][number]['at']) &&
-              isPassableAt(state.board, candidate, state.rules.impassableTerrain),
-          );
+          const legal = state.rules.bankMode && !HOSTS[host.kind].flies
+            ? (coordKey(host.at) === coordKey(BABEL_COORD) ? babelDepartures(state.board) : regionTransitions(state.board, normalizeRegion(state.board, {
+                ...host.at,
+                ...(host.region === undefined ? {} : { region: host.region }),
+              }))).some((candidate) => coordKey(candidate) === coordKey(command.to!) &&
+                command.to!.region !== undefined && candidate.region === command.to!.region)
+            : neighbours(host.at).some(
+                (candidate) =>
+                  coordKey(candidate) === coordKey(command.to as GameState['hosts'][number]['at']) &&
+                  isPassableAt(state.board, candidate, state.rules.impassableTerrain),
+              );
           if (!legal) throw new Error('that is not an adjacent legal tile');
 
           return commit(
@@ -1437,14 +1450,15 @@ export function applyMove(state: GameState, command: Command): ApplyResult {
       const pending = state.pendingBeacon;
       if (!pending) throw new Error('no Beacon is pending');
       if (!state.leaders[command.player]) throw new Error('unknown player');
-      if (!pending.sites.some((site) => coordKey(site) === coordKey(command.at))) {
+      if (!pending.sites.some((site) => coordKey(site) === coordKey(command.at) &&
+        (!state.rules.bankMode || (command.at.region !== undefined && site.region === command.at.region)))) {
         throw new Error('illegal Beacon site');
       }
 
       const beacons = [...state.beacons, command.at];
       /* A new gate opens empty and has to save up like the rest. */
       const beaconCharge = [...state.beaconCharge, 0];
-      events.push({ type: 'beaconPlaced', at: command.at, total: beacons.length });
+      events.push({ type: 'beaconPlaced', at: command.at, ...(command.at.region === undefined ? {} : { region: command.at.region }), total: beacons.length });
 
       const opened = openBeaconDecision({ ...state, beacons, beaconCharge });
       events.push(...opened.events);
