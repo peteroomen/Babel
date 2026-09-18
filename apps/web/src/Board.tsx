@@ -2,12 +2,16 @@ import type { ReactElement } from 'react';
 import {
   BABEL_COORD,
   coordKey,
+  edgeRegions,
   getConnectedFeature,
   getLegalTilePlacements,
   hitsRemaining,
   riverEdgesOf,
   type Coord,
+  type Edge,
   type GameState,
+  type PlacedTile,
+  type RegionCoord,
   type Rotation,
   type TileDraw,
 } from '@babel-game/game-core';
@@ -368,8 +372,8 @@ type Props = {
   onWallEdge?: ((edge: { a: Coord; b: Coord }) => void) | undefined;
   chosenWalls?: readonly string[];
   /** Squares offered while the table is siting a Beacon. */
-  beaconSites?: readonly Coord[];
-  onBeaconSite?: ((at: Coord) => void) | undefined;
+  beaconSites?: readonly RegionCoord[];
+  onBeaconSite?: ((at: RegionCoord) => void) | undefined;
   /** Hosts singled out while assigning Attack hits. */
   onHost?: ((id: string) => void) | undefined;
   selectedHosts?: Readonly<Record<string, number>>;
@@ -413,6 +417,54 @@ function riverPath(river: TileDraw['river'], rotation: Rotation): ReactElement[]
   ];
 }
 
+/**
+ * A bank's visual centre inside its tile. The core's `edgeRegions` already
+ * accounts for shape and rotation; using it here keeps a straight, bend, or
+ * tee's bank marker on the same side that Hosts actually walk. Region 0 on a
+ * source or ordinary land tile is intentionally centred because there is no
+ * second clickable bank to separate from it.
+ */
+export function bankAnchor(tile: PlacedTile | undefined, region: number | undefined): { x: number; y: number } {
+  if (!tile || region === undefined || riverEdgesOf(tile.river, tile.rotation).length === 0) {
+    return { x: CELL / 2, y: CELL / 2 };
+  }
+
+  const points: { x: number; y: number }[] = [];
+  const half = CELL / 2;
+  const outward: Record<Edge, { x: number; y: number }> = {
+    n: { x: 0, y: -1 },
+    e: { x: 1, y: 0 },
+    s: { x: 0, y: 1 },
+    w: { x: -1, y: 0 },
+  };
+  const left: Record<Edge, { x: number; y: number }> = {
+    n: { x: -1, y: 0 },
+    e: { x: 0, y: -1 },
+    s: { x: 1, y: 0 },
+    w: { x: 0, y: 1 },
+  };
+
+  for (const edge of riverEdgesOf(tile.river, tile.rotation)) {
+    const sides = edgeRegions(tile.river, tile.rotation, edge);
+    const side = sides.indexOf(region);
+    /* A source has one dry region on both sides of its single river edge; it
+       does not need a marker pushed toward the water. */
+    if (side < 0 || sides[0] === sides[1]) continue;
+    const normal = outward[edge];
+    const tangent = left[edge];
+    const sideSign = side === 0 ? 1 : -1;
+    points.push({
+      x: half + normal.x * CELL * 0.22 + tangent.x * CELL * 0.28 * sideSign,
+      y: half + normal.y * CELL * 0.22 + tangent.y * CELL * 0.28 * sideSign,
+    });
+  }
+  if (points.length === 0) return { x: half, y: half };
+  return {
+    x: points.reduce((sum, point) => sum + point.x, 0) / points.length,
+    y: points.reduce((sum, point) => sum + point.y, 0) / points.length,
+  };
+}
+
 export function Board({
   className,
   state,
@@ -439,6 +491,16 @@ export function Board({
     state.hosts.flatMap((host) => getConnectedFeature(state.board, host.at)),
   );
   const legalKeys = new Set(options.map((o) => coordKey(o.at)));
+
+  /* Stack only Hosts sharing the same physical bank. Hosts on opposite banks
+     retain their distinct anchors instead of being fanned across each other. */
+  const stackByRegion = new Map<string, number>();
+  const stackOffsets = state.hosts.map((host) => {
+    const key = `${coordKey(host.at)}@${host.region ?? 0}`;
+    const index = stackByRegion.get(key) ?? 0;
+    stackByRegion.set(key, index + 1);
+    return index % 3 === 0 ? 0 : index % 3 === 1 ? -9 : 9;
+  });
 
   /* The squares the map actually contains: everything placed, plus Babel. The
      sheet is sized from these alone, so it grows only when the world does. */
@@ -699,16 +761,20 @@ export function Board({
       {/* Beacons: where Heaven descends */}
       {state.beacons.map((at) => {
         const { x, y } = px(at);
+        const anchor = bankAnchor(state.board[coordKey(at)], at.region);
         return (
-          <g key={`beacon-${coordKey(at)}`} transform={`translate(${x} ${y})`}>
-            <circle cx={CELL / 2} cy={CELL / 2} r={CELL * 0.42} fill={BEACON_LIGHT} opacity={0.28} />
+          <g key={`beacon-${coordKey(at)}@${at.region ?? 0}`} transform={`translate(${x} ${y})`}>
+            <circle cx={anchor.x} cy={anchor.y} r={CELL * 0.25} fill={BEACON_LIGHT} opacity={0.28} />
             <path
-              d={`M ${CELL / 2 - 7} ${CELL - 8} L ${CELL / 2 - 3} 6 L ${CELL / 2 + 3} 6 L ${
-                CELL / 2 + 7
-              } ${CELL - 8} Z`}
+              d={`M ${anchor.x - 7} ${anchor.y + 13} L ${anchor.x - 3} ${anchor.y - 13} L ${anchor.x + 3} ${anchor.y - 13} L ${anchor.x + 7} ${anchor.y + 13} Z`}
               fill={BEACON_LIGHT}
               opacity={0.9}
             />
+            {at.region !== undefined && (
+              <text x={anchor.x} y={anchor.y + 4} textAnchor="middle" fontSize={9} fontWeight={700} fill={INK}>
+                {at.region + 1}
+              </text>
+            )}
           </g>
         );
       })}
@@ -716,30 +782,24 @@ export function Board({
       {/* Squares offered while siting a Beacon */}
       {beaconSites.map((at) => {
         const { x, y } = px(at);
+        const anchor = bankAnchor(state.board[coordKey(at)], at.region);
         return (
           <g
-            key={`bs-${coordKey(at)}`}
+            key={`bs-${coordKey(at)}@${at.region ?? 0}`}
             data-beacon-site=""
+            data-beacon-region={at.region ?? 0}
             transform={`translate(${x} ${y})`}
             onClick={() => onBeaconSite?.(at)}
             style={{ cursor: 'pointer' }}
           >
-            <rect width={CELL} height={CELL} fill={BEACON_LIGHT} opacity={0.55} />
-            <rect
-              width={CELL}
-              height={CELL}
-              fill="none"
-              stroke={INK}
-              strokeWidth={5}
-              opacity={0.55}
-            />
-            <rect
-              width={CELL}
-              height={CELL}
-              fill="none"
-              stroke={HEAVEN_GOLD}
-              strokeWidth={3}
-            />
+            <circle cx={anchor.x} cy={anchor.y} r={CELL * 0.18} fill={BEACON_LIGHT} opacity={0.6} />
+            <circle cx={anchor.x} cy={anchor.y} r={CELL * 0.18} fill="none" stroke={INK} strokeWidth={4} opacity={0.62} />
+            <circle cx={anchor.x} cy={anchor.y} r={CELL * 0.14} fill="none" stroke={HEAVEN_GOLD} strokeWidth={3} />
+            {at.region !== undefined && (
+              <text x={anchor.x} y={anchor.y + 4} textAnchor="middle" fontSize={10} fontWeight={700} fill={INK}>
+                {at.region + 1}
+              </text>
+            )}
           </g>
         );
       })}
@@ -778,14 +838,16 @@ export function Board({
       {/* Heavenly Hosts */}
       {state.hosts.map((host, index) => {
         const { x, y } = px(host.at);
+        const anchor = bankAnchor(state.board[coordKey(host.at)], host.region);
         /* Stacked Hosts fan out slightly so they stay countable. */
-        const offset = index % 3 === 0 ? 0 : index % 3 === 1 ? -9 : 9;
+        const offset = stackOffsets[index] ?? 0;
         const chosen = selectedHosts[host.id] ?? 0;
         return (
           <g
             key={`host-${host.id}`}
             data-host-kind={host.kind}
-            transform={`translate(${x + offset} ${y})`}
+            data-host-region={host.region ?? 0}
+            transform={`translate(${x + anchor.x - CELL / 2 + offset} ${y + anchor.y - CELL / 2})`}
             onClick={() => onHost?.(host.id)}
             style={{ cursor: onHost ? 'pointer' : 'default' }}
           >

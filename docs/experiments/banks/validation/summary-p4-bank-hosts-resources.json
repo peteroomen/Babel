@@ -1,0 +1,126 @@
+{
+  "variant": "bank-hosts-resources",
+  "players": 4,
+  "games": 60,
+  "wins": 14,
+  "losses": 41,
+  "timeouts": 5,
+  "winRate": 0.23333333333333334,
+  "winRateWilson95": {
+    "low": 0.1443943161843107,
+    "high": 0.3543651134039202
+  },
+  "meanWinningRounds": 68.14285714285714,
+  "totalTurns": 15374,
+  "meanTurns": 256.23333333333335,
+  "actionCounts": {
+    "buildHarvester": 2543,
+    "pass": 643,
+    "buildBabel": 2024,
+    "attack": 5918,
+    "muster": 568,
+    "buildTower": 2056,
+    "buyScheme": 1622
+  },
+  "actionShares": {
+    "buildHarvester": 0.1654091323012879,
+    "pass": 0.04182385846233901,
+    "buildBabel": 0.1316508390789645,
+    "attack": 0.3849356055678418,
+    "muster": 0.036945492389748924,
+    "buildTower": 0.13373227526993625,
+    "buyScheme": 0.10550279692988161
+  },
+  "zeroHostGames": 0,
+  "meanHostsSpawned": 114.06666666666666,
+  "meanHostsKilled": 100.83333333333333,
+  "meanBeaconDeferrals": 0,
+  "resourcesGained": {
+    "placement": {
+      "food": 10047,
+      "wood": 9963,
+      "brick": 8835,
+      "metal": 6000
+    },
+    "harvest": {
+      "food": 14523,
+      "wood": 12683,
+      "brick": 12569,
+      "metal": 6612
+    },
+    "barter": {
+      "food": 284,
+      "wood": 1155,
+      "brick": 306,
+      "metal": 1548
+    }
+  },
+  "resourcesGainedPerTurn": {
+    "placement": {
+      "food": 0.6535059190841681,
+      "wood": 0.6480421490828672,
+      "brick": 0.5746715233511123,
+      "metal": 0.390269285807207
+    },
+    "harvest": {
+      "food": 0.9446468062963445,
+      "wood": 0.8249642253154676,
+      "brick": 0.8175491088851308,
+      "metal": 0.43007675295954206
+    },
+    "barter": {
+      "food": 0.018472746194874462,
+      "wood": 0.07512683751788735,
+      "brick": 0.019903733576167554,
+      "metal": 0.1006894757382594
+    }
+  },
+  "harvestTriggers": 9172,
+  "harvestTriggersByResource": {
+    "wood": 2631,
+    "metal": 1484,
+    "brick": 2346,
+    "food": 2711
+  },
+  "placementSuppressed": 2165,
+  "placementSuppressedByReason": {
+    "lostLedgers": 2165
+  },
+  "resourceWantAccess": {
+    "wanting": 5692,
+    "satisfied": 4169,
+    "rate": 0.7324314827828531,
+    "byResource": {
+      "food": {
+        "wanting": 814,
+        "satisfied": 489,
+        "rate": 0.6007371007371007
+      },
+      "wood": {
+        "wanting": 2010,
+        "satisfied": 1565,
+        "rate": 0.7786069651741293
+      },
+      "brick": {
+        "wanting": 627,
+        "satisfied": 374,
+        "rate": 0.5964912280701754
+      },
+      "metal": {
+        "wanting": 2241,
+        "satisfied": 1741,
+        "rate": 0.7768853190539937
+      }
+    }
+  },
+  "bankChoiceUsage": {
+    "choices": 6393,
+    "byRegion": {
+      "0": 5153,
+      "1": 1224,
+      "2": 16
+    },
+    "hostRoutingChoices": 6393,
+    "harvesterBankChoices": 0
+  }
+}

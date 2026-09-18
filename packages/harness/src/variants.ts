@@ -32,7 +32,7 @@ const withRules = (id: string, label: string, note: string, rules: Partial<RuleS
 });
 
 export const VARIANTS: readonly Variant[] = [
-  withRules('control', 'Control', 'Canon v0.5: the live rules', {}),
+  withRules('control', 'Control', 'Canon v0.6: the live rules', {}),
   { id: 'v01', label: 'v0.1', note: 'The pre-Milestone-6 baseline', rules: LEGACY_V01_RULES },
   withRules('same-kind', 'Same-kind Barter', 'Blind draw, 3 of one resource', {
     barterMode: 'sameKind',

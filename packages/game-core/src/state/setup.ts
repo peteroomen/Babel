@@ -11,7 +11,8 @@ import { coordKey } from '../map/edges.js';
 import { hasAnyLegalPlacement, type Board } from '../map/placement.js';
 import { createRng, nextInt, shuffle, weightedPick, type RngState } from '../rng/index.js';
 import { BABEL_COORD, START_TILE_COORD } from './babel.js';
-import type { GameState, LeaderState, PlayerId, TileDraw } from './types.js';
+import { babelRiverDistancesThroughBabel } from '../rivers/index.js';
+import type { GameState, LeaderState, PlayerId, PlacedTile, TileDraw } from './types.js';
 
 /** How many unplaceable tiles to discard before giving up. See RD-002. */
 const MAX_REDRAWS = 50;
@@ -85,9 +86,18 @@ export function setupGame(
   );
 
   /* GDD §5: the fixed Farmland tile, river running north-south into Babel. */
-  const board: Board = {
+  const board: Record<string, PlacedTile> = {
     [coordKey(START_TILE_COORD)]: { terrain: 'farmland', river: 'straight', rotation: 0 },
   };
+  if (rules.bankMode) {
+    /* Experimental starting lane: three desert straights south of Babel and a
+       mountain source at its end. The Beacon is deliberately pre-placed so
+       the comparison starts with equal Heaven quota and no setup Prestige. */
+    board[coordKey({ x: 0, y: 1 })] = { terrain: 'desert', river: 'straight', rotation: 0 };
+    board[coordKey({ x: 0, y: 2 })] = { terrain: 'desert', river: 'straight', rotation: 0 };
+    board[coordKey({ x: 0, y: 3 })] = { terrain: 'desert', river: 'straight', rotation: 0 };
+    board[coordKey({ x: 0, y: 4 })] = { terrain: 'mountain', river: 'source', rotation: 0 };
+  }
 
   /* GDD §5: randomise the First Player. */
   const [first, afterFirst] = nextInt(createRng(seed), order.length);
@@ -130,8 +140,8 @@ export function setupGame(
     freeBarterUsed: false,
     falseProphet: null,
     babel: { stack: [] },
-    riverReachRecord: 1,
-    beacons: [],
+    riverReachRecord: rules.bankMode ? Math.max(...Object.values(babelRiverDistancesThroughBabel(board)), 0) : 1,
+    beacons: rules.bankMode ? [{ x: 0, y: 4, region: 0 }] : [],
     beaconCharge: [],
     hosts: [],
     hostSeq: 0,

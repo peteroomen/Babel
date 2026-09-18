@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CANON_RULES, CANON_WALLS, type RuleSet } from '@babel-game/game-data';
+import { CANON_RULES, CANON_WALLS, V05_RULES, type RuleSet } from '@babel-game/game-data';
 import {
   applyMove,
   babelRiverDistances,
@@ -38,7 +38,7 @@ const BRANCHED: Board = {
 };
 
 const RIVER_RULES = (over: Partial<NonNullable<RuleSet['riverPrestige']>> = {}): RuleSet => ({
-  ...CANON_RULES,
+  ...V05_RULES,
   riverPrestige: { perTile: 1, requireReach: true, cap: null, milestone: null, ...over },
 });
 

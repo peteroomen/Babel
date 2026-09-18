@@ -10,6 +10,9 @@ export type Rotation = (typeof ROTATIONS)[number];
 
 export type Coord = { readonly x: number; readonly y: number };
 
+/** A coordinate plus an optional dry-region selector for bank experiments. */
+export type RegionCoord = Coord & { readonly region?: number };
+
 export const coordKey = (c: Coord): string => `${c.x},${c.y}`;
 
 export const OPPOSITE: Record<Edge, Edge> = { n: 's', e: 'w', s: 'n', w: 'e' };

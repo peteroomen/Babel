@@ -1,5 +1,6 @@
 import {
   BUILDINGS,
+  HOSTS,
   MAX_ARMY,
   MUSTER_COST,
   RESOURCE_TYPES,
@@ -10,9 +11,13 @@ import {
 } from '@babel-game/game-data';
 import {
   babelRiverDistances,
+  babelRiverDistancesThroughBabel,
   babelRiverReach,
+  babelRiverReachThroughBabel,
   coordKey,
   distancesToBabel,
+  bankDistancesToBabel,
+  regionKey,
   hitsRemaining,
   getLegalTilePlacements,
   previewPlacement,
@@ -106,9 +111,26 @@ const canPay = (state: GameState, me: PlayerId, cost: Cost): boolean =>
 /** How close Heaven has got to Babel. Infinity when nothing is on the board. */
 export function threatDistance(state: GameState): number {
   if (state.hosts.length === 0) return Infinity;
-  const distance = distancesToBabel(state.board, state.rules.impassableTerrain);
+  const bankDistance = state.rules.bankMode ? bankDistancesToBabel(state.board) : null;
+  const walkingDistance = distancesToBabel(state.board, {
+    impassable: state.rules.impassableTerrain,
+    flies: false,
+  });
+  const flyingDistance = distancesToBabel(state.board, {
+    impassable: state.rules.impassableTerrain,
+    flies: true,
+  });
   return Math.min(
-    ...state.hosts.map((host) => distance[coordKey(host.at)] ?? Infinity),
+    ...state.hosts.map((host) => {
+      if (state.rules.bankMode && !HOSTS[host.kind].flies) {
+        return bankDistance![regionKey({
+          ...host.at,
+          region: host.region ?? 0,
+        })] ?? Infinity;
+      }
+      const distance = HOSTS[host.kind].flies ? flyingDistance : walkingDistance;
+      return distance[coordKey(host.at)] ?? Infinity;
+    }),
   );
 }
 
@@ -205,72 +227,53 @@ export function bestPlacement(
      river that reaches Babel does not change until this tile goes down. */
   const riverRule = state.rules.riverPrestige;
   const scoresRiver = riverRule !== null && draw.river !== 'none';
-  const riverBefore = scoresRiver ? babelRiverDistances(state.board) : undefined;
+  const riverBefore = scoresRiver
+    ? (state.rules.bankMode
+      ? babelRiverDistancesThroughBabel(state.board)
+      : babelRiverDistances(state.board))
+    : undefined;
   const riverEarned = scoresRiver ? riverPrestigeEarned(state, me) : 0;
 
   for (const option of getLegalTilePlacements(state.board, draw, state.rules)) {
-    /**
-     * Score the square, not the square-and-rotation.
-     *
-     * A payout is 1 plus the adjacent tiles of the same terrain, suppressed if
-     * the feature is occupied (GDD §6, §10) — none of which depends on how the
-     * tile is turned. Rotation only decides where the river runs, and the
-     * legality scan has already thrown out the rotations that would break
-     * RD-001. Scoring each rotation separately meant rebuilding a copy of the
-     * whole board and flood-filling its feature up to four times per square,
-     * which is where the model spent most of its time.
-     */
-    /**
-     * Rotation matters again once the river pays.
-     *
-     * Turning a tile never changes its payout, which is why the loop below
-     * scores one rotation per square — but it decides entirely where the river
-     * runs, so under the river-Prestige rule the rotations of a river tile are
-     * genuinely different moves and each has to be tried.
-     */
-    let rotation = option.rotations[0];
-    if (rotation === undefined) continue;
-    let riverReward = 0;
-    if (scoresRiver) {
-      for (const candidate of option.rotations) {
-        const reward = riverPrestigeFor(
-          state.board,
-          option.at,
-          draw,
-          candidate,
-          state.rules,
-          riverEarned,
-          riverBefore,
-          state.riverReachRecord ?? babelRiverReach(state.board),
-        );
-        if (reward > riverReward) {
-          riverReward = reward;
-          rotation = candidate;
-        }
+    const firstRotation = option.rotations[0];
+    if (firstRotation === undefined) continue;
+    /* Canon and bank-hosts preserve the historical one-rotation scoring path
+       unless the river Prestige rule itself makes rotation a decision. The
+       resource variant additionally scores every legal rotation because a Host
+       can occupy one bank while the other still pays. */
+    const rotations = state.rules.bankMode === 'resources' || scoresRiver
+      ? option.rotations
+      : [firstRotation];
+    let rotation = firstRotation;
+    let score = -Infinity;
+    for (const candidate of rotations) {
+      const riverReward = scoresRiver
+        ? riverPrestigeFor(
+            state.board,
+            option.at,
+            draw,
+            candidate,
+            state.rules,
+            riverEarned,
+            riverBefore,
+            state.riverReachRecord ?? (state.rules.bankMode ? babelRiverReachThroughBabel(state.board) : babelRiverReach(state.board)),
+            state.rules.bankMode !== undefined,
+          )
+        : 0;
+      const payout = previewPlacement(state, option.at, draw, candidate);
+      let candidateScore = payout ? payout.amount : 0;
+      if (payout && payout.resource === seeking) candidateScore *= 3;
+      if (TERRAIN_RESOURCE[draw.terrain] === seeking) candidateScore += 1;
+      if (archetype === 'commander' || archetype === 'engineer') {
+        candidateScore += (Math.abs(option.at.x) + Math.abs(option.at.y)) * 0.08;
+      }
+      if (archetype === 'industrialist' && payout) candidateScore += payout.amount * 0.5;
+      candidateScore += riverReward * RIVER_PRESTIGE_WEIGHT[archetype];
+      if (candidateScore > score) {
+        score = candidateScore;
+        rotation = candidate;
       }
     }
-    const payout = previewPlacement(state, option.at, draw, rotation);
-
-    let score = payout ? payout.amount : 0;
-    if (payout && payout.resource === seeking) score *= 3;
-
-    /* A tile whose terrain carries the building this Leader wants is worth
-       something even when it pays nothing today. */
-    if (TERRAIN_RESOURCE[draw.terrain] === seeking) score += 1;
-
-    /* The Commander and the Engineer lean towards the frontier, since a longer
-       route to Babel is more rounds of warning — but only lean. Weighting this
-       heavily starved them of the income their plans run on. */
-    if (archetype === 'commander' || archetype === 'engineer') {
-      score += (Math.abs(option.at.x) + Math.abs(option.at.y)) * 0.08;
-    }
-    if (archetype === 'industrialist' && payout) score += payout.amount * 0.5;
-
-    /* The wrinkle the rule is for: a Leader may now take a worse square
-       because the river pays for it. `payoutPerPlacement` in the harness is
-       what measures whether they actually did. */
-    score += riverReward * RIVER_PRESTIGE_WEIGHT[archetype];
-
     score += rand() * 0.4;
     if (!best || score > best.score) best = { at: option.at, rotation, score };
   }
@@ -361,7 +364,7 @@ export function chooseBarter(
 export type ActionChoice =
   | { kind: 'pass' }
   | { kind: 'buildBabel'; pieces: number }
-  | { kind: 'buildHarvester'; at: Coord; building: 'sawmill' | 'farmstead' | 'brickworks' | 'mine' }
+  | { kind: 'buildHarvester'; at: Coord; region?: number; building: 'sawmill' | 'farmstead' | 'brickworks' | 'mine' }
   | { kind: 'buildTower'; at: Coord }
   | { kind: 'buildMonument'; at: Coord }
   | { kind: 'buildWalls'; edges: readonly { a: Coord; b: Coord }[] }
@@ -386,8 +389,19 @@ export function bestWalls(
   state: GameState,
   action: Extract<LegalAction, { type: 'buildWalls' }>,
 ): readonly { a: Coord; b: Coord }[] {
-  const distance = distancesToBabel(state.board, state.rules.impassableTerrain);
-  const at = (c: Coord) => distance[coordKey(c)] ?? Infinity;
+  const distance = distancesToBabel(state.board, {
+    impassable: state.rules.impassableTerrain,
+    flies: false,
+  });
+  const bankDistance = state.rules.bankMode ? bankDistancesToBabel(state.board) : null;
+  const at = (c: Coord) => {
+    if (!bankDistance) return distance[coordKey(c)] ?? Infinity;
+    const prefix = `${coordKey(c)}@`;
+    const distances = Object.entries(bankDistance)
+      .filter(([key]) => key.startsWith(prefix))
+      .map(([, value]) => value);
+    return distances.length === 0 ? Infinity : Math.min(...distances);
+  };
 
   const scored = action.edges
     .map((edge) => {
@@ -418,7 +432,11 @@ function harvesterFor(
   );
   const pool = preferred.length > 0 ? preferred : action.sites;
   const site = pool[Math.floor(rand() * pool.length)]!;
-  return { kind: 'buildHarvester', at: site.at, building: site.type };
+  return {
+    kind: 'buildHarvester', at: site.at,
+    ...(site.region === undefined ? {} : { region: site.region }),
+    building: site.type,
+  };
 }
 
 /**

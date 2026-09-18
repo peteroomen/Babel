@@ -1,5 +1,7 @@
 # Prototype implementation plan
 
+**Current priority order (2026-09-18):** see [next-work triage](docs/NEXT_WORK_TRIAGE.md). The milestones below retain the project's history; their old “Next” labels do not supersede the triage. Host-bank adoption comes first, then bot reliability and family-playtest readiness, followed by shorter-game modelling. The five-Stage proposal is deferred.
+
 ## Milestone 0 — framework spike
 
 Goal: decide orchestration layer without committing the rules to it.

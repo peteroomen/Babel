@@ -22,6 +22,8 @@ import {
 } from '@babel-game/game-data';
 import {
   applyMove,
+  BABEL_COORD,
+  babelDepartures,
   coordKey,
   currentPlayer,
   effectiveHostDefence,
@@ -33,11 +35,14 @@ import {
   isPassableAt,
   neighbours,
   previewPlacement,
+  normalizeRegion,
+  regionTransitions,
   setupGame,
   validateAssignments,
   type Command,
   type Coord,
   type GameState,
+  type RegionCoord,
   type Rotation,
 } from '@babel-game/game-core';
 import { BookOpenIcon, PanelRightIcon, RotateCcwIcon, ScrollTextIcon, UsersIcon } from 'lucide-react';
@@ -335,8 +340,8 @@ export function App() {
                     </p>
                     <p>
                       <strong>Heaven:</strong> Beacons spawn Hosts, which walk the shortest land
-                      route to Babel. Rivers block them permanently. A Host anywhere in a feature
-                      shuts down that whole feature's economy.
+                      route to Babel. On split river tiles, bank markers show the route side;
+                      Hosts still occupy and shut down the whole terrain feature's economy.
                     </p>
                     <div className="space-y-1">
                       {heavenKinds.map((kind) => (
@@ -742,7 +747,7 @@ export function App() {
           ) : state.pendingBeacon ? (
             <Bar
               title="Where does Heaven land?"
-              hint={`${state.pendingBeacon.sites.length} legal frontier tiles are lit. Beacons determine where Hosts arrive; the round, Stage, and table size determine how many.`}
+              hint={`${state.pendingBeacon.sites.length} legal frontier targets are lit. Beacons determine where Hosts arrive; numbered markers on split river tiles choose the bank route. The round, Stage, and table size determine how many.`}
             />
           ) : state.phase === 'confusion' && state.confusion.card ? (
             <Bar title={`${CONFUSION[state.confusion.card].label} revealed`} hint={CONFUSION[state.confusion.card].text}>
@@ -1129,6 +1134,32 @@ function ProphetPicker({
 }) {
   const holder = state.order.find((id) => state.leaders[id]?.schemeHand.includes('false-prophet'));
   const host = state.hosts.find((h) => h.id === mode.hostId);
+  const destinationLabel = (at: RegionCoord) =>
+    `${at.x}, ${at.y}${at.region === undefined ? '' : ` · bank ${at.region + 1}`}`;
+
+  const bankDestinations = (selectedHost: NonNullable<typeof host>): readonly RegionCoord[] => {
+    if (!state.rules.bankMode || HOSTS[selectedHost.kind].flies) return [];
+    const current = normalizeRegion(state.board, {
+      ...selectedHost.at,
+      ...(selectedHost.region === undefined ? {} : { region: selectedHost.region }),
+    });
+    return coordKey(selectedHost.at) === coordKey(BABEL_COORD)
+      ? babelDepartures(state.board)
+      : regionTransitions(state.board, current);
+  };
+
+  const destinations = host
+    ? state.rules.bankMode && !HOSTS[host.kind].flies
+      ? bankDestinations(host)
+      : neighbours(host.at)
+          .filter((at) =>
+            isPassableAt(state.board, at, {
+              impassable: state.rules.impassableTerrain,
+              flies: HOSTS[host.kind].flies,
+            }),
+          )
+          .map((at) => ({ ...at } as RegionCoord))
+    : [];
 
   return (
     <>
@@ -1136,31 +1167,29 @@ function ProphetPicker({
         ? state.hosts.map((h) => (
             <Act
               key={h.id}
-              label={`${HOST_LABEL[h.kind]} ${h.at.x},${h.at.y}`}
-              hint="Mislead this one."
+              label={`${HOST_LABEL[h.kind]} ${destinationLabel({ ...h.at, ...(h.region === undefined ? {} : { region: h.region }) })}`}
+              hint={h.region === undefined ? 'Mislead this one.' : `Mislead this one from bank ${h.region + 1}.`}
               onClick={() => setMode({ kind: 'prophet', hostId: h.id })}
             />
           ))
-        : neighbours(host.at)
-            .filter((at) => isPassableAt(state.board, at))
-            .map((at) => (
-              <Act
-                key={coordKey(at)}
-                label={`${at.x}, ${at.y}`}
-                variant="accent"
-                hint="Send it here, ending its movement."
-                onClick={() =>
-                  holder &&
-                  dispatch({
-                    type: 'playScheme',
-                    player: holder,
-                    scheme: 'false-prophet',
-                    hostId: host.id,
-                    to: at,
-                  })
-                }
-              />
-            ))}
+        : destinations.map((at) => (
+            <Act
+              key={`${coordKey(at)}@${at.region ?? 0}`}
+              label={`${at.x}, ${at.y}${at.region === undefined ? '' : ` · bank ${at.region + 1}`}`}
+              variant="accent"
+              hint={`Send it to ${destinationLabel(at)}, ending its movement.`}
+              onClick={() =>
+                holder &&
+                dispatch({
+                  type: 'playScheme',
+                  player: holder,
+                  scheme: 'false-prophet',
+                  hostId: host.id,
+                  to: at,
+                })
+              }
+            />
+          ))}
       <Act label="Cancel" variant="ghost" hint="Leave the Hosts alone." onClick={() => setMode({ kind: 'idle' })} />
     </>
   );

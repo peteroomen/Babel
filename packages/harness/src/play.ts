@@ -6,6 +6,7 @@ import {
 } from '@babel-game/game-data';
 import {
   applyMove,
+  babelRiverDistancesThroughBabel,
   babelRiverReach,
   babelRiverTiles,
   currentPlayer,
@@ -219,8 +220,12 @@ export function playGame(
     ),
     stageRounds,
     babelPieces: state.babel.stack.length,
-    riverReach: babelRiverReach(state.board),
-    riverTiles: babelRiverTiles(state.board),
+    riverReach: state.rules.bankMode
+      ? Math.max(...Object.values(babelRiverDistancesThroughBabel(state.board)), 0)
+      : babelRiverReach(state.board),
+    riverTiles: state.rules.bankMode
+      ? Object.keys(babelRiverDistancesThroughBabel(state.board)).length
+      : babelRiverTiles(state.board),
     wallsStanding: state.walls.length,
     turns,
     events: state.log,

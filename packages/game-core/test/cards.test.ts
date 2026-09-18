@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONFUSION_IDS, confusionCardsForStage } from '@babel-game/game-data';
+import { V05_RULES } from '@babel-game/game-data';
 import {
   activeConfusion,
   applyMove,
@@ -28,7 +29,10 @@ const ophanim = (id: string, x: number, y: number): Host => ({
 
 /** A Leader ready to act, under a chosen Confusion card. */
 function under(card: ConfusionId | null, over: Partial<GameState> = {}): GameState {
-  const base = setupGame(['Ada', 'Peter'], 'cards');
+  /* These hand-written card fixtures predate the v0.6 bank start. Keep their
+     small coordinate boards on the frozen v0.5 rules; bank behavior has its
+     own explicit tests. */
+  const base = setupGame(['Ada', 'Peter'], 'cards', V05_RULES);
   return {
     ...base,
     board: { '1,0': land('forest'), '2,0': land('forest') },

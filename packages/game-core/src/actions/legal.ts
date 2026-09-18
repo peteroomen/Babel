@@ -46,7 +46,7 @@ export type LegalAction =
     }
   | {
       readonly type: 'buildHarvester';
-      readonly sites: readonly { at: Coord; type: BuildingType }[];
+      readonly sites: readonly { at: Coord; type: BuildingType; region?: number }[];
     }
   | {
       readonly type: 'barter';
@@ -106,7 +106,7 @@ export function getLegalActions(state: GameState, playerId: PlayerId): LegalActi
     isActionBlockedByConfusion(state, playerId, category);
 
   const canBuild = !blocked('build');
-  const sites = canBuild ? getLegalBuildSites(state.board, state.buildings, leader) : [];
+  const sites = canBuild ? getLegalBuildSites(state.board, state.buildings, leader, state.rules.bankMode) : [];
   if (sites.length > 0) actions.push({ type: 'buildHarvester', sites });
 
   /* GDD §16: one Tower per connected feature, on any land tile. */

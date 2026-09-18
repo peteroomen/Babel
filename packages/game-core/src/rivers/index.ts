@@ -51,11 +51,51 @@ export function babelRiverDistances(board: Board): Record<string, number> {
   return distance;
 }
 
+/** Experimental river metric: Babel is a virtual junction, so both banks can
+ * continue through it. Canonical callers keep using babelRiverDistances. */
+export function babelRiverDistancesThroughBabel(board: Board): Record<string, number> {
+  const distance: Record<string, number> = {};
+  const frontier: Coord[] = [];
+  for (const edge of ['n', 'e', 's', 'w'] as const) {
+    /* Babel is at (0,0), not START_TILE_COORD; explicitly inspect its four
+       adjacent squares so the experimental south lane is included. */
+    const fromBabel = neighbour({ x: 0, y: 0 }, edge);
+    const candidate = tileAt(board, fromBabel);
+    if (!candidate || candidate.river === 'none') continue;
+    if (!riverEdgesOf(candidate.river, candidate.rotation).includes(OPPOSITE[edge])) continue;
+    const key = coordKey(fromBabel);
+    if (!(key in distance)) { distance[key] = 1; frontier.push(fromBabel); }
+  }
+  let step = 1;
+  while (frontier.length) {
+    step += 1;
+    const next: Coord[] = [];
+    for (const at of frontier) {
+      const tile = tileAt(board, at);
+      if (!tile) continue;
+      for (const edge of riverEdgesOf(tile.river, tile.rotation)) {
+        const other = neighbour(at, edge);
+        const key = coordKey(other);
+        if (key in distance) continue;
+        const across = tileAt(board, other);
+        if (!across || !riverEdgesOf(across.river, across.rotation).includes(OPPOSITE[edge])) continue;
+        distance[key] = step;
+        next.push(other);
+      }
+    }
+    frontier.splice(0, frontier.length, ...next);
+  }
+  return distance;
+}
+
 const maxOf = (distance: Record<string, number>): number => {
   let best = 0;
   for (const value of Object.values(distance)) if (value > best) best = value;
   return best;
 };
+
+export const babelRiverReachThroughBabel = (board: Board): number =>
+  maxOf(babelRiverDistancesThroughBabel(board));
 
 /** How many tiles of river reach Babel. */
 export const babelRiverTiles = (board: Board): number =>
@@ -86,8 +126,9 @@ export function riverGainFor(
   draw: TileDraw,
   rotation: Rotation,
   before?: Record<string, number>,
+  throughBabel = false,
 ): RiverGain {
-  const prior = before ?? babelRiverDistances(board);
+  const prior = before ?? (throughBabel ? babelRiverDistancesThroughBabel(board) : babelRiverDistances(board));
   const priorReach = maxOf(prior);
   const priorTiles = Object.keys(prior).length;
 
@@ -114,6 +155,7 @@ export function riverGainFor(
    */
   const joined = riverEdgesOf(draw.river, rotation).some((edge) => {
     const other = neighbour(at, edge);
+    if (throughBabel && coordKey(other) === coordKey({ x: 0, y: 0 })) return true;
     if (!(coordKey(other) in prior)) return false;
     const across = tileAt(board, other);
     return across !== undefined && riverEdgesOf(across.river, across.rotation).includes(
@@ -132,7 +174,9 @@ export function riverGainFor(
   }
 
   const placed: PlacedTile = { ...draw, rotation };
-  const after = babelRiverDistances({ ...board, [coordKey(at)]: placed });
+  const after = throughBabel
+    ? babelRiverDistancesThroughBabel({ ...board, [coordKey(at)]: placed })
+    : babelRiverDistances({ ...board, [coordKey(at)]: placed });
   return {
     joined: true,
     reachBefore: priorReach,
@@ -157,11 +201,12 @@ export function riverPrestigeFor(
   earned = 0,
   before?: Record<string, number>,
   recordedReach?: number,
+  throughBabel = false,
 ): number {
   const rule = rules.riverPrestige;
   if (!rule || rule.perTile <= 0 || draw.river === 'none') return 0;
 
-  const gain = riverGainFor(board, at, draw, rotation, before);
+  const gain = riverGainFor(board, at, draw, rotation, before, throughBabel);
   if (!gain.joined) return 0;
   const highWater = recordedReach ?? gain.reachBefore;
   if (rule.requireReach && gain.reachAfter <= highWater) return 0;

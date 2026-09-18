@@ -9,10 +9,13 @@ import {
   hitsRemaining,
   rollsBeating,
   stepOptions,
+  bankStepOptions,
+  normalizeRegion,
   type Command,
   type Coord,
   type GameState,
   type PlayerId,
+  type RegionCoord,
 } from '@babel-game/game-core';
 import {
   bestPlacement,
@@ -111,7 +114,11 @@ export function nextCommand(
     case 'buildBabel':
       return { type: 'buildBabel', player: me, pieces: choice.pieces };
     case 'buildHarvester':
-      return { type: 'buildHarvester', player: me, at: choice.at, building: choice.building };
+      return {
+        type: 'buildHarvester', player: me, at: choice.at,
+        ...(choice.region === undefined ? {} : { region: choice.region }),
+        building: choice.building,
+      };
     case 'buildTower':
       return { type: 'buildTower', player: me, at: choice.at };
     case 'buildMonument':
@@ -152,16 +159,18 @@ export function nextCommand(
  * there to be chosen: everything else stays random, so this changes nothing
  * about a game with no Walls in it.
  */
-export function heavenPlan(state: GameState): Record<string, readonly Coord[]> {
+export function heavenPlan(state: GameState): Record<string, readonly RegionCoord[]> {
   if (state.walls.length === 0) return {};
-  const plan: Record<string, readonly Coord[]> = {};
+  const plan: Record<string, readonly RegionCoord[]> = {};
 
   for (const host of state.hosts) {
     const how = {
       impassable: state.rules.impassableTerrain,
       flies: HOSTS[host.kind].flies,
     };
-    const options = stepOptions(state.board, host.at, undefined, how);
+    const options = state.rules.bankMode && !HOSTS[host.kind].flies
+      ? bankStepOptions(state.board, normalizeRegion(state.board, { ...host.at, ...(host.region === undefined ? {} : { region: host.region }) }))
+      : stepOptions(state.board, host.at, undefined, how);
     /* With one legal step there is nothing to steer: it happens anyway. */
     if (options.length < 2) continue;
     const intoWall = options.find((option) => hasWallBetween(state.walls, host.at, option));

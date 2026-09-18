@@ -1,0 +1,6409 @@
+{
+  "experimental": true,
+  "paired": true,
+  "players": 3,
+  "rosterMode": "diverse",
+  "seedPrefix": "banks-20260918-validation",
+  "games": [
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g0",
+      "roster": [
+        "architect",
+        "commander",
+        "industrialist"
+      ],
+      "outcome": "win",
+      "rounds": 37,
+      "winningRound": 37,
+      "totalTurns": 110,
+      "actionCounts": {
+        "buildHarvester": 22,
+        "pass": 13,
+        "muster": 8,
+        "buyScheme": 4,
+        "buildBabel": 20,
+        "buildTower": 17,
+        "attack": 26
+      },
+      "hostsSpawned": 38,
+      "hostsKilled": 34,
+      "beaconDeferrals": 8,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 51,
+          "wood": 75,
+          "brick": 54,
+          "metal": 39
+        },
+        "harvest": {
+          "food": 63,
+          "wood": 100,
+          "brick": 62,
+          "metal": 52
+        },
+        "barter": {
+          "food": 6,
+          "wood": 8,
+          "brick": 7,
+          "metal": 2
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.4636363636363636,
+          "wood": 0.6818181818181818,
+          "brick": 0.4909090909090909,
+          "metal": 0.35454545454545455
+        },
+        "harvest": {
+          "food": 0.5727272727272728,
+          "wood": 0.9090909090909091,
+          "brick": 0.5636363636363636,
+          "metal": 0.4727272727272727
+        },
+        "barter": {
+          "food": 0.05454545454545454,
+          "wood": 0.07272727272727272,
+          "brick": 0.06363636363636363,
+          "metal": 0.01818181818181818
+        }
+      },
+      "harvestTriggers": 57,
+      "harvestTriggersByResource": {
+        "wood": 19,
+        "metal": 11,
+        "food": 13,
+        "brick": 14
+      },
+      "placementSuppressed": 21,
+      "placementSuppressedByReason": {
+        "lostLedgers": 21
+      },
+      "resourceWantAccess": {
+        "wanting": 48,
+        "satisfied": 28,
+        "rate": 0.5833333333333334,
+        "byResource": {
+          "food": {
+            "wanting": 17,
+            "satisfied": 8,
+            "rate": 0.47058823529411764
+          },
+          "wood": {
+            "wanting": 18,
+            "satisfied": 12,
+            "rate": 0.6666666666666666
+          },
+          "brick": {
+            "wanting": 10,
+            "satisfied": 6,
+            "rate": 0.6
+          },
+          "metal": {
+            "wanting": 3,
+            "satisfied": 2,
+            "rate": 0.6666666666666666
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g1",
+      "roster": [
+        "architect",
+        "commander",
+        "engineer"
+      ],
+      "outcome": "loss",
+      "rounds": 48,
+      "winningRound": null,
+      "totalTurns": 144,
+      "actionCounts": {
+        "buildHarvester": 18,
+        "pass": 15,
+        "buildBabel": 10,
+        "muster": 8,
+        "attack": 72,
+        "buildTower": 21
+      },
+      "hostsSpawned": 62,
+      "hostsKilled": 49,
+      "beaconDeferrals": 4,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 75,
+          "wood": 86,
+          "brick": 60,
+          "metal": 44
+        },
+        "harvest": {
+          "food": 57,
+          "wood": 64,
+          "brick": 32,
+          "metal": 45
+        },
+        "barter": {
+          "food": 2,
+          "wood": 16,
+          "brick": 5,
+          "metal": 12
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.5208333333333334,
+          "wood": 0.5972222222222222,
+          "brick": 0.4166666666666667,
+          "metal": 0.3055555555555556
+        },
+        "harvest": {
+          "food": 0.3958333333333333,
+          "wood": 0.4444444444444444,
+          "brick": 0.2222222222222222,
+          "metal": 0.3125
+        },
+        "barter": {
+          "food": 0.013888888888888888,
+          "wood": 0.1111111111111111,
+          "brick": 0.034722222222222224,
+          "metal": 0.08333333333333333
+        }
+      },
+      "harvestTriggers": 58,
+      "harvestTriggersByResource": {
+        "food": 17,
+        "brick": 10,
+        "metal": 11,
+        "wood": 20
+      },
+      "placementSuppressed": 30,
+      "placementSuppressedByReason": {
+        "lostLedgers": 30
+      },
+      "resourceWantAccess": {
+        "wanting": 90,
+        "satisfied": 53,
+        "rate": 0.5888888888888889,
+        "byResource": {
+          "food": {
+            "wanting": 7,
+            "satisfied": 5,
+            "rate": 0.7142857142857143
+          },
+          "wood": {
+            "wanting": 54,
+            "satisfied": 31,
+            "rate": 0.5740740740740741
+          },
+          "brick": {
+            "wanting": 8,
+            "satisfied": 5,
+            "rate": 0.625
+          },
+          "metal": {
+            "wanting": 21,
+            "satisfied": 12,
+            "rate": 0.5714285714285714
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g2",
+      "roster": [
+        "architect",
+        "commander",
+        "merchant"
+      ],
+      "outcome": "loss",
+      "rounds": 25,
+      "winningRound": null,
+      "totalTurns": 75,
+      "actionCounts": {
+        "buildHarvester": 13,
+        "pass": 4,
+        "muster": 7,
+        "attack": 22,
+        "buyScheme": 9,
+        "buildBabel": 6,
+        "buildTower": 14
+      },
+      "hostsSpawned": 31,
+      "hostsKilled": 22,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 41,
+          "wood": 36,
+          "brick": 57,
+          "metal": 21
+        },
+        "harvest": {
+          "food": 39,
+          "wood": 24,
+          "brick": 34,
+          "metal": 6
+        },
+        "barter": {
+          "food": 1,
+          "wood": 15,
+          "brick": 3,
+          "metal": 18
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.5466666666666666,
+          "wood": 0.48,
+          "brick": 0.76,
+          "metal": 0.28
+        },
+        "harvest": {
+          "food": 0.52,
+          "wood": 0.32,
+          "brick": 0.4533333333333333,
+          "metal": 0.08
+        },
+        "barter": {
+          "food": 0.013333333333333334,
+          "wood": 0.2,
+          "brick": 0.04,
+          "metal": 0.24
+        }
+      },
+      "harvestTriggers": 32,
+      "harvestTriggersByResource": {
+        "food": 11,
+        "wood": 8,
+        "brick": 11,
+        "metal": 2
+      },
+      "placementSuppressed": 11,
+      "placementSuppressedByReason": {
+        "lostLedgers": 11
+      },
+      "resourceWantAccess": {
+        "wanting": 70,
+        "satisfied": 45,
+        "rate": 0.6428571428571429,
+        "byResource": {
+          "food": {
+            "wanting": 11,
+            "satisfied": 3,
+            "rate": 0.2727272727272727
+          },
+          "wood": {
+            "wanting": 24,
+            "satisfied": 19,
+            "rate": 0.7916666666666666
+          },
+          "brick": {
+            "wanting": 8,
+            "satisfied": 5,
+            "rate": 0.625
+          },
+          "metal": {
+            "wanting": 27,
+            "satisfied": 18,
+            "rate": 0.6666666666666666
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g3",
+      "roster": [
+        "architect",
+        "industrialist",
+        "engineer"
+      ],
+      "outcome": "loss",
+      "rounds": 21,
+      "winningRound": null,
+      "totalTurns": 63,
+      "actionCounts": {
+        "buildHarvester": 12,
+        "pass": 12,
+        "attack": 17,
+        "buildBabel": 5,
+        "buildTower": 12,
+        "muster": 4,
+        "buyScheme": 1
+      },
+      "hostsSpawned": 23,
+      "hostsKilled": 14,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 33,
+          "wood": 38,
+          "brick": 15,
+          "metal": 13
+        },
+        "harvest": {
+          "food": 28,
+          "wood": 35,
+          "brick": 18,
+          "metal": 9
+        },
+        "barter": {
+          "food": 0,
+          "wood": 5,
+          "brick": 8,
+          "metal": 10
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.5238095238095238,
+          "wood": 0.6031746031746031,
+          "brick": 0.23809523809523808,
+          "metal": 0.20634920634920634
+        },
+        "harvest": {
+          "food": 0.4444444444444444,
+          "wood": 0.5555555555555556,
+          "brick": 0.2857142857142857,
+          "metal": 0.14285714285714285
+        },
+        "barter": {
+          "food": 0,
+          "wood": 0.07936507936507936,
+          "brick": 0.12698412698412698,
+          "metal": 0.15873015873015872
+        }
+      },
+      "harvestTriggers": 24,
+      "harvestTriggersByResource": {
+        "food": 8,
+        "wood": 10,
+        "brick": 4,
+        "metal": 2
+      },
+      "placementSuppressed": 13,
+      "placementSuppressedByReason": {
+        "lostLedgers": 13
+      },
+      "resourceWantAccess": {
+        "wanting": 48,
+        "satisfied": 30,
+        "rate": 0.625,
+        "byResource": {
+          "food": {
+            "wanting": 3,
+            "satisfied": 3,
+            "rate": 1
+          },
+          "wood": {
+            "wanting": 21,
+            "satisfied": 9,
+            "rate": 0.42857142857142855
+          },
+          "brick": {
+            "wanting": 12,
+            "satisfied": 8,
+            "rate": 0.6666666666666666
+          },
+          "metal": {
+            "wanting": 12,
+            "satisfied": 10,
+            "rate": 0.8333333333333334
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g4",
+      "roster": [
+        "architect",
+        "industrialist",
+        "merchant"
+      ],
+      "outcome": "loss",
+      "rounds": 106,
+      "winningRound": null,
+      "totalTurns": 318,
+      "actionCounts": {
+        "buildHarvester": 29,
+        "pass": 20,
+        "buyScheme": 44,
+        "attack": 129,
+        "muster": 6,
+        "buildTower": 38,
+        "buildBabel": 52
+      },
+      "hostsSpawned": 145,
+      "hostsKilled": 122,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 224,
+          "wood": 200,
+          "brick": 179,
+          "metal": 131
+        },
+        "harvest": {
+          "food": 193,
+          "wood": 245,
+          "brick": 241,
+          "metal": 132
+        },
+        "barter": {
+          "food": 16,
+          "wood": 38,
+          "brick": 11,
+          "metal": 18
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.7044025157232704,
+          "wood": 0.6289308176100629,
+          "brick": 0.5628930817610063,
+          "metal": 0.4119496855345912
+        },
+        "harvest": {
+          "food": 0.6069182389937107,
+          "wood": 0.7704402515723271,
+          "brick": 0.7578616352201258,
+          "metal": 0.41509433962264153
+        },
+        "barter": {
+          "food": 0.050314465408805034,
+          "wood": 0.11949685534591195,
+          "brick": 0.03459119496855346,
+          "metal": 0.05660377358490566
+        }
+      },
+      "harvestTriggers": 190,
+      "harvestTriggersByResource": {
+        "wood": 54,
+        "metal": 30,
+        "food": 57,
+        "brick": 49
+      },
+      "placementSuppressed": 43,
+      "placementSuppressedByReason": {
+        "lostLedgers": 43
+      },
+      "resourceWantAccess": {
+        "wanting": 146,
+        "satisfied": 103,
+        "rate": 0.7054794520547946,
+        "byResource": {
+          "food": {
+            "wanting": 42,
+            "satisfied": 25,
+            "rate": 0.5952380952380952
+          },
+          "wood": {
+            "wanting": 63,
+            "satisfied": 46,
+            "rate": 0.7301587301587301
+          },
+          "brick": {
+            "wanting": 13,
+            "satisfied": 8,
+            "rate": 0.6153846153846154
+          },
+          "metal": {
+            "wanting": 28,
+            "satisfied": 24,
+            "rate": 0.8571428571428571
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g5",
+      "roster": [
+        "architect",
+        "engineer",
+        "merchant"
+      ],
+      "outcome": "loss",
+      "rounds": 39,
+      "winningRound": null,
+      "totalTurns": 117,
+      "actionCounts": {
+        "buildBabel": 13,
+        "buildHarvester": 16,
+        "pass": 5,
+        "attack": 48,
+        "buyScheme": 13,
+        "buildTower": 16,
+        "muster": 6
+      },
+      "hostsSpawned": 52,
+      "hostsKilled": 37,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 80,
+          "wood": 49,
+          "brick": 75,
+          "metal": 44
+        },
+        "harvest": {
+          "food": 86,
+          "wood": 75,
+          "brick": 73,
+          "metal": 39
+        },
+        "barter": {
+          "food": 5,
+          "wood": 4,
+          "brick": 5,
+          "metal": 12
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.6837606837606838,
+          "wood": 0.4188034188034188,
+          "brick": 0.6410256410256411,
+          "metal": 0.37606837606837606
+        },
+        "harvest": {
+          "food": 0.7350427350427351,
+          "wood": 0.6410256410256411,
+          "brick": 0.6239316239316239,
+          "metal": 0.3333333333333333
+        },
+        "barter": {
+          "food": 0.042735042735042736,
+          "wood": 0.03418803418803419,
+          "brick": 0.042735042735042736,
+          "metal": 0.10256410256410256
+        }
+      },
+      "harvestTriggers": 70,
+      "harvestTriggersByResource": {
+        "brick": 21,
+        "food": 23,
+        "wood": 16,
+        "metal": 10
+      },
+      "placementSuppressed": 24,
+      "placementSuppressedByReason": {
+        "lostLedgers": 24
+      },
+      "resourceWantAccess": {
+        "wanting": 55,
+        "satisfied": 36,
+        "rate": 0.6545454545454545,
+        "byResource": {
+          "food": {
+            "wanting": 15,
+            "satisfied": 9,
+            "rate": 0.6
+          },
+          "wood": {
+            "wanting": 9,
+            "satisfied": 7,
+            "rate": 0.7777777777777778
+          },
+          "brick": {
+            "wanting": 9,
+            "satisfied": 6,
+            "rate": 0.6666666666666666
+          },
+          "metal": {
+            "wanting": 22,
+            "satisfied": 14,
+            "rate": 0.6363636363636364
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g6",
+      "roster": [
+        "commander",
+        "industrialist",
+        "engineer"
+      ],
+      "outcome": "win",
+      "rounds": 53,
+      "winningRound": 53,
+      "totalTurns": 159,
+      "actionCounts": {
+        "buildHarvester": 27,
+        "pass": 8,
+        "buyScheme": 2,
+        "attack": 69,
+        "muster": 8,
+        "buildBabel": 28,
+        "buildTower": 17
+      },
+      "hostsSpawned": 68,
+      "hostsKilled": 52,
+      "beaconDeferrals": 1,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 68,
+          "wood": 93,
+          "brick": 87,
+          "metal": 59
+        },
+        "harvest": {
+          "food": 104,
+          "wood": 120,
+          "brick": 116,
+          "metal": 75
+        },
+        "barter": {
+          "food": 5,
+          "wood": 10,
+          "brick": 0,
+          "metal": 5
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.4276729559748428,
+          "wood": 0.5849056603773585,
+          "brick": 0.5471698113207547,
+          "metal": 0.3710691823899371
+        },
+        "harvest": {
+          "food": 0.6540880503144654,
+          "wood": 0.7547169811320755,
+          "brick": 0.7295597484276729,
+          "metal": 0.4716981132075472
+        },
+        "barter": {
+          "food": 0.031446540880503145,
+          "wood": 0.06289308176100629,
+          "brick": 0,
+          "metal": 0.031446540880503145
+        }
+      },
+      "harvestTriggers": 88,
+      "harvestTriggersByResource": {
+        "food": 24,
+        "brick": 21,
+        "wood": 27,
+        "metal": 16
+      },
+      "placementSuppressed": 39,
+      "placementSuppressedByReason": {
+        "lostLedgers": 39
+      },
+      "resourceWantAccess": {
+        "wanting": 47,
+        "satisfied": 23,
+        "rate": 0.48936170212765956,
+        "byResource": {
+          "food": {
+            "wanting": 9,
+            "satisfied": 4,
+            "rate": 0.4444444444444444
+          },
+          "wood": {
+            "wanting": 24,
+            "satisfied": 13,
+            "rate": 0.5416666666666666
+          },
+          "brick": {
+            "wanting": 4,
+            "satisfied": 0,
+            "rate": 0
+          },
+          "metal": {
+            "wanting": 10,
+            "satisfied": 6,
+            "rate": 0.6
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g7",
+      "roster": [
+        "commander",
+        "industrialist",
+        "merchant"
+      ],
+      "outcome": "loss",
+      "rounds": 90,
+      "winningRound": null,
+      "totalTurns": 272,
+      "actionCounts": {
+        "buildHarvester": 15,
+        "pass": 8,
+        "attack": 109,
+        "buyScheme": 54,
+        "muster": 8,
+        "buildTower": 40,
+        "buildBabel": 38
+      },
+      "hostsSpawned": 123,
+      "hostsKilled": 106,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 212,
+          "wood": 163,
+          "brick": 142,
+          "metal": 130
+        },
+        "harvest": {
+          "food": 218,
+          "wood": 80,
+          "brick": 84,
+          "metal": 96
+        },
+        "barter": {
+          "food": 0,
+          "wood": 20,
+          "brick": 2,
+          "metal": 10
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.7794117647058824,
+          "wood": 0.5992647058823529,
+          "brick": 0.5220588235294118,
+          "metal": 0.47794117647058826
+        },
+        "harvest": {
+          "food": 0.8014705882352942,
+          "wood": 0.29411764705882354,
+          "brick": 0.3088235294117647,
+          "metal": 0.35294117647058826
+        },
+        "barter": {
+          "food": 0,
+          "wood": 0.07352941176470588,
+          "brick": 0.007352941176470588,
+          "metal": 0.03676470588235294
+        }
+      },
+      "harvestTriggers": 157,
+      "harvestTriggersByResource": {
+        "metal": 33,
+        "food": 65,
+        "wood": 28,
+        "brick": 31
+      },
+      "placementSuppressed": 30,
+      "placementSuppressedByReason": {
+        "lostLedgers": 30
+      },
+      "resourceWantAccess": {
+        "wanting": 83,
+        "satisfied": 47,
+        "rate": 0.5662650602409639,
+        "byResource": {
+          "food": {
+            "wanting": 6,
+            "satisfied": 2,
+            "rate": 0.3333333333333333
+          },
+          "wood": {
+            "wanting": 49,
+            "satisfied": 32,
+            "rate": 0.6530612244897959
+          },
+          "brick": {
+            "wanting": 3,
+            "satisfied": 1,
+            "rate": 0.3333333333333333
+          },
+          "metal": {
+            "wanting": 25,
+            "satisfied": 12,
+            "rate": 0.48
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g8",
+      "roster": [
+        "commander",
+        "engineer",
+        "merchant"
+      ],
+      "outcome": "loss",
+      "rounds": 25,
+      "winningRound": null,
+      "totalTurns": 75,
+      "actionCounts": {
+        "buildBabel": 6,
+        "buildHarvester": 10,
+        "pass": 8,
+        "muster": 8,
+        "attack": 27,
+        "buyScheme": 7,
+        "buildTower": 9
+      },
+      "hostsSpawned": 27,
+      "hostsKilled": 18,
+      "beaconDeferrals": 2,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 27,
+          "wood": 21,
+          "brick": 56,
+          "metal": 8
+        },
+        "harvest": {
+          "food": 27,
+          "wood": 17,
+          "brick": 46,
+          "metal": 0
+        },
+        "barter": {
+          "food": 5,
+          "wood": 13,
+          "brick": 1,
+          "metal": 16
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.36,
+          "wood": 0.28,
+          "brick": 0.7466666666666667,
+          "metal": 0.10666666666666667
+        },
+        "harvest": {
+          "food": 0.36,
+          "wood": 0.22666666666666666,
+          "brick": 0.6133333333333333,
+          "metal": 0
+        },
+        "barter": {
+          "food": 0.06666666666666667,
+          "wood": 0.17333333333333334,
+          "brick": 0.013333333333333334,
+          "metal": 0.21333333333333335
+        }
+      },
+      "harvestTriggers": 24,
+      "harvestTriggersByResource": {
+        "wood": 5,
+        "food": 7,
+        "brick": 12
+      },
+      "placementSuppressed": 15,
+      "placementSuppressedByReason": {
+        "lostLedgers": 15
+      },
+      "resourceWantAccess": {
+        "wanting": 72,
+        "satisfied": 44,
+        "rate": 0.6111111111111112,
+        "byResource": {
+          "food": {
+            "wanting": 19,
+            "satisfied": 9,
+            "rate": 0.47368421052631576
+          },
+          "wood": {
+            "wanting": 27,
+            "satisfied": 17,
+            "rate": 0.6296296296296297
+          },
+          "brick": {
+            "wanting": 3,
+            "satisfied": 2,
+            "rate": 0.6666666666666666
+          },
+          "metal": {
+            "wanting": 23,
+            "satisfied": 16,
+            "rate": 0.6956521739130435
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g9",
+      "roster": [
+        "industrialist",
+        "engineer",
+        "merchant"
+      ],
+      "outcome": "loss",
+      "rounds": 38,
+      "winningRound": null,
+      "totalTurns": 115,
+      "actionCounts": {
+        "buildHarvester": 23,
+        "buildBabel": 7,
+        "buyScheme": 9,
+        "pass": 11,
+        "attack": 38,
+        "muster": 6,
+        "buildTower": 21
+      },
+      "hostsSpawned": 41,
+      "hostsKilled": 31,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 76,
+          "wood": 51,
+          "brick": 53,
+          "metal": 17
+        },
+        "harvest": {
+          "food": 102,
+          "wood": 77,
+          "brick": 47,
+          "metal": 7
+        },
+        "barter": {
+          "food": 2,
+          "wood": 6,
+          "brick": 2,
+          "metal": 23
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.6608695652173913,
+          "wood": 0.4434782608695652,
+          "brick": 0.4608695652173913,
+          "metal": 0.14782608695652175
+        },
+        "harvest": {
+          "food": 0.8869565217391304,
+          "wood": 0.6695652173913044,
+          "brick": 0.40869565217391307,
+          "metal": 0.06086956521739131
+        },
+        "barter": {
+          "food": 0.017391304347826087,
+          "wood": 0.05217391304347826,
+          "brick": 0.017391304347826087,
+          "metal": 0.2
+        }
+      },
+      "harvestTriggers": 56,
+      "harvestTriggersByResource": {
+        "food": 23,
+        "wood": 18,
+        "brick": 13,
+        "metal": 2
+      },
+      "placementSuppressed": 27,
+      "placementSuppressedByReason": {
+        "lostLedgers": 27
+      },
+      "resourceWantAccess": {
+        "wanting": 75,
+        "satisfied": 49,
+        "rate": 0.6533333333333333,
+        "byResource": {
+          "food": {
+            "wanting": 14,
+            "satisfied": 12,
+            "rate": 0.8571428571428571
+          },
+          "wood": {
+            "wanting": 16,
+            "satisfied": 11,
+            "rate": 0.6875
+          },
+          "brick": {
+            "wanting": 8,
+            "satisfied": 3,
+            "rate": 0.375
+          },
+          "metal": {
+            "wanting": 37,
+            "satisfied": 23,
+            "rate": 0.6216216216216216
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g10",
+      "roster": [
+        "commander",
+        "industrialist",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 20,
+      "winningRound": null,
+      "totalTurns": 60,
+      "actionCounts": {
+        "muster": 6,
+        "buildHarvester": 8,
+        "pass": 11,
+        "buildBabel": 6,
+        "attack": 18,
+        "buildTower": 11
+      },
+      "hostsSpawned": 21,
+      "hostsKilled": 12,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 20,
+          "wood": 24,
+          "brick": 19,
+          "metal": 21
+        },
+        "harvest": {
+          "food": 9,
+          "wood": 29,
+          "brick": 41,
+          "metal": 0
+        },
+        "barter": {
+          "food": 3,
+          "wood": 6,
+          "brick": 3,
+          "metal": 5
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.3333333333333333,
+          "wood": 0.4,
+          "brick": 0.31666666666666665,
+          "metal": 0.35
+        },
+        "harvest": {
+          "food": 0.15,
+          "wood": 0.48333333333333334,
+          "brick": 0.6833333333333333,
+          "metal": 0
+        },
+        "barter": {
+          "food": 0.05,
+          "wood": 0.1,
+          "brick": 0.05,
+          "metal": 0.08333333333333333
+        }
+      },
+      "harvestTriggers": 18,
+      "harvestTriggersByResource": {
+        "brick": 8,
+        "wood": 7,
+        "food": 3
+      },
+      "placementSuppressed": 14,
+      "placementSuppressedByReason": {
+        "lostLedgers": 14
+      },
+      "resourceWantAccess": {
+        "wanting": 47,
+        "satisfied": 24,
+        "rate": 0.5106382978723404,
+        "byResource": {
+          "food": {
+            "wanting": 13,
+            "satisfied": 5,
+            "rate": 0.38461538461538464
+          },
+          "wood": {
+            "wanting": 15,
+            "satisfied": 10,
+            "rate": 0.6666666666666666
+          },
+          "brick": {
+            "wanting": 7,
+            "satisfied": 3,
+            "rate": 0.42857142857142855
+          },
+          "metal": {
+            "wanting": 12,
+            "satisfied": 6,
+            "rate": 0.5
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g11",
+      "roster": [
+        "commander",
+        "engineer",
+        "architect"
+      ],
+      "outcome": "win",
+      "rounds": 55,
+      "winningRound": 55,
+      "totalTurns": 165,
+      "actionCounts": {
+        "buildHarvester": 19,
+        "buildBabel": 35,
+        "pass": 11,
+        "attack": 72,
+        "muster": 8,
+        "buildTower": 20
+      },
+      "hostsSpawned": 72,
+      "hostsKilled": 53,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 68,
+          "wood": 87,
+          "brick": 92,
+          "metal": 63
+        },
+        "harvest": {
+          "food": 125,
+          "wood": 77,
+          "brick": 78,
+          "metal": 48
+        },
+        "barter": {
+          "food": 2,
+          "wood": 18,
+          "brick": 10,
+          "metal": 8
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.4121212121212121,
+          "wood": 0.5272727272727272,
+          "brick": 0.5575757575757576,
+          "metal": 0.38181818181818183
+        },
+        "harvest": {
+          "food": 0.7575757575757576,
+          "wood": 0.4666666666666667,
+          "brick": 0.4727272727272727,
+          "metal": 0.2909090909090909
+        },
+        "barter": {
+          "food": 0.012121212121212121,
+          "wood": 0.10909090909090909,
+          "brick": 0.06060606060606061,
+          "metal": 0.048484848484848485
+        }
+      },
+      "harvestTriggers": 82,
+      "harvestTriggersByResource": {
+        "food": 25,
+        "brick": 22,
+        "metal": 16,
+        "wood": 19
+      },
+      "placementSuppressed": 33,
+      "placementSuppressedByReason": {
+        "lostLedgers": 33
+      },
+      "resourceWantAccess": {
+        "wanting": 75,
+        "satisfied": 55,
+        "rate": 0.7333333333333333,
+        "byResource": {
+          "food": {
+            "wanting": 13,
+            "satisfied": 5,
+            "rate": 0.38461538461538464
+          },
+          "wood": {
+            "wanting": 36,
+            "satisfied": 29,
+            "rate": 0.8055555555555556
+          },
+          "brick": {
+            "wanting": 16,
+            "satisfied": 12,
+            "rate": 0.75
+          },
+          "metal": {
+            "wanting": 10,
+            "satisfied": 9,
+            "rate": 0.9
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g12",
+      "roster": [
+        "commander",
+        "merchant",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 76,
+      "winningRound": null,
+      "totalTurns": 229,
+      "actionCounts": {
+        "buildHarvester": 18,
+        "pass": 15,
+        "buildBabel": 28,
+        "attack": 91,
+        "muster": 8,
+        "buyScheme": 31,
+        "buildTower": 38
+      },
+      "hostsSpawned": 102,
+      "hostsKilled": 87,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 76,
+          "wood": 184,
+          "brick": 144,
+          "metal": 79
+        },
+        "harvest": {
+          "food": 39,
+          "wood": 250,
+          "brick": 151,
+          "metal": 22
+        },
+        "barter": {
+          "food": 27,
+          "wood": 7,
+          "brick": 5,
+          "metal": 54
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.3318777292576419,
+          "wood": 0.8034934497816594,
+          "brick": 0.62882096069869,
+          "metal": 0.34497816593886466
+        },
+        "harvest": {
+          "food": 0.1703056768558952,
+          "wood": 1.091703056768559,
+          "brick": 0.6593886462882096,
+          "metal": 0.09606986899563319
+        },
+        "barter": {
+          "food": 0.11790393013100436,
+          "wood": 0.03056768558951965,
+          "brick": 0.021834061135371178,
+          "metal": 0.23580786026200873
+        }
+      },
+      "harvestTriggers": 105,
+      "harvestTriggersByResource": {
+        "wood": 52,
+        "food": 12,
+        "brick": 32,
+        "metal": 9
+      },
+      "placementSuppressed": 34,
+      "placementSuppressedByReason": {
+        "lostLedgers": 34
+      },
+      "resourceWantAccess": {
+        "wanting": 155,
+        "satisfied": 113,
+        "rate": 0.7290322580645161,
+        "byResource": {
+          "food": {
+            "wanting": 43,
+            "satisfied": 29,
+            "rate": 0.6744186046511628
+          },
+          "wood": {
+            "wanting": 28,
+            "satisfied": 20,
+            "rate": 0.7142857142857143
+          },
+          "brick": {
+            "wanting": 13,
+            "satisfied": 8,
+            "rate": 0.6153846153846154
+          },
+          "metal": {
+            "wanting": 71,
+            "satisfied": 56,
+            "rate": 0.7887323943661971
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g13",
+      "roster": [
+        "industrialist",
+        "engineer",
+        "architect"
+      ],
+      "outcome": "win",
+      "rounds": 80,
+      "winningRound": 80,
+      "totalTurns": 239,
+      "actionCounts": {
+        "buildHarvester": 25,
+        "pass": 18,
+        "buildBabel": 69,
+        "attack": 93,
+        "buildTower": 24,
+        "muster": 6,
+        "buyScheme": 4
+      },
+      "hostsSpawned": 108,
+      "hostsKilled": 75,
+      "beaconDeferrals": 10,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 140,
+          "wood": 139,
+          "brick": 147,
+          "metal": 80
+        },
+        "harvest": {
+          "food": 211,
+          "wood": 215,
+          "brick": 229,
+          "metal": 113
+        },
+        "barter": {
+          "food": 0,
+          "wood": 12,
+          "brick": 9,
+          "metal": 18
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.5857740585774058,
+          "wood": 0.5815899581589958,
+          "brick": 0.6150627615062761,
+          "metal": 0.33472803347280333
+        },
+        "harvest": {
+          "food": 0.8828451882845189,
+          "wood": 0.899581589958159,
+          "brick": 0.9581589958158996,
+          "metal": 0.47280334728033474
+        },
+        "barter": {
+          "food": 0,
+          "wood": 0.0502092050209205,
+          "brick": 0.03765690376569038,
+          "metal": 0.07531380753138076
+        }
+      },
+      "harvestTriggers": 146,
+      "harvestTriggersByResource": {
+        "food": 42,
+        "wood": 42,
+        "brick": 41,
+        "metal": 21
+      },
+      "placementSuppressed": 49,
+      "placementSuppressedByReason": {
+        "lostLedgers": 49
+      },
+      "resourceWantAccess": {
+        "wanting": 62,
+        "satisfied": 50,
+        "rate": 0.8064516129032258,
+        "byResource": {
+          "food": {
+            "wanting": 4,
+            "satisfied": 2,
+            "rate": 0.5
+          },
+          "wood": {
+            "wanting": 24,
+            "satisfied": 21,
+            "rate": 0.875
+          },
+          "brick": {
+            "wanting": 15,
+            "satisfied": 8,
+            "rate": 0.5333333333333333
+          },
+          "metal": {
+            "wanting": 19,
+            "satisfied": 19,
+            "rate": 1
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g14",
+      "roster": [
+        "industrialist",
+        "merchant",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 24,
+      "winningRound": null,
+      "totalTurns": 73,
+      "actionCounts": {
+        "buildHarvester": 17,
+        "buildBabel": 6,
+        "pass": 9,
+        "attack": 24,
+        "muster": 6,
+        "buyScheme": 5,
+        "buildTower": 6
+      },
+      "hostsSpawned": 28,
+      "hostsKilled": 18,
+      "beaconDeferrals": 2,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 43,
+          "wood": 25,
+          "brick": 28,
+          "metal": 19
+        },
+        "harvest": {
+          "food": 58,
+          "wood": 11,
+          "brick": 18,
+          "metal": 11
+        },
+        "barter": {
+          "food": 2,
+          "wood": 16,
+          "brick": 5,
+          "metal": 7
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.589041095890411,
+          "wood": 0.3424657534246575,
+          "brick": 0.3835616438356164,
+          "metal": 0.2602739726027397
+        },
+        "harvest": {
+          "food": 0.7945205479452054,
+          "wood": 0.1506849315068493,
+          "brick": 0.2465753424657534,
+          "metal": 0.1506849315068493
+        },
+        "barter": {
+          "food": 0.0273972602739726,
+          "wood": 0.2191780821917808,
+          "brick": 0.0684931506849315,
+          "metal": 0.0958904109589041
+        }
+      },
+      "harvestTriggers": 26,
+      "harvestTriggersByResource": {
+        "wood": 4,
+        "brick": 6,
+        "food": 13,
+        "metal": 3
+      },
+      "placementSuppressed": 13,
+      "placementSuppressedByReason": {
+        "lostLedgers": 13
+      },
+      "resourceWantAccess": {
+        "wanting": 71,
+        "satisfied": 39,
+        "rate": 0.5492957746478874,
+        "byResource": {
+          "food": {
+            "wanting": 13,
+            "satisfied": 6,
+            "rate": 0.46153846153846156
+          },
+          "wood": {
+            "wanting": 33,
+            "satisfied": 19,
+            "rate": 0.5757575757575758
+          },
+          "brick": {
+            "wanting": 12,
+            "satisfied": 6,
+            "rate": 0.5
+          },
+          "metal": {
+            "wanting": 13,
+            "satisfied": 8,
+            "rate": 0.6153846153846154
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g15",
+      "roster": [
+        "engineer",
+        "merchant",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 27,
+      "winningRound": null,
+      "totalTurns": 82,
+      "actionCounts": {
+        "buildHarvester": 15,
+        "buildBabel": 12,
+        "pass": 6,
+        "attack": 16,
+        "buyScheme": 6,
+        "buildTower": 21,
+        "muster": 6
+      },
+      "hostsSpawned": 30,
+      "hostsKilled": 14,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 20,
+          "wood": 47,
+          "brick": 51,
+          "metal": 19
+        },
+        "harvest": {
+          "food": 17,
+          "wood": 54,
+          "brick": 46,
+          "metal": 19
+        },
+        "barter": {
+          "food": 6,
+          "wood": 9,
+          "brick": 0,
+          "metal": 14
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.24390243902439024,
+          "wood": 0.573170731707317,
+          "brick": 0.6219512195121951,
+          "metal": 0.23170731707317074
+        },
+        "harvest": {
+          "food": 0.2073170731707317,
+          "wood": 0.6585365853658537,
+          "brick": 0.5609756097560976,
+          "metal": 0.23170731707317074
+        },
+        "barter": {
+          "food": 0.07317073170731707,
+          "wood": 0.10975609756097561,
+          "brick": 0,
+          "metal": 0.17073170731707318
+        }
+      },
+      "harvestTriggers": 36,
+      "harvestTriggersByResource": {
+        "brick": 12,
+        "wood": 11,
+        "food": 6,
+        "metal": 7
+      },
+      "placementSuppressed": 14,
+      "placementSuppressedByReason": {
+        "lostLedgers": 14
+      },
+      "resourceWantAccess": {
+        "wanting": 65,
+        "satisfied": 38,
+        "rate": 0.5846153846153846,
+        "byResource": {
+          "food": {
+            "wanting": 18,
+            "satisfied": 9,
+            "rate": 0.5
+          },
+          "wood": {
+            "wanting": 18,
+            "satisfied": 12,
+            "rate": 0.6666666666666666
+          },
+          "brick": {
+            "wanting": 8,
+            "satisfied": 4,
+            "rate": 0.5
+          },
+          "metal": {
+            "wanting": 21,
+            "satisfied": 13,
+            "rate": 0.6190476190476191
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g16",
+      "roster": [
+        "industrialist",
+        "engineer",
+        "commander"
+      ],
+      "outcome": "win",
+      "rounds": 17,
+      "winningRound": 17,
+      "totalTurns": 51,
+      "actionCounts": {
+        "buildHarvester": 13,
+        "buildBabel": 15,
+        "pass": 16,
+        "muster": 3,
+        "buyScheme": 4
+      },
+      "hostsSpawned": 0,
+      "hostsKilled": 0,
+      "beaconDeferrals": 57,
+      "zeroHostGame": true,
+      "resourcesGained": {
+        "placement": {
+          "food": 29,
+          "wood": 10,
+          "brick": 29,
+          "metal": 26
+        },
+        "harvest": {
+          "food": 41,
+          "wood": 16,
+          "brick": 53,
+          "metal": 25
+        },
+        "barter": {
+          "food": 0,
+          "wood": 16,
+          "brick": 3,
+          "metal": 4
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.5686274509803921,
+          "wood": 0.19607843137254902,
+          "brick": 0.5686274509803921,
+          "metal": 0.5098039215686274
+        },
+        "harvest": {
+          "food": 0.803921568627451,
+          "wood": 0.3137254901960784,
+          "brick": 1.0392156862745099,
+          "metal": 0.49019607843137253
+        },
+        "barter": {
+          "food": 0,
+          "wood": 0.3137254901960784,
+          "brick": 0.058823529411764705,
+          "metal": 0.0784313725490196
+        }
+      },
+      "harvestTriggers": 30,
+      "harvestTriggersByResource": {
+        "wood": 4,
+        "food": 9,
+        "brick": 10,
+        "metal": 7
+      },
+      "placementSuppressed": 15,
+      "placementSuppressedByReason": {
+        "lostLedgers": 15
+      },
+      "resourceWantAccess": {
+        "wanting": 42,
+        "satisfied": 30,
+        "rate": 0.7142857142857143,
+        "byResource": {
+          "food": {
+            "wanting": 5,
+            "satisfied": 4,
+            "rate": 0.8
+          },
+          "wood": {
+            "wanting": 16,
+            "satisfied": 15,
+            "rate": 0.9375
+          },
+          "brick": {
+            "wanting": 10,
+            "satisfied": 5,
+            "rate": 0.5
+          },
+          "metal": {
+            "wanting": 11,
+            "satisfied": 6,
+            "rate": 0.5454545454545454
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g17",
+      "roster": [
+        "industrialist",
+        "merchant",
+        "commander"
+      ],
+      "outcome": "loss",
+      "rounds": 26,
+      "winningRound": null,
+      "totalTurns": 78,
+      "actionCounts": {
+        "buildBabel": 5,
+        "buildHarvester": 12,
+        "pass": 9,
+        "attack": 28,
+        "muster": 7,
+        "buyScheme": 7,
+        "buildTower": 10
+      },
+      "hostsSpawned": 30,
+      "hostsKilled": 20,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 52,
+          "wood": 18,
+          "brick": 36,
+          "metal": 21
+        },
+        "harvest": {
+          "food": 49,
+          "wood": 6,
+          "brick": 27,
+          "metal": 11
+        },
+        "barter": {
+          "food": 5,
+          "wood": 15,
+          "brick": 1,
+          "metal": 14
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.6666666666666666,
+          "wood": 0.23076923076923078,
+          "brick": 0.46153846153846156,
+          "metal": 0.2692307692307692
+        },
+        "harvest": {
+          "food": 0.6282051282051282,
+          "wood": 0.07692307692307693,
+          "brick": 0.34615384615384615,
+          "metal": 0.14102564102564102
+        },
+        "barter": {
+          "food": 0.0641025641025641,
+          "wood": 0.19230769230769232,
+          "brick": 0.01282051282051282,
+          "metal": 0.1794871794871795
+        }
+      },
+      "harvestTriggers": 27,
+      "harvestTriggersByResource": {
+        "food": 14,
+        "wood": 2,
+        "brick": 7,
+        "metal": 4
+      },
+      "placementSuppressed": 18,
+      "placementSuppressedByReason": {
+        "lostLedgers": 18
+      },
+      "resourceWantAccess": {
+        "wanting": 74,
+        "satisfied": 43,
+        "rate": 0.581081081081081,
+        "byResource": {
+          "food": {
+            "wanting": 19,
+            "satisfied": 12,
+            "rate": 0.631578947368421
+          },
+          "wood": {
+            "wanting": 28,
+            "satisfied": 19,
+            "rate": 0.6785714285714286
+          },
+          "brick": {
+            "wanting": 3,
+            "satisfied": 1,
+            "rate": 0.3333333333333333
+          },
+          "metal": {
+            "wanting": 24,
+            "satisfied": 11,
+            "rate": 0.4583333333333333
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g18",
+      "roster": [
+        "engineer",
+        "merchant",
+        "commander"
+      ],
+      "outcome": "timeout",
+      "rounds": 121,
+      "winningRound": null,
+      "totalTurns": 360,
+      "actionCounts": {
+        "buildHarvester": 25,
+        "pass": 9,
+        "buyScheme": 64,
+        "muster": 8,
+        "buildTower": 48,
+        "attack": 181,
+        "buildBabel": 25
+      },
+      "hostsSpawned": 166,
+      "hostsKilled": 169,
+      "beaconDeferrals": 1,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 236,
+          "wood": 218,
+          "brick": 201,
+          "metal": 127
+        },
+        "harvest": {
+          "food": 254,
+          "wood": 226,
+          "brick": 101,
+          "metal": 139
+        },
+        "barter": {
+          "food": 1,
+          "wood": 14,
+          "brick": 3,
+          "metal": 22
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.6555555555555556,
+          "wood": 0.6055555555555555,
+          "brick": 0.5583333333333333,
+          "metal": 0.3527777777777778
+        },
+        "harvest": {
+          "food": 0.7055555555555556,
+          "wood": 0.6277777777777778,
+          "brick": 0.28055555555555556,
+          "metal": 0.3861111111111111
+        },
+        "barter": {
+          "food": 0.002777777777777778,
+          "wood": 0.03888888888888889,
+          "brick": 0.008333333333333333,
+          "metal": 0.06111111111111111
+        }
+      },
+      "harvestTriggers": 178,
+      "harvestTriggersByResource": {
+        "wood": 51,
+        "food": 55,
+        "metal": 34,
+        "brick": 38
+      },
+      "placementSuppressed": 41,
+      "placementSuppressedByReason": {
+        "lostLedgers": 41
+      },
+      "resourceWantAccess": {
+        "wanting": 72,
+        "satisfied": 50,
+        "rate": 0.6944444444444444,
+        "byResource": {
+          "food": {
+            "wanting": 5,
+            "satisfied": 3,
+            "rate": 0.6
+          },
+          "wood": {
+            "wanting": 23,
+            "satisfied": 18,
+            "rate": 0.782608695652174
+          },
+          "brick": {
+            "wanting": 7,
+            "satisfied": 3,
+            "rate": 0.42857142857142855
+          },
+          "metal": {
+            "wanting": 37,
+            "satisfied": 26,
+            "rate": 0.7027027027027027
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g19",
+      "roster": [
+        "engineer",
+        "merchant",
+        "industrialist"
+      ],
+      "outcome": "loss",
+      "rounds": 15,
+      "winningRound": null,
+      "totalTurns": 45,
+      "actionCounts": {
+        "buildHarvester": 9,
+        "buildBabel": 1,
+        "pass": 7,
+        "attack": 19,
+        "buildTower": 4,
+        "muster": 3,
+        "buyScheme": 2
+      },
+      "hostsSpawned": 13,
+      "hostsKilled": 10,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 8,
+          "wood": 32,
+          "brick": 14,
+          "metal": 13
+        },
+        "harvest": {
+          "food": 0,
+          "wood": 27,
+          "brick": 10,
+          "metal": 0
+        },
+        "barter": {
+          "food": 4,
+          "wood": 1,
+          "brick": 2,
+          "metal": 3
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.17777777777777778,
+          "wood": 0.7111111111111111,
+          "brick": 0.3111111111111111,
+          "metal": 0.28888888888888886
+        },
+        "harvest": {
+          "food": 0,
+          "wood": 0.6,
+          "brick": 0.2222222222222222,
+          "metal": 0
+        },
+        "barter": {
+          "food": 0.08888888888888889,
+          "wood": 0.022222222222222223,
+          "brick": 0.044444444444444446,
+          "metal": 0.06666666666666667
+        }
+      },
+      "harvestTriggers": 11,
+      "harvestTriggersByResource": {
+        "wood": 7,
+        "brick": 4
+      },
+      "placementSuppressed": 7,
+      "placementSuppressedByReason": {
+        "lostLedgers": 7
+      },
+      "resourceWantAccess": {
+        "wanting": 38,
+        "satisfied": 18,
+        "rate": 0.47368421052631576,
+        "byResource": {
+          "food": {
+            "wanting": 14,
+            "satisfied": 6,
+            "rate": 0.42857142857142855
+          },
+          "wood": {
+            "wanting": 10,
+            "satisfied": 5,
+            "rate": 0.5
+          },
+          "brick": {
+            "wanting": 6,
+            "satisfied": 3,
+            "rate": 0.5
+          },
+          "metal": {
+            "wanting": 8,
+            "satisfied": 4,
+            "rate": 0.5
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g20",
+      "roster": [
+        "industrialist",
+        "architect",
+        "commander"
+      ],
+      "outcome": "loss",
+      "rounds": 41,
+      "winningRound": null,
+      "totalTurns": 123,
+      "actionCounts": {
+        "buildHarvester": 19,
+        "pass": 10,
+        "attack": 52,
+        "buyScheme": 4,
+        "buildBabel": 10,
+        "buildTower": 20,
+        "muster": 8
+      },
+      "hostsSpawned": 50,
+      "hostsKilled": 38,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 61,
+          "wood": 53,
+          "brick": 62,
+          "metal": 31
+        },
+        "harvest": {
+          "food": 47,
+          "wood": 30,
+          "brick": 64,
+          "metal": 28
+        },
+        "barter": {
+          "food": 6,
+          "wood": 27,
+          "brick": 3,
+          "metal": 11
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.4959349593495935,
+          "wood": 0.43089430894308944,
+          "brick": 0.5040650406504065,
+          "metal": 0.25203252032520324
+        },
+        "harvest": {
+          "food": 0.3821138211382114,
+          "wood": 0.24390243902439024,
+          "brick": 0.5203252032520326,
+          "metal": 0.22764227642276422
+        },
+        "barter": {
+          "food": 0.04878048780487805,
+          "wood": 0.21951219512195122,
+          "brick": 0.024390243902439025,
+          "metal": 0.08943089430894309
+        }
+      },
+      "harvestTriggers": 49,
+      "harvestTriggersByResource": {
+        "wood": 7,
+        "metal": 10,
+        "brick": 17,
+        "food": 15
+      },
+      "placementSuppressed": 25,
+      "placementSuppressedByReason": {
+        "lostLedgers": 25
+      },
+      "resourceWantAccess": {
+        "wanting": 103,
+        "satisfied": 61,
+        "rate": 0.5922330097087378,
+        "byResource": {
+          "food": {
+            "wanting": 17,
+            "satisfied": 8,
+            "rate": 0.47058823529411764
+          },
+          "wood": {
+            "wanting": 56,
+            "satisfied": 36,
+            "rate": 0.6428571428571429
+          },
+          "brick": {
+            "wanting": 14,
+            "satisfied": 5,
+            "rate": 0.35714285714285715
+          },
+          "metal": {
+            "wanting": 16,
+            "satisfied": 12,
+            "rate": 0.75
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g21",
+      "roster": [
+        "engineer",
+        "architect",
+        "commander"
+      ],
+      "outcome": "loss",
+      "rounds": 65,
+      "winningRound": null,
+      "totalTurns": 195,
+      "actionCounts": {
+        "buildHarvester": 17,
+        "pass": 20,
+        "buildBabel": 36,
+        "muster": 8,
+        "attack": 103,
+        "buildTower": 11
+      },
+      "hostsSpawned": 90,
+      "hostsKilled": 63,
+      "beaconDeferrals": 1,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 90,
+          "wood": 102,
+          "brick": 140,
+          "metal": 75
+        },
+        "harvest": {
+          "food": 91,
+          "wood": 148,
+          "brick": 217,
+          "metal": 104
+        },
+        "barter": {
+          "food": 1,
+          "wood": 15,
+          "brick": 3,
+          "metal": 5
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.46153846153846156,
+          "wood": 0.5230769230769231,
+          "brick": 0.717948717948718,
+          "metal": 0.38461538461538464
+        },
+        "harvest": {
+          "food": 0.4666666666666667,
+          "wood": 0.7589743589743589,
+          "brick": 1.1128205128205129,
+          "metal": 0.5333333333333333
+        },
+        "barter": {
+          "food": 0.005128205128205128,
+          "wood": 0.07692307692307693,
+          "brick": 0.015384615384615385,
+          "metal": 0.02564102564102564
+        }
+      },
+      "harvestTriggers": 115,
+      "harvestTriggersByResource": {
+        "food": 24,
+        "brick": 40,
+        "wood": 31,
+        "metal": 20
+      },
+      "placementSuppressed": 45,
+      "placementSuppressedByReason": {
+        "lostLedgers": 45
+      },
+      "resourceWantAccess": {
+        "wanting": 60,
+        "satisfied": 36,
+        "rate": 0.6,
+        "byResource": {
+          "food": {
+            "wanting": 5,
+            "satisfied": 3,
+            "rate": 0.6
+          },
+          "wood": {
+            "wanting": 33,
+            "satisfied": 20,
+            "rate": 0.6060606060606061
+          },
+          "brick": {
+            "wanting": 8,
+            "satisfied": 6,
+            "rate": 0.75
+          },
+          "metal": {
+            "wanting": 14,
+            "satisfied": 7,
+            "rate": 0.5
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g22",
+      "roster": [
+        "merchant",
+        "architect",
+        "commander"
+      ],
+      "outcome": "loss",
+      "rounds": 18,
+      "winningRound": null,
+      "totalTurns": 54,
+      "actionCounts": {
+        "buildHarvester": 7,
+        "buyScheme": 2,
+        "pass": 12,
+        "attack": 20,
+        "muster": 3,
+        "buildBabel": 5,
+        "buildTower": 5
+      },
+      "hostsSpawned": 20,
+      "hostsKilled": 13,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 25,
+          "wood": 26,
+          "brick": 18,
+          "metal": 8
+        },
+        "harvest": {
+          "food": 11,
+          "wood": 25,
+          "brick": 8,
+          "metal": 0
+        },
+        "barter": {
+          "food": 6,
+          "wood": 3,
+          "brick": 2,
+          "metal": 5
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.46296296296296297,
+          "wood": 0.48148148148148145,
+          "brick": 0.3333333333333333,
+          "metal": 0.14814814814814814
+        },
+        "harvest": {
+          "food": 0.2037037037037037,
+          "wood": 0.46296296296296297,
+          "brick": 0.14814814814814814,
+          "metal": 0
+        },
+        "barter": {
+          "food": 0.1111111111111111,
+          "wood": 0.05555555555555555,
+          "brick": 0.037037037037037035,
+          "metal": 0.09259259259259259
+        }
+      },
+      "harvestTriggers": 14,
+      "harvestTriggersByResource": {
+        "wood": 8,
+        "food": 4,
+        "brick": 2
+      },
+      "placementSuppressed": 12,
+      "placementSuppressedByReason": {
+        "lostLedgers": 12
+      },
+      "resourceWantAccess": {
+        "wanting": 50,
+        "satisfied": 19,
+        "rate": 0.38,
+        "byResource": {
+          "food": {
+            "wanting": 21,
+            "satisfied": 7,
+            "rate": 0.3333333333333333
+          },
+          "wood": {
+            "wanting": 6,
+            "satisfied": 4,
+            "rate": 0.6666666666666666
+          },
+          "brick": {
+            "wanting": 3,
+            "satisfied": 1,
+            "rate": 0.3333333333333333
+          },
+          "metal": {
+            "wanting": 20,
+            "satisfied": 7,
+            "rate": 0.35
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g23",
+      "roster": [
+        "engineer",
+        "architect",
+        "industrialist"
+      ],
+      "outcome": "loss",
+      "rounds": 22,
+      "winningRound": null,
+      "totalTurns": 66,
+      "actionCounts": {
+        "buildHarvester": 17,
+        "pass": 8,
+        "attack": 17,
+        "muster": 5,
+        "buildBabel": 6,
+        "buildTower": 13
+      },
+      "hostsSpawned": 24,
+      "hostsKilled": 16,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 36,
+          "wood": 38,
+          "brick": 9,
+          "metal": 20
+        },
+        "harvest": {
+          "food": 29,
+          "wood": 39,
+          "brick": 21,
+          "metal": 7
+        },
+        "barter": {
+          "food": 2,
+          "wood": 9,
+          "brick": 5,
+          "metal": 10
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.5454545454545454,
+          "wood": 0.5757575757575758,
+          "brick": 0.13636363636363635,
+          "metal": 0.30303030303030304
+        },
+        "harvest": {
+          "food": 0.4393939393939394,
+          "wood": 0.5909090909090909,
+          "brick": 0.3181818181818182,
+          "metal": 0.10606060606060606
+        },
+        "barter": {
+          "food": 0.030303030303030304,
+          "wood": 0.13636363636363635,
+          "brick": 0.07575757575757576,
+          "metal": 0.15151515151515152
+        }
+      },
+      "harvestTriggers": 23,
+      "harvestTriggersByResource": {
+        "food": 8,
+        "wood": 9,
+        "brick": 4,
+        "metal": 2
+      },
+      "placementSuppressed": 17,
+      "placementSuppressedByReason": {
+        "lostLedgers": 17
+      },
+      "resourceWantAccess": {
+        "wanting": 56,
+        "satisfied": 36,
+        "rate": 0.6428571428571429,
+        "byResource": {
+          "food": {
+            "wanting": 13,
+            "satisfied": 5,
+            "rate": 0.38461538461538464
+          },
+          "wood": {
+            "wanting": 22,
+            "satisfied": 14,
+            "rate": 0.6363636363636364
+          },
+          "brick": {
+            "wanting": 8,
+            "satisfied": 5,
+            "rate": 0.625
+          },
+          "metal": {
+            "wanting": 13,
+            "satisfied": 12,
+            "rate": 0.9230769230769231
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g24",
+      "roster": [
+        "merchant",
+        "architect",
+        "industrialist"
+      ],
+      "outcome": "loss",
+      "rounds": 76,
+      "winningRound": null,
+      "totalTurns": 228,
+      "actionCounts": {
+        "buildHarvester": 32,
+        "pass": 7,
+        "attack": 68,
+        "buyScheme": 38,
+        "muster": 6,
+        "buildTower": 39,
+        "buildBabel": 38
+      },
+      "hostsSpawned": 104,
+      "hostsKilled": 92,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 172,
+          "wood": 128,
+          "brick": 165,
+          "metal": 82
+        },
+        "harvest": {
+          "food": 190,
+          "wood": 178,
+          "brick": 170,
+          "metal": 63
+        },
+        "barter": {
+          "food": 3,
+          "wood": 17,
+          "brick": 2,
+          "metal": 27
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.7543859649122807,
+          "wood": 0.5614035087719298,
+          "brick": 0.7236842105263158,
+          "metal": 0.35964912280701755
+        },
+        "harvest": {
+          "food": 0.8333333333333334,
+          "wood": 0.7807017543859649,
+          "brick": 0.7456140350877193,
+          "metal": 0.27631578947368424
+        },
+        "barter": {
+          "food": 0.013157894736842105,
+          "wood": 0.07456140350877193,
+          "brick": 0.008771929824561403,
+          "metal": 0.11842105263157894
+        }
+      },
+      "harvestTriggers": 150,
+      "harvestTriggersByResource": {
+        "food": 50,
+        "wood": 41,
+        "brick": 44,
+        "metal": 15
+      },
+      "placementSuppressed": 34,
+      "placementSuppressedByReason": {
+        "lostLedgers": 34
+      },
+      "resourceWantAccess": {
+        "wanting": 83,
+        "satisfied": 62,
+        "rate": 0.7469879518072289,
+        "byResource": {
+          "food": {
+            "wanting": 17,
+            "satisfied": 9,
+            "rate": 0.5294117647058824
+          },
+          "wood": {
+            "wanting": 29,
+            "satisfied": 23,
+            "rate": 0.7931034482758621
+          },
+          "brick": {
+            "wanting": 4,
+            "satisfied": 1,
+            "rate": 0.25
+          },
+          "metal": {
+            "wanting": 33,
+            "satisfied": 29,
+            "rate": 0.8787878787878788
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g25",
+      "roster": [
+        "merchant",
+        "architect",
+        "engineer"
+      ],
+      "outcome": "loss",
+      "rounds": 57,
+      "winningRound": null,
+      "totalTurns": 172,
+      "actionCounts": {
+        "buildHarvester": 17,
+        "pass": 10,
+        "buildBabel": 23,
+        "attack": 74,
+        "buildTower": 23,
+        "buyScheme": 19,
+        "muster": 6
+      },
+      "hostsSpawned": 73,
+      "hostsKilled": 54,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 92,
+          "wood": 98,
+          "brick": 104,
+          "metal": 61
+        },
+        "harvest": {
+          "food": 60,
+          "wood": 108,
+          "brick": 185,
+          "metal": 35
+        },
+        "barter": {
+          "food": 7,
+          "wood": 15,
+          "brick": 1,
+          "metal": 22
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.5348837209302325,
+          "wood": 0.5697674418604651,
+          "brick": 0.6046511627906976,
+          "metal": 0.3546511627906977
+        },
+        "harvest": {
+          "food": 0.3488372093023256,
+          "wood": 0.627906976744186,
+          "brick": 1.0755813953488371,
+          "metal": 0.20348837209302326
+        },
+        "barter": {
+          "food": 0.040697674418604654,
+          "wood": 0.0872093023255814,
+          "brick": 0.005813953488372093,
+          "metal": 0.12790697674418605
+        }
+      },
+      "harvestTriggers": 90,
+      "harvestTriggersByResource": {
+        "brick": 34,
+        "food": 21,
+        "wood": 24,
+        "metal": 11
+      },
+      "placementSuppressed": 33,
+      "placementSuppressedByReason": {
+        "lostLedgers": 33
+      },
+      "resourceWantAccess": {
+        "wanting": 89,
+        "satisfied": 59,
+        "rate": 0.6629213483146067,
+        "byResource": {
+          "food": {
+            "wanting": 22,
+            "satisfied": 11,
+            "rate": 0.5
+          },
+          "wood": {
+            "wanting": 28,
+            "satisfied": 20,
+            "rate": 0.7142857142857143
+          },
+          "brick": {
+            "wanting": 10,
+            "satisfied": 4,
+            "rate": 0.4
+          },
+          "metal": {
+            "wanting": 29,
+            "satisfied": 24,
+            "rate": 0.8275862068965517
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g26",
+      "roster": [
+        "engineer",
+        "commander",
+        "industrialist"
+      ],
+      "outcome": "loss",
+      "rounds": 18,
+      "winningRound": null,
+      "totalTurns": 54,
+      "actionCounts": {
+        "muster": 7,
+        "buildHarvester": 9,
+        "pass": 8,
+        "attack": 13,
+        "buildBabel": 5,
+        "buildTower": 12
+      },
+      "hostsSpawned": 19,
+      "hostsKilled": 12,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 20,
+          "wood": 27,
+          "brick": 21,
+          "metal": 17
+        },
+        "harvest": {
+          "food": 22,
+          "wood": 32,
+          "brick": 27,
+          "metal": 2
+        },
+        "barter": {
+          "food": 2,
+          "wood": 3,
+          "brick": 1,
+          "metal": 7
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.37037037037037035,
+          "wood": 0.5,
+          "brick": 0.3888888888888889,
+          "metal": 0.3148148148148148
+        },
+        "harvest": {
+          "food": 0.4074074074074074,
+          "wood": 0.5925925925925926,
+          "brick": 0.5,
+          "metal": 0.037037037037037035
+        },
+        "barter": {
+          "food": 0.037037037037037035,
+          "wood": 0.05555555555555555,
+          "brick": 0.018518518518518517,
+          "metal": 0.12962962962962962
+        }
+      },
+      "harvestTriggers": 22,
+      "harvestTriggersByResource": {
+        "wood": 7,
+        "brick": 8,
+        "food": 6,
+        "metal": 1
+      },
+      "placementSuppressed": 11,
+      "placementSuppressedByReason": {
+        "lostLedgers": 11
+      },
+      "resourceWantAccess": {
+        "wanting": 42,
+        "satisfied": 21,
+        "rate": 0.5,
+        "byResource": {
+          "food": {
+            "wanting": 5,
+            "satisfied": 3,
+            "rate": 0.6
+          },
+          "wood": {
+            "wanting": 12,
+            "satisfied": 7,
+            "rate": 0.5833333333333334
+          },
+          "brick": {
+            "wanting": 4,
+            "satisfied": 1,
+            "rate": 0.25
+          },
+          "metal": {
+            "wanting": 21,
+            "satisfied": 10,
+            "rate": 0.47619047619047616
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g27",
+      "roster": [
+        "merchant",
+        "commander",
+        "industrialist"
+      ],
+      "outcome": "loss",
+      "rounds": 42,
+      "winningRound": null,
+      "totalTurns": 126,
+      "actionCounts": {
+        "buildHarvester": 17,
+        "pass": 12,
+        "attack": 49,
+        "buyScheme": 8,
+        "muster": 8,
+        "buildTower": 24,
+        "buildBabel": 8
+      },
+      "hostsSpawned": 52,
+      "hostsKilled": 42,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 64,
+          "wood": 62,
+          "brick": 41,
+          "metal": 31
+        },
+        "harvest": {
+          "food": 30,
+          "wood": 70,
+          "brick": 52,
+          "metal": 20
+        },
+        "barter": {
+          "food": 10,
+          "wood": 14,
+          "brick": 1,
+          "metal": 14
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.5079365079365079,
+          "wood": 0.49206349206349204,
+          "brick": 0.3253968253968254,
+          "metal": 0.24603174603174602
+        },
+        "harvest": {
+          "food": 0.23809523809523808,
+          "wood": 0.5555555555555556,
+          "brick": 0.4126984126984127,
+          "metal": 0.15873015873015872
+        },
+        "barter": {
+          "food": 0.07936507936507936,
+          "wood": 0.1111111111111111,
+          "brick": 0.007936507936507936,
+          "metal": 0.1111111111111111
+        }
+      },
+      "harvestTriggers": 52,
+      "harvestTriggersByResource": {
+        "brick": 14,
+        "food": 10,
+        "wood": 20,
+        "metal": 8
+      },
+      "placementSuppressed": 32,
+      "placementSuppressedByReason": {
+        "lostLedgers": 32
+      },
+      "resourceWantAccess": {
+        "wanting": 91,
+        "satisfied": 51,
+        "rate": 0.5604395604395604,
+        "byResource": {
+          "food": {
+            "wanting": 34,
+            "satisfied": 18,
+            "rate": 0.5294117647058824
+          },
+          "wood": {
+            "wanting": 25,
+            "satisfied": 16,
+            "rate": 0.64
+          },
+          "brick": {
+            "wanting": 3,
+            "satisfied": 1,
+            "rate": 0.3333333333333333
+          },
+          "metal": {
+            "wanting": 29,
+            "satisfied": 16,
+            "rate": 0.5517241379310345
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g28",
+      "roster": [
+        "merchant",
+        "commander",
+        "engineer"
+      ],
+      "outcome": "loss",
+      "rounds": 80,
+      "winningRound": null,
+      "totalTurns": 240,
+      "actionCounts": {
+        "buyScheme": 45,
+        "buildBabel": 25,
+        "buildHarvester": 14,
+        "pass": 6,
+        "attack": 113,
+        "buildTower": 29,
+        "muster": 8
+      },
+      "hostsSpawned": 109,
+      "hostsKilled": 81,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 154,
+          "wood": 153,
+          "brick": 138,
+          "metal": 90
+        },
+        "harvest": {
+          "food": 97,
+          "wood": 126,
+          "brick": 79,
+          "metal": 110
+        },
+        "barter": {
+          "food": 5,
+          "wood": 11,
+          "brick": 2,
+          "metal": 9
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.6416666666666667,
+          "wood": 0.6375,
+          "brick": 0.575,
+          "metal": 0.375
+        },
+        "harvest": {
+          "food": 0.4041666666666667,
+          "wood": 0.525,
+          "brick": 0.32916666666666666,
+          "metal": 0.4583333333333333
+        },
+        "barter": {
+          "food": 0.020833333333333332,
+          "wood": 0.04583333333333333,
+          "brick": 0.008333333333333333,
+          "metal": 0.0375
+        }
+      },
+      "harvestTriggers": 126,
+      "harvestTriggersByResource": {
+        "wood": 38,
+        "food": 35,
+        "brick": 28,
+        "metal": 25
+      },
+      "placementSuppressed": 25,
+      "placementSuppressedByReason": {
+        "lostLedgers": 25
+      },
+      "resourceWantAccess": {
+        "wanting": 55,
+        "satisfied": 36,
+        "rate": 0.6545454545454545,
+        "byResource": {
+          "food": {
+            "wanting": 14,
+            "satisfied": 7,
+            "rate": 0.5
+          },
+          "wood": {
+            "wanting": 22,
+            "satisfied": 16,
+            "rate": 0.7272727272727273
+          },
+          "brick": {
+            "wanting": 4,
+            "satisfied": 2,
+            "rate": 0.5
+          },
+          "metal": {
+            "wanting": 15,
+            "satisfied": 11,
+            "rate": 0.7333333333333333
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g29",
+      "roster": [
+        "merchant",
+        "industrialist",
+        "engineer"
+      ],
+      "outcome": "loss",
+      "rounds": 18,
+      "winningRound": null,
+      "totalTurns": 54,
+      "actionCounts": {
+        "buildHarvester": 12,
+        "pass": 9,
+        "buildBabel": 6,
+        "buildTower": 3,
+        "attack": 16,
+        "buyScheme": 4,
+        "muster": 4
+      },
+      "hostsSpawned": 20,
+      "hostsKilled": 10,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 22,
+          "wood": 13,
+          "brick": 35,
+          "metal": 6
+        },
+        "harvest": {
+          "food": 17,
+          "wood": 7,
+          "brick": 25,
+          "metal": 0
+        },
+        "barter": {
+          "food": 1,
+          "wood": 7,
+          "brick": 1,
+          "metal": 6
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.4074074074074074,
+          "wood": 0.24074074074074073,
+          "brick": 0.6481481481481481,
+          "metal": 0.1111111111111111
+        },
+        "harvest": {
+          "food": 0.3148148148148148,
+          "wood": 0.12962962962962962,
+          "brick": 0.46296296296296297,
+          "metal": 0
+        },
+        "barter": {
+          "food": 0.018518518518518517,
+          "wood": 0.12962962962962962,
+          "brick": 0.018518518518518517,
+          "metal": 0.1111111111111111
+        }
+      },
+      "harvestTriggers": 13,
+      "harvestTriggersByResource": {
+        "food": 5,
+        "brick": 5,
+        "wood": 3
+      },
+      "placementSuppressed": 13,
+      "placementSuppressedByReason": {
+        "lostLedgers": 13
+      },
+      "resourceWantAccess": {
+        "wanting": 50,
+        "satisfied": 22,
+        "rate": 0.44,
+        "byResource": {
+          "food": {
+            "wanting": 10,
+            "satisfied": 3,
+            "rate": 0.3
+          },
+          "wood": {
+            "wanting": 23,
+            "satisfied": 12,
+            "rate": 0.5217391304347826
+          },
+          "brick": {
+            "wanting": 5,
+            "satisfied": 2,
+            "rate": 0.4
+          },
+          "metal": {
+            "wanting": 12,
+            "satisfied": 5,
+            "rate": 0.4166666666666667
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g30",
+      "roster": [
+        "architect",
+        "commander",
+        "industrialist"
+      ],
+      "outcome": "win",
+      "rounds": 33,
+      "winningRound": 33,
+      "totalTurns": 99,
+      "actionCounts": {
+        "buildHarvester": 16,
+        "pass": 3,
+        "buildBabel": 22,
+        "attack": 34,
+        "buildTower": 14,
+        "muster": 8,
+        "buyScheme": 2
+      },
+      "hostsSpawned": 41,
+      "hostsKilled": 37,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 57,
+          "wood": 54,
+          "brick": 32,
+          "metal": 50
+        },
+        "harvest": {
+          "food": 38,
+          "wood": 72,
+          "brick": 44,
+          "metal": 51
+        },
+        "barter": {
+          "food": 5,
+          "wood": 6,
+          "brick": 6,
+          "metal": 4
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.5757575757575758,
+          "wood": 0.5454545454545454,
+          "brick": 0.32323232323232326,
+          "metal": 0.5050505050505051
+        },
+        "harvest": {
+          "food": 0.3838383838383838,
+          "wood": 0.7272727272727273,
+          "brick": 0.4444444444444444,
+          "metal": 0.5151515151515151
+        },
+        "barter": {
+          "food": 0.050505050505050504,
+          "wood": 0.06060606060606061,
+          "brick": 0.06060606060606061,
+          "metal": 0.04040404040404041
+        }
+      },
+      "harvestTriggers": 60,
+      "harvestTriggersByResource": {
+        "wood": 21,
+        "metal": 15,
+        "brick": 12,
+        "food": 12
+      },
+      "placementSuppressed": 25,
+      "placementSuppressedByReason": {
+        "lostLedgers": 25
+      },
+      "resourceWantAccess": {
+        "wanting": 51,
+        "satisfied": 34,
+        "rate": 0.6666666666666666,
+        "byResource": {
+          "food": {
+            "wanting": 16,
+            "satisfied": 8,
+            "rate": 0.5
+          },
+          "wood": {
+            "wanting": 11,
+            "satisfied": 9,
+            "rate": 0.8181818181818182
+          },
+          "brick": {
+            "wanting": 15,
+            "satisfied": 10,
+            "rate": 0.6666666666666666
+          },
+          "metal": {
+            "wanting": 9,
+            "satisfied": 7,
+            "rate": 0.7777777777777778
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g31",
+      "roster": [
+        "architect",
+        "commander",
+        "engineer"
+      ],
+      "outcome": "loss",
+      "rounds": 32,
+      "winningRound": null,
+      "totalTurns": 96,
+      "actionCounts": {
+        "buildHarvester": 16,
+        "buildBabel": 8,
+        "pass": 14,
+        "muster": 8,
+        "attack": 37,
+        "buildTower": 13
+      },
+      "hostsSpawned": 40,
+      "hostsKilled": 29,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 72,
+          "wood": 27,
+          "brick": 33,
+          "metal": 45
+        },
+        "harvest": {
+          "food": 58,
+          "wood": 9,
+          "brick": 31,
+          "metal": 38
+        },
+        "barter": {
+          "food": 0,
+          "wood": 34,
+          "brick": 3,
+          "metal": 7
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.75,
+          "wood": 0.28125,
+          "brick": 0.34375,
+          "metal": 0.46875
+        },
+        "harvest": {
+          "food": 0.6041666666666666,
+          "wood": 0.09375,
+          "brick": 0.3229166666666667,
+          "metal": 0.3958333333333333
+        },
+        "barter": {
+          "food": 0,
+          "wood": 0.3541666666666667,
+          "brick": 0.03125,
+          "metal": 0.07291666666666667
+        }
+      },
+      "harvestTriggers": 39,
+      "harvestTriggersByResource": {
+        "food": 15,
+        "metal": 13,
+        "brick": 9,
+        "wood": 2
+      },
+      "placementSuppressed": 23,
+      "placementSuppressedByReason": {
+        "lostLedgers": 23
+      },
+      "resourceWantAccess": {
+        "wanting": 82,
+        "satisfied": 57,
+        "rate": 0.6951219512195121,
+        "byResource": {
+          "food": {
+            "wanting": 7,
+            "satisfied": 3,
+            "rate": 0.42857142857142855
+          },
+          "wood": {
+            "wanting": 53,
+            "satisfied": 41,
+            "rate": 0.7735849056603774
+          },
+          "brick": {
+            "wanting": 7,
+            "satisfied": 4,
+            "rate": 0.5714285714285714
+          },
+          "metal": {
+            "wanting": 15,
+            "satisfied": 9,
+            "rate": 0.6
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g32",
+      "roster": [
+        "architect",
+        "commander",
+        "merchant"
+      ],
+      "outcome": "win",
+      "rounds": 55,
+      "winningRound": 55,
+      "totalTurns": 165,
+      "actionCounts": {
+        "buildHarvester": 11,
+        "buyScheme": 23,
+        "buildBabel": 29,
+        "pass": 13,
+        "muster": 8,
+        "buildTower": 20,
+        "attack": 61
+      },
+      "hostsSpawned": 64,
+      "hostsKilled": 52,
+      "beaconDeferrals": 4,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 77,
+          "wood": 114,
+          "brick": 89,
+          "metal": 70
+        },
+        "harvest": {
+          "food": 77,
+          "wood": 114,
+          "brick": 47,
+          "metal": 43
+        },
+        "barter": {
+          "food": 8,
+          "wood": 7,
+          "brick": 2,
+          "metal": 10
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.4666666666666667,
+          "wood": 0.6909090909090909,
+          "brick": 0.5393939393939394,
+          "metal": 0.42424242424242425
+        },
+        "harvest": {
+          "food": 0.4666666666666667,
+          "wood": 0.6909090909090909,
+          "brick": 0.28484848484848485,
+          "metal": 0.2606060606060606
+        },
+        "barter": {
+          "food": 0.048484848484848485,
+          "wood": 0.04242424242424243,
+          "brick": 0.012121212121212121,
+          "metal": 0.06060606060606061
+        }
+      },
+      "harvestTriggers": 81,
+      "harvestTriggersByResource": {
+        "food": 21,
+        "brick": 16,
+        "metal": 17,
+        "wood": 27
+      },
+      "placementSuppressed": 23,
+      "placementSuppressedByReason": {
+        "lostLedgers": 23
+      },
+      "resourceWantAccess": {
+        "wanting": 70,
+        "satisfied": 45,
+        "rate": 0.6428571428571429,
+        "byResource": {
+          "food": {
+            "wanting": 19,
+            "satisfied": 11,
+            "rate": 0.5789473684210527
+          },
+          "wood": {
+            "wanting": 20,
+            "satisfied": 12,
+            "rate": 0.6
+          },
+          "brick": {
+            "wanting": 8,
+            "satisfied": 5,
+            "rate": 0.625
+          },
+          "metal": {
+            "wanting": 23,
+            "satisfied": 17,
+            "rate": 0.7391304347826086
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g33",
+      "roster": [
+        "architect",
+        "industrialist",
+        "engineer"
+      ],
+      "outcome": "win",
+      "rounds": 56,
+      "winningRound": 56,
+      "totalTurns": 168,
+      "actionCounts": {
+        "buildHarvester": 34,
+        "pass": 5,
+        "buildTower": 23,
+        "attack": 61,
+        "muster": 6,
+        "buildBabel": 36,
+        "buyScheme": 3
+      },
+      "hostsSpawned": 77,
+      "hostsKilled": 56,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 114,
+          "wood": 87,
+          "brick": 66,
+          "metal": 44
+        },
+        "harvest": {
+          "food": 157,
+          "wood": 124,
+          "brick": 103,
+          "metal": 45
+        },
+        "barter": {
+          "food": 1,
+          "wood": 9,
+          "brick": 9,
+          "metal": 28
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.6785714285714286,
+          "wood": 0.5178571428571429,
+          "brick": 0.39285714285714285,
+          "metal": 0.2619047619047619
+        },
+        "harvest": {
+          "food": 0.9345238095238095,
+          "wood": 0.7380952380952381,
+          "brick": 0.6130952380952381,
+          "metal": 0.26785714285714285
+        },
+        "barter": {
+          "food": 0.005952380952380952,
+          "wood": 0.05357142857142857,
+          "brick": 0.05357142857142857,
+          "metal": 0.16666666666666666
+        }
+      },
+      "harvestTriggers": 86,
+      "harvestTriggersByResource": {
+        "wood": 26,
+        "food": 28,
+        "metal": 12,
+        "brick": 20
+      },
+      "placementSuppressed": 36,
+      "placementSuppressedByReason": {
+        "lostLedgers": 36
+      },
+      "resourceWantAccess": {
+        "wanting": 77,
+        "satisfied": 53,
+        "rate": 0.6883116883116883,
+        "byResource": {
+          "food": {
+            "wanting": 4,
+            "satisfied": 2,
+            "rate": 0.5
+          },
+          "wood": {
+            "wanting": 19,
+            "satisfied": 13,
+            "rate": 0.6842105263157895
+          },
+          "brick": {
+            "wanting": 22,
+            "satisfied": 10,
+            "rate": 0.45454545454545453
+          },
+          "metal": {
+            "wanting": 32,
+            "satisfied": 28,
+            "rate": 0.875
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g34",
+      "roster": [
+        "architect",
+        "industrialist",
+        "merchant"
+      ],
+      "outcome": "win",
+      "rounds": 35,
+      "winningRound": 35,
+      "totalTurns": 105,
+      "actionCounts": {
+        "buildHarvester": 18,
+        "pass": 5,
+        "buyScheme": 17,
+        "attack": 22,
+        "muster": 6,
+        "buildBabel": 20,
+        "buildTower": 17
+      },
+      "hostsSpawned": 43,
+      "hostsKilled": 32,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 44,
+          "wood": 74,
+          "brick": 30,
+          "metal": 51
+        },
+        "harvest": {
+          "food": 27,
+          "wood": 98,
+          "brick": 48,
+          "metal": 78
+        },
+        "barter": {
+          "food": 5,
+          "wood": 7,
+          "brick": 7,
+          "metal": 4
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.41904761904761906,
+          "wood": 0.7047619047619048,
+          "brick": 0.2857142857142857,
+          "metal": 0.4857142857142857
+        },
+        "harvest": {
+          "food": 0.2571428571428571,
+          "wood": 0.9333333333333333,
+          "brick": 0.45714285714285713,
+          "metal": 0.7428571428571429
+        },
+        "barter": {
+          "food": 0.047619047619047616,
+          "wood": 0.06666666666666667,
+          "brick": 0.06666666666666667,
+          "metal": 0.0380952380952381
+        }
+      },
+      "harvestTriggers": 56,
+      "harvestTriggersByResource": {
+        "metal": 15,
+        "wood": 21,
+        "brick": 11,
+        "food": 9
+      },
+      "placementSuppressed": 21,
+      "placementSuppressedByReason": {
+        "lostLedgers": 21
+      },
+      "resourceWantAccess": {
+        "wanting": 56,
+        "satisfied": 31,
+        "rate": 0.5535714285714286,
+        "byResource": {
+          "food": {
+            "wanting": 17,
+            "satisfied": 8,
+            "rate": 0.47058823529411764
+          },
+          "wood": {
+            "wanting": 21,
+            "satisfied": 11,
+            "rate": 0.5238095238095238
+          },
+          "brick": {
+            "wanting": 12,
+            "satisfied": 7,
+            "rate": 0.5833333333333334
+          },
+          "metal": {
+            "wanting": 6,
+            "satisfied": 5,
+            "rate": 0.8333333333333334
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g35",
+      "roster": [
+        "architect",
+        "engineer",
+        "merchant"
+      ],
+      "outcome": "loss",
+      "rounds": 21,
+      "winningRound": null,
+      "totalTurns": 63,
+      "actionCounts": {
+        "buildHarvester": 10,
+        "pass": 6,
+        "buildBabel": 7,
+        "buildTower": 11,
+        "attack": 19,
+        "muster": 6,
+        "buyScheme": 4
+      },
+      "hostsSpawned": 22,
+      "hostsKilled": 12,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 31,
+          "wood": 18,
+          "brick": 37,
+          "metal": 25
+        },
+        "harvest": {
+          "food": 12,
+          "wood": 21,
+          "brick": 30,
+          "metal": 34
+        },
+        "barter": {
+          "food": 4,
+          "wood": 11,
+          "brick": 1,
+          "metal": 2
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.49206349206349204,
+          "wood": 0.2857142857142857,
+          "brick": 0.5873015873015873,
+          "metal": 0.3968253968253968
+        },
+        "harvest": {
+          "food": 0.19047619047619047,
+          "wood": 0.3333333333333333,
+          "brick": 0.47619047619047616,
+          "metal": 0.5396825396825397
+        },
+        "barter": {
+          "food": 0.06349206349206349,
+          "wood": 0.1746031746031746,
+          "brick": 0.015873015873015872,
+          "metal": 0.031746031746031744
+        }
+      },
+      "harvestTriggers": 27,
+      "harvestTriggersByResource": {
+        "food": 5,
+        "metal": 8,
+        "wood": 7,
+        "brick": 7
+      },
+      "placementSuppressed": 13,
+      "placementSuppressedByReason": {
+        "featureOccupied": 2,
+        "lostLedgers": 11
+      },
+      "resourceWantAccess": {
+        "wanting": 58,
+        "satisfied": 29,
+        "rate": 0.5,
+        "byResource": {
+          "food": {
+            "wanting": 15,
+            "satisfied": 9,
+            "rate": 0.6
+          },
+          "wood": {
+            "wanting": 29,
+            "satisfied": 17,
+            "rate": 0.5862068965517241
+          },
+          "brick": {
+            "wanting": 4,
+            "satisfied": 1,
+            "rate": 0.25
+          },
+          "metal": {
+            "wanting": 10,
+            "satisfied": 2,
+            "rate": 0.2
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g36",
+      "roster": [
+        "commander",
+        "industrialist",
+        "engineer"
+      ],
+      "outcome": "win",
+      "rounds": 49,
+      "winningRound": 49,
+      "totalTurns": 145,
+      "actionCounts": {
+        "buildHarvester": 15,
+        "pass": 11,
+        "buildTower": 17,
+        "attack": 67,
+        "buildBabel": 25,
+        "muster": 8,
+        "buyScheme": 2
+      },
+      "hostsSpawned": 65,
+      "hostsKilled": 51,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 88,
+          "wood": 104,
+          "brick": 55,
+          "metal": 35
+        },
+        "harvest": {
+          "food": 50,
+          "wood": 90,
+          "brick": 54,
+          "metal": 33
+        },
+        "barter": {
+          "food": 0,
+          "wood": 10,
+          "brick": 2,
+          "metal": 14
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.6068965517241379,
+          "wood": 0.7172413793103448,
+          "brick": 0.3793103448275862,
+          "metal": 0.2413793103448276
+        },
+        "harvest": {
+          "food": 0.3448275862068966,
+          "wood": 0.6206896551724138,
+          "brick": 0.3724137931034483,
+          "metal": 0.22758620689655173
+        },
+        "barter": {
+          "food": 0,
+          "wood": 0.06896551724137931,
+          "brick": 0.013793103448275862,
+          "metal": 0.09655172413793103
+        }
+      },
+      "harvestTriggers": 67,
+      "harvestTriggersByResource": {
+        "food": 17,
+        "wood": 25,
+        "brick": 15,
+        "metal": 10
+      },
+      "placementSuppressed": 27,
+      "placementSuppressedByReason": {
+        "lostLedgers": 27
+      },
+      "resourceWantAccess": {
+        "wanting": 65,
+        "satisfied": 40,
+        "rate": 0.6153846153846154,
+        "byResource": {
+          "food": {
+            "wanting": 2,
+            "satisfied": 2,
+            "rate": 1
+          },
+          "wood": {
+            "wanting": 28,
+            "satisfied": 19,
+            "rate": 0.6785714285714286
+          },
+          "brick": {
+            "wanting": 7,
+            "satisfied": 4,
+            "rate": 0.5714285714285714
+          },
+          "metal": {
+            "wanting": 28,
+            "satisfied": 15,
+            "rate": 0.5357142857142857
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g37",
+      "roster": [
+        "commander",
+        "industrialist",
+        "merchant"
+      ],
+      "outcome": "loss",
+      "rounds": 22,
+      "winningRound": null,
+      "totalTurns": 66,
+      "actionCounts": {
+        "buildHarvester": 13,
+        "buildBabel": 6,
+        "pass": 5,
+        "attack": 20,
+        "buyScheme": 5,
+        "muster": 7,
+        "buildTower": 10
+      },
+      "hostsSpawned": 24,
+      "hostsKilled": 15,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 34,
+          "wood": 23,
+          "brick": 40,
+          "metal": 14
+        },
+        "harvest": {
+          "food": 21,
+          "wood": 21,
+          "brick": 50,
+          "metal": 8
+        },
+        "barter": {
+          "food": 5,
+          "wood": 8,
+          "brick": 1,
+          "metal": 10
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.5151515151515151,
+          "wood": 0.3484848484848485,
+          "brick": 0.6060606060606061,
+          "metal": 0.21212121212121213
+        },
+        "harvest": {
+          "food": 0.3181818181818182,
+          "wood": 0.3181818181818182,
+          "brick": 0.7575757575757576,
+          "metal": 0.12121212121212122
+        },
+        "barter": {
+          "food": 0.07575757575757576,
+          "wood": 0.12121212121212122,
+          "brick": 0.015151515151515152,
+          "metal": 0.15151515151515152
+        }
+      },
+      "harvestTriggers": 26,
+      "harvestTriggersByResource": {
+        "food": 8,
+        "metal": 2,
+        "brick": 10,
+        "wood": 6
+      },
+      "placementSuppressed": 17,
+      "placementSuppressedByReason": {
+        "lostLedgers": 17
+      },
+      "resourceWantAccess": {
+        "wanting": 52,
+        "satisfied": 33,
+        "rate": 0.6346153846153846,
+        "byResource": {
+          "food": {
+            "wanting": 22,
+            "satisfied": 9,
+            "rate": 0.4090909090909091
+          },
+          "wood": {
+            "wanting": 16,
+            "satisfied": 13,
+            "rate": 0.8125
+          },
+          "brick": {
+            "wanting": 2,
+            "satisfied": 2,
+            "rate": 1
+          },
+          "metal": {
+            "wanting": 12,
+            "satisfied": 9,
+            "rate": 0.75
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g38",
+      "roster": [
+        "commander",
+        "engineer",
+        "merchant"
+      ],
+      "outcome": "loss",
+      "rounds": 39,
+      "winningRound": null,
+      "totalTurns": 117,
+      "actionCounts": {
+        "buildHarvester": 18,
+        "pass": 11,
+        "buyScheme": 12,
+        "muster": 8,
+        "buildBabel": 11,
+        "buildTower": 18,
+        "attack": 39
+      },
+      "hostsSpawned": 38,
+      "hostsKilled": 23,
+      "beaconDeferrals": 8,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 65,
+          "wood": 67,
+          "brick": 34,
+          "metal": 45
+        },
+        "harvest": {
+          "food": 73,
+          "wood": 91,
+          "brick": 25,
+          "metal": 14
+        },
+        "barter": {
+          "food": 6,
+          "wood": 7,
+          "brick": 5,
+          "metal": 22
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.5555555555555556,
+          "wood": 0.5726495726495726,
+          "brick": 0.2905982905982906,
+          "metal": 0.38461538461538464
+        },
+        "harvest": {
+          "food": 0.6239316239316239,
+          "wood": 0.7777777777777778,
+          "brick": 0.21367521367521367,
+          "metal": 0.11965811965811966
+        },
+        "barter": {
+          "food": 0.05128205128205128,
+          "wood": 0.05982905982905983,
+          "brick": 0.042735042735042736,
+          "metal": 0.18803418803418803
+        }
+      },
+      "harvestTriggers": 47,
+      "harvestTriggersByResource": {
+        "wood": 20,
+        "brick": 7,
+        "food": 15,
+        "metal": 5
+      },
+      "placementSuppressed": 23,
+      "placementSuppressedByReason": {
+        "lostLedgers": 23
+      },
+      "resourceWantAccess": {
+        "wanting": 72,
+        "satisfied": 49,
+        "rate": 0.6805555555555556,
+        "byResource": {
+          "food": {
+            "wanting": 15,
+            "satisfied": 10,
+            "rate": 0.6666666666666666
+          },
+          "wood": {
+            "wanting": 16,
+            "satisfied": 9,
+            "rate": 0.5625
+          },
+          "brick": {
+            "wanting": 8,
+            "satisfied": 6,
+            "rate": 0.75
+          },
+          "metal": {
+            "wanting": 33,
+            "satisfied": 24,
+            "rate": 0.7272727272727273
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g39",
+      "roster": [
+        "industrialist",
+        "engineer",
+        "merchant"
+      ],
+      "outcome": "win",
+      "rounds": 51,
+      "winningRound": 51,
+      "totalTurns": 154,
+      "actionCounts": {
+        "buildHarvester": 19,
+        "pass": 6,
+        "buildBabel": 24,
+        "attack": 50,
+        "muster": 6,
+        "buildTower": 23,
+        "buyScheme": 26
+      },
+      "hostsSpawned": 66,
+      "hostsKilled": 54,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 97,
+          "wood": 117,
+          "brick": 91,
+          "metal": 39
+        },
+        "harvest": {
+          "food": 161,
+          "wood": 118,
+          "brick": 112,
+          "metal": 45
+        },
+        "barter": {
+          "food": 2,
+          "wood": 4,
+          "brick": 1,
+          "metal": 26
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.6298701298701299,
+          "wood": 0.7597402597402597,
+          "brick": 0.5909090909090909,
+          "metal": 0.2532467532467532
+        },
+        "harvest": {
+          "food": 1.0454545454545454,
+          "wood": 0.7662337662337663,
+          "brick": 0.7272727272727273,
+          "metal": 0.2922077922077922
+        },
+        "barter": {
+          "food": 0.012987012987012988,
+          "wood": 0.025974025974025976,
+          "brick": 0.006493506493506494,
+          "metal": 0.16883116883116883
+        }
+      },
+      "harvestTriggers": 98,
+      "harvestTriggersByResource": {
+        "wood": 32,
+        "brick": 28,
+        "food": 29,
+        "metal": 9
+      },
+      "placementSuppressed": 26,
+      "placementSuppressedByReason": {
+        "lostLedgers": 26
+      },
+      "resourceWantAccess": {
+        "wanting": 59,
+        "satisfied": 39,
+        "rate": 0.6610169491525424,
+        "byResource": {
+          "food": {
+            "wanting": 9,
+            "satisfied": 4,
+            "rate": 0.4444444444444444
+          },
+          "wood": {
+            "wanting": 10,
+            "satisfied": 7,
+            "rate": 0.7
+          },
+          "brick": {
+            "wanting": 6,
+            "satisfied": 2,
+            "rate": 0.3333333333333333
+          },
+          "metal": {
+            "wanting": 34,
+            "satisfied": 26,
+            "rate": 0.7647058823529411
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g40",
+      "roster": [
+        "commander",
+        "industrialist",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 26,
+      "winningRound": null,
+      "totalTurns": 78,
+      "actionCounts": {
+        "buildHarvester": 14,
+        "pass": 6,
+        "attack": 27,
+        "muster": 7,
+        "buildTower": 17,
+        "buyScheme": 1,
+        "buildBabel": 6
+      },
+      "hostsSpawned": 30,
+      "hostsKilled": 19,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 38,
+          "wood": 43,
+          "brick": 35,
+          "metal": 11
+        },
+        "harvest": {
+          "food": 18,
+          "wood": 51,
+          "brick": 36,
+          "metal": 4
+        },
+        "barter": {
+          "food": 1,
+          "wood": 7,
+          "brick": 4,
+          "metal": 15
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.48717948717948717,
+          "wood": 0.5512820512820513,
+          "brick": 0.44871794871794873,
+          "metal": 0.14102564102564102
+        },
+        "harvest": {
+          "food": 0.23076923076923078,
+          "wood": 0.6538461538461539,
+          "brick": 0.46153846153846156,
+          "metal": 0.05128205128205128
+        },
+        "barter": {
+          "food": 0.01282051282051282,
+          "wood": 0.08974358974358974,
+          "brick": 0.05128205128205128,
+          "metal": 0.19230769230769232
+        }
+      },
+      "harvestTriggers": 29,
+      "harvestTriggersByResource": {
+        "wood": 14,
+        "food": 4,
+        "metal": 2,
+        "brick": 9
+      },
+      "placementSuppressed": 16,
+      "placementSuppressedByReason": {
+        "lostLedgers": 16
+      },
+      "resourceWantAccess": {
+        "wanting": 62,
+        "satisfied": 35,
+        "rate": 0.5645161290322581,
+        "byResource": {
+          "food": {
+            "wanting": 4,
+            "satisfied": 1,
+            "rate": 0.25
+          },
+          "wood": {
+            "wanting": 20,
+            "satisfied": 13,
+            "rate": 0.65
+          },
+          "brick": {
+            "wanting": 13,
+            "satisfied": 7,
+            "rate": 0.5384615384615384
+          },
+          "metal": {
+            "wanting": 25,
+            "satisfied": 14,
+            "rate": 0.56
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g41",
+      "roster": [
+        "commander",
+        "engineer",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 34,
+      "winningRound": null,
+      "totalTurns": 102,
+      "actionCounts": {
+        "buildHarvester": 15,
+        "buildBabel": 7,
+        "muster": 8,
+        "pass": 13,
+        "attack": 43,
+        "buildTower": 16
+      },
+      "hostsSpawned": 43,
+      "hostsKilled": 33,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 37,
+          "wood": 34,
+          "brick": 59,
+          "metal": 50
+        },
+        "harvest": {
+          "food": 19,
+          "wood": 42,
+          "brick": 53,
+          "metal": 24
+        },
+        "barter": {
+          "food": 1,
+          "wood": 17,
+          "brick": 4,
+          "metal": 7
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.3627450980392157,
+          "wood": 0.3333333333333333,
+          "brick": 0.5784313725490197,
+          "metal": 0.49019607843137253
+        },
+        "harvest": {
+          "food": 0.18627450980392157,
+          "wood": 0.4117647058823529,
+          "brick": 0.5196078431372549,
+          "metal": 0.23529411764705882
+        },
+        "barter": {
+          "food": 0.00980392156862745,
+          "wood": 0.16666666666666666,
+          "brick": 0.0392156862745098,
+          "metal": 0.06862745098039216
+        }
+      },
+      "harvestTriggers": 38,
+      "harvestTriggersByResource": {
+        "food": 6,
+        "brick": 11,
+        "wood": 13,
+        "metal": 8
+      },
+      "placementSuppressed": 19,
+      "placementSuppressedByReason": {
+        "lostLedgers": 19
+      },
+      "resourceWantAccess": {
+        "wanting": 64,
+        "satisfied": 41,
+        "rate": 0.640625,
+        "byResource": {
+          "food": {
+            "wanting": 7,
+            "satisfied": 1,
+            "rate": 0.14285714285714285
+          },
+          "wood": {
+            "wanting": 30,
+            "satisfied": 22,
+            "rate": 0.7333333333333333
+          },
+          "brick": {
+            "wanting": 10,
+            "satisfied": 7,
+            "rate": 0.7
+          },
+          "metal": {
+            "wanting": 17,
+            "satisfied": 11,
+            "rate": 0.6470588235294118
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g42",
+      "roster": [
+        "commander",
+        "merchant",
+        "architect"
+      ],
+      "outcome": "win",
+      "rounds": 71,
+      "winningRound": 71,
+      "totalTurns": 213,
+      "actionCounts": {
+        "buildBabel": 39,
+        "muster": 8,
+        "buildHarvester": 13,
+        "pass": 11,
+        "attack": 86,
+        "buyScheme": 32,
+        "buildTower": 24
+      },
+      "hostsSpawned": 93,
+      "hostsKilled": 71,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 99,
+          "wood": 152,
+          "brick": 121,
+          "metal": 88
+        },
+        "harvest": {
+          "food": 61,
+          "wood": 207,
+          "brick": 103,
+          "metal": 64
+        },
+        "barter": {
+          "food": 2,
+          "wood": 4,
+          "brick": 3,
+          "metal": 26
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.4647887323943662,
+          "wood": 0.7136150234741784,
+          "brick": 0.568075117370892,
+          "metal": 0.4131455399061033
+        },
+        "harvest": {
+          "food": 0.2863849765258216,
+          "wood": 0.971830985915493,
+          "brick": 0.4835680751173709,
+          "metal": 0.3004694835680751
+        },
+        "barter": {
+          "food": 0.009389671361502348,
+          "wood": 0.018779342723004695,
+          "brick": 0.014084507042253521,
+          "metal": 0.12206572769953052
+        }
+      },
+      "harvestTriggers": 109,
+      "harvestTriggersByResource": {
+        "wood": 44,
+        "food": 17,
+        "brick": 30,
+        "metal": 18
+      },
+      "placementSuppressed": 33,
+      "placementSuppressedByReason": {
+        "lostLedgers": 33
+      },
+      "resourceWantAccess": {
+        "wanting": 73,
+        "satisfied": 44,
+        "rate": 0.6027397260273972,
+        "byResource": {
+          "food": {
+            "wanting": 23,
+            "satisfied": 6,
+            "rate": 0.2608695652173913
+          },
+          "wood": {
+            "wanting": 10,
+            "satisfied": 7,
+            "rate": 0.7
+          },
+          "brick": {
+            "wanting": 6,
+            "satisfied": 4,
+            "rate": 0.6666666666666666
+          },
+          "metal": {
+            "wanting": 34,
+            "satisfied": 27,
+            "rate": 0.7941176470588235
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g43",
+      "roster": [
+        "industrialist",
+        "engineer",
+        "architect"
+      ],
+      "outcome": "win",
+      "rounds": 35,
+      "winningRound": 35,
+      "totalTurns": 105,
+      "actionCounts": {
+        "buildHarvester": 23,
+        "pass": 13,
+        "muster": 6,
+        "attack": 26,
+        "buildBabel": 19,
+        "buildTower": 18
+      },
+      "hostsSpawned": 38,
+      "hostsKilled": 31,
+      "beaconDeferrals": 4,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 45,
+          "wood": 40,
+          "brick": 57,
+          "metal": 40
+        },
+        "harvest": {
+          "food": 68,
+          "wood": 50,
+          "brick": 63,
+          "metal": 54
+        },
+        "barter": {
+          "food": 6,
+          "wood": 22,
+          "brick": 5,
+          "metal": 9
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.42857142857142855,
+          "wood": 0.38095238095238093,
+          "brick": 0.5428571428571428,
+          "metal": 0.38095238095238093
+        },
+        "harvest": {
+          "food": 0.6476190476190476,
+          "wood": 0.47619047619047616,
+          "brick": 0.6,
+          "metal": 0.5142857142857142
+        },
+        "barter": {
+          "food": 0.05714285714285714,
+          "wood": 0.20952380952380953,
+          "brick": 0.047619047619047616,
+          "metal": 0.08571428571428572
+        }
+      },
+      "harvestTriggers": 53,
+      "harvestTriggersByResource": {
+        "food": 15,
+        "wood": 12,
+        "metal": 12,
+        "brick": 14
+      },
+      "placementSuppressed": 28,
+      "placementSuppressedByReason": {
+        "lostLedgers": 28
+      },
+      "resourceWantAccess": {
+        "wanting": 80,
+        "satisfied": 54,
+        "rate": 0.675,
+        "byResource": {
+          "food": {
+            "wanting": 13,
+            "satisfied": 7,
+            "rate": 0.5384615384615384
+          },
+          "wood": {
+            "wanting": 40,
+            "satisfied": 34,
+            "rate": 0.85
+          },
+          "brick": {
+            "wanting": 14,
+            "satisfied": 4,
+            "rate": 0.2857142857142857
+          },
+          "metal": {
+            "wanting": 13,
+            "satisfied": 9,
+            "rate": 0.6923076923076923
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g44",
+      "roster": [
+        "industrialist",
+        "merchant",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 18,
+      "winningRound": null,
+      "totalTurns": 54,
+      "actionCounts": {
+        "buildHarvester": 15,
+        "buildBabel": 6,
+        "pass": 6,
+        "attack": 15,
+        "buildTower": 7,
+        "buyScheme": 2,
+        "muster": 3
+      },
+      "hostsSpawned": 21,
+      "hostsKilled": 12,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 26,
+          "wood": 35,
+          "brick": 15,
+          "metal": 10
+        },
+        "harvest": {
+          "food": 24,
+          "wood": 43,
+          "brick": 12,
+          "metal": 3
+        },
+        "barter": {
+          "food": 4,
+          "wood": 2,
+          "brick": 10,
+          "metal": 5
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.48148148148148145,
+          "wood": 0.6481481481481481,
+          "brick": 0.2777777777777778,
+          "metal": 0.18518518518518517
+        },
+        "harvest": {
+          "food": 0.4444444444444444,
+          "wood": 0.7962962962962963,
+          "brick": 0.2222222222222222,
+          "metal": 0.05555555555555555
+        },
+        "barter": {
+          "food": 0.07407407407407407,
+          "wood": 0.037037037037037035,
+          "brick": 0.18518518518518517,
+          "metal": 0.09259259259259259
+        }
+      },
+      "harvestTriggers": 19,
+      "harvestTriggersByResource": {
+        "wood": 9,
+        "food": 6,
+        "brick": 3,
+        "metal": 1
+      },
+      "placementSuppressed": 9,
+      "placementSuppressedByReason": {
+        "lostLedgers": 9
+      },
+      "resourceWantAccess": {
+        "wanting": 50,
+        "satisfied": 28,
+        "rate": 0.56,
+        "byResource": {
+          "food": {
+            "wanting": 13,
+            "satisfied": 5,
+            "rate": 0.38461538461538464
+          },
+          "wood": {
+            "wanting": 10,
+            "satisfied": 7,
+            "rate": 0.7
+          },
+          "brick": {
+            "wanting": 15,
+            "satisfied": 10,
+            "rate": 0.6666666666666666
+          },
+          "metal": {
+            "wanting": 12,
+            "satisfied": 6,
+            "rate": 0.5
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g45",
+      "roster": [
+        "engineer",
+        "merchant",
+        "architect"
+      ],
+      "outcome": "loss",
+      "rounds": 34,
+      "winningRound": null,
+      "totalTurns": 102,
+      "actionCounts": {
+        "buildHarvester": 15,
+        "buildBabel": 9,
+        "pass": 16,
+        "buyScheme": 12,
+        "attack": 29,
+        "buildTower": 15,
+        "muster": 6
+      },
+      "hostsSpawned": 36,
+      "hostsKilled": 23,
+      "beaconDeferrals": 11,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 39,
+          "wood": 44,
+          "brick": 46,
+          "metal": 31
+        },
+        "harvest": {
+          "food": 61,
+          "wood": 50,
+          "brick": 31,
+          "metal": 6
+        },
+        "barter": {
+          "food": 3,
+          "wood": 11,
+          "brick": 2,
+          "metal": 18
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.38235294117647056,
+          "wood": 0.43137254901960786,
+          "brick": 0.45098039215686275,
+          "metal": 0.30392156862745096
+        },
+        "harvest": {
+          "food": 0.5980392156862745,
+          "wood": 0.49019607843137253,
+          "brick": 0.30392156862745096,
+          "metal": 0.058823529411764705
+        },
+        "barter": {
+          "food": 0.029411764705882353,
+          "wood": 0.10784313725490197,
+          "brick": 0.0196078431372549,
+          "metal": 0.17647058823529413
+        }
+      },
+      "harvestTriggers": 40,
+      "harvestTriggersByResource": {
+        "food": 13,
+        "brick": 11,
+        "wood": 14,
+        "metal": 2
+      },
+      "placementSuppressed": 26,
+      "placementSuppressedByReason": {
+        "lostLedgers": 26
+      },
+      "resourceWantAccess": {
+        "wanting": 86,
+        "satisfied": 49,
+        "rate": 0.5697674418604651,
+        "byResource": {
+          "food": {
+            "wanting": 16,
+            "satisfied": 7,
+            "rate": 0.4375
+          },
+          "wood": {
+            "wanting": 28,
+            "satisfied": 15,
+            "rate": 0.5357142857142857
+          },
+          "brick": {
+            "wanting": 13,
+            "satisfied": 6,
+            "rate": 0.46153846153846156
+          },
+          "metal": {
+            "wanting": 29,
+            "satisfied": 21,
+            "rate": 0.7241379310344828
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g46",
+      "roster": [
+        "industrialist",
+        "engineer",
+        "commander"
+      ],
+      "outcome": "win",
+      "rounds": 45,
+      "winningRound": 45,
+      "totalTurns": 134,
+      "actionCounts": {
+        "buildHarvester": 22,
+        "muster": 8,
+        "pass": 10,
+        "buildBabel": 26,
+        "attack": 46,
+        "buyScheme": 2,
+        "buildTower": 20
+      },
+      "hostsSpawned": 52,
+      "hostsKilled": 43,
+      "beaconDeferrals": 7,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 67,
+          "wood": 95,
+          "brick": 59,
+          "metal": 71
+        },
+        "harvest": {
+          "food": 99,
+          "wood": 144,
+          "brick": 70,
+          "metal": 66
+        },
+        "barter": {
+          "food": 0,
+          "wood": 10,
+          "brick": 5,
+          "metal": 4
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.5,
+          "wood": 0.7089552238805971,
+          "brick": 0.44029850746268656,
+          "metal": 0.5298507462686567
+        },
+        "harvest": {
+          "food": 0.7388059701492538,
+          "wood": 1.0746268656716418,
+          "brick": 0.5223880597014925,
+          "metal": 0.4925373134328358
+        },
+        "barter": {
+          "food": 0,
+          "wood": 0.07462686567164178,
+          "brick": 0.03731343283582089,
+          "metal": 0.029850746268656716
+        }
+      },
+      "harvestTriggers": 88,
+      "harvestTriggersByResource": {
+        "brick": 19,
+        "food": 22,
+        "wood": 29,
+        "metal": 18
+      },
+      "placementSuppressed": 30,
+      "placementSuppressedByReason": {
+        "lostLedgers": 30
+      },
+      "resourceWantAccess": {
+        "wanting": 44,
+        "satisfied": 32,
+        "rate": 0.7272727272727273,
+        "byResource": {
+          "food": {
+            "wanting": 4,
+            "satisfied": 2,
+            "rate": 0.5
+          },
+          "wood": {
+            "wanting": 22,
+            "satisfied": 17,
+            "rate": 0.7727272727272727
+          },
+          "brick": {
+            "wanting": 11,
+            "satisfied": 8,
+            "rate": 0.7272727272727273
+          },
+          "metal": {
+            "wanting": 7,
+            "satisfied": 5,
+            "rate": 0.7142857142857143
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g47",
+      "roster": [
+        "industrialist",
+        "merchant",
+        "commander"
+      ],
+      "outcome": "loss",
+      "rounds": 19,
+      "winningRound": null,
+      "totalTurns": 58,
+      "actionCounts": {
+        "buildHarvester": 11,
+        "muster": 8,
+        "pass": 8,
+        "attack": 12,
+        "buildBabel": 5,
+        "buyScheme": 4,
+        "buildTower": 10
+      },
+      "hostsSpawned": 19,
+      "hostsKilled": 11,
+      "beaconDeferrals": 2,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 32,
+          "wood": 18,
+          "brick": 17,
+          "metal": 14
+        },
+        "harvest": {
+          "food": 44,
+          "wood": 16,
+          "brick": 7,
+          "metal": 8
+        },
+        "barter": {
+          "food": 1,
+          "wood": 11,
+          "brick": 1,
+          "metal": 4
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.5517241379310345,
+          "wood": 0.3103448275862069,
+          "brick": 0.29310344827586204,
+          "metal": 0.2413793103448276
+        },
+        "harvest": {
+          "food": 0.7586206896551724,
+          "wood": 0.27586206896551724,
+          "brick": 0.1206896551724138,
+          "metal": 0.13793103448275862
+        },
+        "barter": {
+          "food": 0.017241379310344827,
+          "wood": 0.1896551724137931,
+          "brick": 0.017241379310344827,
+          "metal": 0.06896551724137931
+        }
+      },
+      "harvestTriggers": 22,
+      "harvestTriggersByResource": {
+        "food": 12,
+        "wood": 5,
+        "brick": 2,
+        "metal": 3
+      },
+      "placementSuppressed": 14,
+      "placementSuppressedByReason": {
+        "lostLedgers": 14
+      },
+      "resourceWantAccess": {
+        "wanting": 50,
+        "satisfied": 28,
+        "rate": 0.56,
+        "byResource": {
+          "food": {
+            "wanting": 10,
+            "satisfied": 4,
+            "rate": 0.4
+          },
+          "wood": {
+            "wanting": 19,
+            "satisfied": 14,
+            "rate": 0.7368421052631579
+          },
+          "brick": {
+            "wanting": 6,
+            "satisfied": 2,
+            "rate": 0.3333333333333333
+          },
+          "metal": {
+            "wanting": 15,
+            "satisfied": 8,
+            "rate": 0.5333333333333333
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g48",
+      "roster": [
+        "engineer",
+        "merchant",
+        "commander"
+      ],
+      "outcome": "timeout",
+      "rounds": 121,
+      "winningRound": null,
+      "totalTurns": 360,
+      "actionCounts": {
+        "buildHarvester": 23,
+        "muster": 8,
+        "pass": 5,
+        "buildBabel": 21,
+        "attack": 196,
+        "buyScheme": 76,
+        "buildTower": 31
+      },
+      "hostsSpawned": 171,
+      "hostsKilled": 148,
+      "beaconDeferrals": 1,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 247,
+          "wood": 293,
+          "brick": 212,
+          "metal": 170
+        },
+        "harvest": {
+          "food": 200,
+          "wood": 325,
+          "brick": 147,
+          "metal": 83
+        },
+        "barter": {
+          "food": 7,
+          "wood": 6,
+          "brick": 2,
+          "metal": 41
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.6861111111111111,
+          "wood": 0.8138888888888889,
+          "brick": 0.5888888888888889,
+          "metal": 0.4722222222222222
+        },
+        "harvest": {
+          "food": 0.5555555555555556,
+          "wood": 0.9027777777777778,
+          "brick": 0.4083333333333333,
+          "metal": 0.23055555555555557
+        },
+        "barter": {
+          "food": 0.019444444444444445,
+          "wood": 0.016666666666666666,
+          "brick": 0.005555555555555556,
+          "metal": 0.11388888888888889
+        }
+      },
+      "harvestTriggers": 214,
+      "harvestTriggersByResource": {
+        "wood": 78,
+        "brick": 46,
+        "food": 58,
+        "metal": 32
+      },
+      "placementSuppressed": 32,
+      "placementSuppressedByReason": {
+        "lostLedgers": 30,
+        "featureOccupied": 2
+      },
+      "resourceWantAccess": {
+        "wanting": 99,
+        "satisfied": 74,
+        "rate": 0.7474747474747475,
+        "byResource": {
+          "food": {
+            "wanting": 21,
+            "satisfied": 12,
+            "rate": 0.5714285714285714
+          },
+          "wood": {
+            "wanting": 11,
+            "satisfied": 11,
+            "rate": 1
+          },
+          "brick": {
+            "wanting": 6,
+            "satisfied": 2,
+            "rate": 0.3333333333333333
+          },
+          "metal": {
+            "wanting": 61,
+            "satisfied": 49,
+            "rate": 0.8032786885245902
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g49",
+      "roster": [
+        "engineer",
+        "merchant",
+        "industrialist"
+      ],
+      "outcome": "loss",
+      "rounds": 65,
+      "winningRound": null,
+      "totalTurns": 195,
+      "actionCounts": {
+        "buildHarvester": 24,
+        "pass": 5,
+        "attack": 76,
+        "buyScheme": 37,
+        "buildTower": 28,
+        "muster": 6,
+        "buildBabel": 19
+      },
+      "hostsSpawned": 85,
+      "hostsKilled": 78,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 110,
+          "wood": 162,
+          "brick": 107,
+          "metal": 83
+        },
+        "harvest": {
+          "food": 99,
+          "wood": 192,
+          "brick": 104,
+          "metal": 119
+        },
+        "barter": {
+          "food": 5,
+          "wood": 6,
+          "brick": 6,
+          "metal": 5
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.5641025641025641,
+          "wood": 0.8307692307692308,
+          "brick": 0.5487179487179488,
+          "metal": 0.4256410256410256
+        },
+        "harvest": {
+          "food": 0.5076923076923077,
+          "wood": 0.9846153846153847,
+          "brick": 0.5333333333333333,
+          "metal": 0.6102564102564103
+        },
+        "barter": {
+          "food": 0.02564102564102564,
+          "wood": 0.03076923076923077,
+          "brick": 0.03076923076923077,
+          "metal": 0.02564102564102564
+        }
+      },
+      "harvestTriggers": 119,
+      "harvestTriggersByResource": {
+        "food": 27,
+        "wood": 39,
+        "brick": 30,
+        "metal": 23
+      },
+      "placementSuppressed": 20,
+      "placementSuppressedByReason": {
+        "lostLedgers": 20
+      },
+      "resourceWantAccess": {
+        "wanting": 49,
+        "satisfied": 32,
+        "rate": 0.6530612244897959,
+        "byResource": {
+          "food": {
+            "wanting": 12,
+            "satisfied": 10,
+            "rate": 0.8333333333333334
+          },
+          "wood": {
+            "wanting": 23,
+            "satisfied": 13,
+            "rate": 0.5652173913043478
+          },
+          "brick": {
+            "wanting": 6,
+            "satisfied": 5,
+            "rate": 0.8333333333333334
+          },
+          "metal": {
+            "wanting": 8,
+            "satisfied": 4,
+            "rate": 0.5
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g50",
+      "roster": [
+        "industrialist",
+        "architect",
+        "commander"
+      ],
+      "outcome": "loss",
+      "rounds": 27,
+      "winningRound": null,
+      "totalTurns": 81,
+      "actionCounts": {
+        "buildHarvester": 17,
+        "muster": 7,
+        "pass": 10,
+        "attack": 24,
+        "buildBabel": 7,
+        "buildTower": 16
+      },
+      "hostsSpawned": 32,
+      "hostsKilled": 22,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 36,
+          "wood": 36,
+          "brick": 37,
+          "metal": 17
+        },
+        "harvest": {
+          "food": 39,
+          "wood": 29,
+          "brick": 70,
+          "metal": 7
+        },
+        "barter": {
+          "food": 1,
+          "wood": 19,
+          "brick": 3,
+          "metal": 10
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.4444444444444444,
+          "wood": 0.4444444444444444,
+          "brick": 0.4567901234567901,
+          "metal": 0.20987654320987653
+        },
+        "harvest": {
+          "food": 0.48148148148148145,
+          "wood": 0.35802469135802467,
+          "brick": 0.8641975308641975,
+          "metal": 0.08641975308641975
+        },
+        "barter": {
+          "food": 0.012345679012345678,
+          "wood": 0.2345679012345679,
+          "brick": 0.037037037037037035,
+          "metal": 0.12345679012345678
+        }
+      },
+      "harvestTriggers": 35,
+      "harvestTriggersByResource": {
+        "food": 10,
+        "wood": 9,
+        "brick": 13,
+        "metal": 3
+      },
+      "placementSuppressed": 18,
+      "placementSuppressedByReason": {
+        "lostLedgers": 18
+      },
+      "resourceWantAccess": {
+        "wanting": 68,
+        "satisfied": 40,
+        "rate": 0.5882352941176471,
+        "byResource": {
+          "food": {
+            "wanting": 11,
+            "satisfied": 3,
+            "rate": 0.2727272727272727
+          },
+          "wood": {
+            "wanting": 33,
+            "satisfied": 25,
+            "rate": 0.7575757575757576
+          },
+          "brick": {
+            "wanting": 11,
+            "satisfied": 3,
+            "rate": 0.2727272727272727
+          },
+          "metal": {
+            "wanting": 13,
+            "satisfied": 9,
+            "rate": 0.6923076923076923
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g51",
+      "roster": [
+        "engineer",
+        "architect",
+        "commander"
+      ],
+      "outcome": "win",
+      "rounds": 50,
+      "winningRound": 50,
+      "totalTurns": 150,
+      "actionCounts": {
+        "buildHarvester": 17,
+        "pass": 14,
+        "attack": 66,
+        "muster": 8,
+        "buildBabel": 30,
+        "buildTower": 15
+      },
+      "hostsSpawned": 63,
+      "hostsKilled": 49,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 83,
+          "wood": 63,
+          "brick": 70,
+          "metal": 73
+        },
+        "harvest": {
+          "food": 91,
+          "wood": 95,
+          "brick": 72,
+          "metal": 72
+        },
+        "barter": {
+          "food": 4,
+          "wood": 10,
+          "brick": 10,
+          "metal": 3
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.5533333333333333,
+          "wood": 0.42,
+          "brick": 0.4666666666666667,
+          "metal": 0.4866666666666667
+        },
+        "harvest": {
+          "food": 0.6066666666666667,
+          "wood": 0.6333333333333333,
+          "brick": 0.48,
+          "metal": 0.48
+        },
+        "barter": {
+          "food": 0.02666666666666667,
+          "wood": 0.06666666666666667,
+          "brick": 0.06666666666666667,
+          "metal": 0.02
+        }
+      },
+      "harvestTriggers": 78,
+      "harvestTriggersByResource": {
+        "wood": 21,
+        "food": 22,
+        "brick": 18,
+        "metal": 17
+      },
+      "placementSuppressed": 34,
+      "placementSuppressedByReason": {
+        "lostLedgers": 34
+      },
+      "resourceWantAccess": {
+        "wanting": 63,
+        "satisfied": 38,
+        "rate": 0.6031746031746031,
+        "byResource": {
+          "food": {
+            "wanting": 18,
+            "satisfied": 7,
+            "rate": 0.3888888888888889
+          },
+          "wood": {
+            "wanting": 20,
+            "satisfied": 14,
+            "rate": 0.7
+          },
+          "brick": {
+            "wanting": 21,
+            "satisfied": 14,
+            "rate": 0.6666666666666666
+          },
+          "metal": {
+            "wanting": 4,
+            "satisfied": 3,
+            "rate": 0.75
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g52",
+      "roster": [
+        "merchant",
+        "architect",
+        "commander"
+      ],
+      "outcome": "win",
+      "rounds": 56,
+      "winningRound": 56,
+      "totalTurns": 167,
+      "actionCounts": {
+        "buildBabel": 26,
+        "buildHarvester": 16,
+        "pass": 6,
+        "attack": 65,
+        "buyScheme": 27,
+        "muster": 8,
+        "buildTower": 19
+      },
+      "hostsSpawned": 76,
+      "hostsKilled": 62,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 85,
+          "wood": 93,
+          "brick": 130,
+          "metal": 56
+        },
+        "harvest": {
+          "food": 104,
+          "wood": 77,
+          "brick": 115,
+          "metal": 58
+        },
+        "barter": {
+          "food": 6,
+          "wood": 27,
+          "brick": 3,
+          "metal": 25
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.5089820359281437,
+          "wood": 0.5568862275449101,
+          "brick": 0.7784431137724551,
+          "metal": 0.33532934131736525
+        },
+        "harvest": {
+          "food": 0.6227544910179641,
+          "wood": 0.46107784431137727,
+          "brick": 0.688622754491018,
+          "metal": 0.3473053892215569
+        },
+        "barter": {
+          "food": 0.03592814371257485,
+          "wood": 0.16167664670658682,
+          "brick": 0.017964071856287425,
+          "metal": 0.1497005988023952
+        }
+      },
+      "harvestTriggers": 95,
+      "harvestTriggersByResource": {
+        "food": 24,
+        "metal": 18,
+        "brick": 32,
+        "wood": 21
+      },
+      "placementSuppressed": 26,
+      "placementSuppressedByReason": {
+        "lostLedgers": 26
+      },
+      "resourceWantAccess": {
+        "wanting": 121,
+        "satisfied": 78,
+        "rate": 0.6446280991735537,
+        "byResource": {
+          "food": {
+            "wanting": 31,
+            "satisfied": 14,
+            "rate": 0.45161290322580644
+          },
+          "wood": {
+            "wanting": 49,
+            "satisfied": 35,
+            "rate": 0.7142857142857143
+          },
+          "brick": {
+            "wanting": 9,
+            "satisfied": 3,
+            "rate": 0.3333333333333333
+          },
+          "metal": {
+            "wanting": 32,
+            "satisfied": 26,
+            "rate": 0.8125
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g53",
+      "roster": [
+        "engineer",
+        "architect",
+        "industrialist"
+      ],
+      "outcome": "loss",
+      "rounds": 18,
+      "winningRound": null,
+      "totalTurns": 54,
+      "actionCounts": {
+        "buildHarvester": 14,
+        "buildBabel": 5,
+        "pass": 4,
+        "attack": 14,
+        "muster": 5,
+        "buildTower": 12
+      },
+      "hostsSpawned": 18,
+      "hostsKilled": 11,
+      "beaconDeferrals": 2,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 23,
+          "wood": 19,
+          "brick": 33,
+          "metal": 17
+        },
+        "harvest": {
+          "food": 17,
+          "wood": 27,
+          "brick": 51,
+          "metal": 8
+        },
+        "barter": {
+          "food": 5,
+          "wood": 10,
+          "brick": 3,
+          "metal": 2
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.42592592592592593,
+          "wood": 0.35185185185185186,
+          "brick": 0.6111111111111112,
+          "metal": 0.3148148148148148
+        },
+        "harvest": {
+          "food": 0.3148148148148148,
+          "wood": 0.5,
+          "brick": 0.9444444444444444,
+          "metal": 0.14814814814814814
+        },
+        "barter": {
+          "food": 0.09259259259259259,
+          "wood": 0.18518518518518517,
+          "brick": 0.05555555555555555,
+          "metal": 0.037037037037037035
+        }
+      },
+      "harvestTriggers": 29,
+      "harvestTriggersByResource": {
+        "brick": 14,
+        "wood": 6,
+        "food": 7,
+        "metal": 2
+      },
+      "placementSuppressed": 12,
+      "placementSuppressedByReason": {
+        "lostLedgers": 12
+      },
+      "resourceWantAccess": {
+        "wanting": 43,
+        "satisfied": 27,
+        "rate": 0.627906976744186,
+        "byResource": {
+          "food": {
+            "wanting": 11,
+            "satisfied": 5,
+            "rate": 0.45454545454545453
+          },
+          "wood": {
+            "wanting": 21,
+            "satisfied": 14,
+            "rate": 0.6666666666666666
+          },
+          "brick": {
+            "wanting": 8,
+            "satisfied": 5,
+            "rate": 0.625
+          },
+          "metal": {
+            "wanting": 3,
+            "satisfied": 3,
+            "rate": 1
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g54",
+      "roster": [
+        "merchant",
+        "architect",
+        "industrialist"
+      ],
+      "outcome": "loss",
+      "rounds": 40,
+      "winningRound": null,
+      "totalTurns": 120,
+      "actionCounts": {
+        "buildHarvester": 16,
+        "pass": 6,
+        "buyScheme": 13,
+        "buildBabel": 12,
+        "attack": 49,
+        "buildTower": 18,
+        "muster": 6
+      },
+      "hostsSpawned": 52,
+      "hostsKilled": 36,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 100,
+          "wood": 26,
+          "brick": 67,
+          "metal": 37
+        },
+        "harvest": {
+          "food": 125,
+          "wood": 23,
+          "brick": 60,
+          "metal": 26
+        },
+        "barter": {
+          "food": 2,
+          "wood": 34,
+          "brick": 6,
+          "metal": 10
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.8333333333333334,
+          "wood": 0.21666666666666667,
+          "brick": 0.5583333333333333,
+          "metal": 0.30833333333333335
+        },
+        "harvest": {
+          "food": 1.0416666666666667,
+          "wood": 0.19166666666666668,
+          "brick": 0.5,
+          "metal": 0.21666666666666667
+        },
+        "barter": {
+          "food": 0.016666666666666666,
+          "wood": 0.2833333333333333,
+          "brick": 0.05,
+          "metal": 0.08333333333333333
+        }
+      },
+      "harvestTriggers": 67,
+      "harvestTriggersByResource": {
+        "food": 32,
+        "brick": 17,
+        "metal": 10,
+        "wood": 8
+      },
+      "placementSuppressed": 19,
+      "placementSuppressedByReason": {
+        "lostLedgers": 19
+      },
+      "resourceWantAccess": {
+        "wanting": 92,
+        "satisfied": 67,
+        "rate": 0.7282608695652174,
+        "byResource": {
+          "food": {
+            "wanting": 12,
+            "satisfied": 7,
+            "rate": 0.5833333333333334
+          },
+          "wood": {
+            "wanting": 48,
+            "satisfied": 39,
+            "rate": 0.8125
+          },
+          "brick": {
+            "wanting": 11,
+            "satisfied": 7,
+            "rate": 0.6363636363636364
+          },
+          "metal": {
+            "wanting": 21,
+            "satisfied": 14,
+            "rate": 0.6666666666666666
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g55",
+      "roster": [
+        "merchant",
+        "architect",
+        "engineer"
+      ],
+      "outcome": "loss",
+      "rounds": 45,
+      "winningRound": null,
+      "totalTurns": 135,
+      "actionCounts": {
+        "buildHarvester": 11,
+        "pass": 13,
+        "buildBabel": 15,
+        "attack": 55,
+        "buyScheme": 14,
+        "buildTower": 21,
+        "muster": 6
+      },
+      "hostsSpawned": 55,
+      "hostsKilled": 37,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 70,
+          "wood": 87,
+          "brick": 60,
+          "metal": 27
+        },
+        "harvest": {
+          "food": 9,
+          "wood": 73,
+          "brick": 92,
+          "metal": 12
+        },
+        "barter": {
+          "food": 4,
+          "wood": 11,
+          "brick": 7,
+          "metal": 19
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.5185185185185185,
+          "wood": 0.6444444444444445,
+          "brick": 0.4444444444444444,
+          "metal": 0.2
+        },
+        "harvest": {
+          "food": 0.06666666666666667,
+          "wood": 0.5407407407407407,
+          "brick": 0.6814814814814815,
+          "metal": 0.08888888888888889
+        },
+        "barter": {
+          "food": 0.02962962962962963,
+          "wood": 0.08148148148148149,
+          "brick": 0.05185185185185185,
+          "metal": 0.14074074074074075
+        }
+      },
+      "harvestTriggers": 54,
+      "harvestTriggersByResource": {
+        "brick": 22,
+        "wood": 24,
+        "metal": 4,
+        "food": 4
+      },
+      "placementSuppressed": 26,
+      "placementSuppressedByReason": {
+        "lostLedgers": 26
+      },
+      "resourceWantAccess": {
+        "wanting": 88,
+        "satisfied": 54,
+        "rate": 0.6136363636363636,
+        "byResource": {
+          "food": {
+            "wanting": 17,
+            "satisfied": 8,
+            "rate": 0.47058823529411764
+          },
+          "wood": {
+            "wanting": 28,
+            "satisfied": 16,
+            "rate": 0.5714285714285714
+          },
+          "brick": {
+            "wanting": 13,
+            "satisfied": 7,
+            "rate": 0.5384615384615384
+          },
+          "metal": {
+            "wanting": 30,
+            "satisfied": 23,
+            "rate": 0.7666666666666667
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g56",
+      "roster": [
+        "engineer",
+        "commander",
+        "industrialist"
+      ],
+      "outcome": "win",
+      "rounds": 67,
+      "winningRound": 67,
+      "totalTurns": 202,
+      "actionCounts": {
+        "buildHarvester": 30,
+        "pass": 18,
+        "muster": 8,
+        "buildBabel": 40,
+        "attack": 78,
+        "buyScheme": 2,
+        "buildTower": 26
+      },
+      "hostsSpawned": 83,
+      "hostsKilled": 75,
+      "beaconDeferrals": 5,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 82,
+          "wood": 123,
+          "brick": 114,
+          "metal": 63
+        },
+        "harvest": {
+          "food": 101,
+          "wood": 173,
+          "brick": 135,
+          "metal": 82
+        },
+        "barter": {
+          "food": 0,
+          "wood": 21,
+          "brick": 2,
+          "metal": 12
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.40594059405940597,
+          "wood": 0.6089108910891089,
+          "brick": 0.5643564356435643,
+          "metal": 0.3118811881188119
+        },
+        "harvest": {
+          "food": 0.5,
+          "wood": 0.8564356435643564,
+          "brick": 0.6683168316831684,
+          "metal": 0.40594059405940597
+        },
+        "barter": {
+          "food": 0,
+          "wood": 0.10396039603960396,
+          "brick": 0.009900990099009901,
+          "metal": 0.0594059405940594
+        }
+      },
+      "harvestTriggers": 107,
+      "harvestTriggersByResource": {
+        "food": 23,
+        "wood": 37,
+        "brick": 29,
+        "metal": 18
+      },
+      "placementSuppressed": 44,
+      "placementSuppressedByReason": {
+        "lostLedgers": 44
+      },
+      "resourceWantAccess": {
+        "wanting": 66,
+        "satisfied": 45,
+        "rate": 0.6818181818181818,
+        "byResource": {
+          "food": {
+            "wanting": 6,
+            "satisfied": 3,
+            "rate": 0.5
+          },
+          "wood": {
+            "wanting": 39,
+            "satisfied": 28,
+            "rate": 0.717948717948718
+          },
+          "brick": {
+            "wanting": 6,
+            "satisfied": 3,
+            "rate": 0.5
+          },
+          "metal": {
+            "wanting": 15,
+            "satisfied": 11,
+            "rate": 0.7333333333333333
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g57",
+      "roster": [
+        "merchant",
+        "commander",
+        "industrialist"
+      ],
+      "outcome": "loss",
+      "rounds": 30,
+      "winningRound": null,
+      "totalTurns": 90,
+      "actionCounts": {
+        "buildHarvester": 16,
+        "pass": 11,
+        "muster": 6,
+        "attack": 29,
+        "buildBabel": 6,
+        "buyScheme": 10,
+        "buildTower": 12
+      },
+      "hostsSpawned": 34,
+      "hostsKilled": 25,
+      "beaconDeferrals": 1,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 67,
+          "wood": 31,
+          "brick": 39,
+          "metal": 17
+        },
+        "harvest": {
+          "food": 59,
+          "wood": 18,
+          "brick": 28,
+          "metal": 7
+        },
+        "barter": {
+          "food": 2,
+          "wood": 16,
+          "brick": 4,
+          "metal": 15
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.7444444444444445,
+          "wood": 0.34444444444444444,
+          "brick": 0.43333333333333335,
+          "metal": 0.18888888888888888
+        },
+        "harvest": {
+          "food": 0.6555555555555556,
+          "wood": 0.2,
+          "brick": 0.3111111111111111,
+          "metal": 0.07777777777777778
+        },
+        "barter": {
+          "food": 0.022222222222222223,
+          "wood": 0.17777777777777778,
+          "brick": 0.044444444444444446,
+          "metal": 0.16666666666666666
+        }
+      },
+      "harvestTriggers": 37,
+      "harvestTriggersByResource": {
+        "food": 17,
+        "wood": 7,
+        "brick": 10,
+        "metal": 3
+      },
+      "placementSuppressed": 16,
+      "placementSuppressedByReason": {
+        "lostLedgers": 16
+      },
+      "resourceWantAccess": {
+        "wanting": 82,
+        "satisfied": 48,
+        "rate": 0.5853658536585366,
+        "byResource": {
+          "food": {
+            "wanting": 11,
+            "satisfied": 6,
+            "rate": 0.5454545454545454
+          },
+          "wood": {
+            "wanting": 32,
+            "satisfied": 18,
+            "rate": 0.5625
+          },
+          "brick": {
+            "wanting": 7,
+            "satisfied": 4,
+            "rate": 0.5714285714285714
+          },
+          "metal": {
+            "wanting": 32,
+            "satisfied": 20,
+            "rate": 0.625
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g58",
+      "roster": [
+        "merchant",
+        "commander",
+        "engineer"
+      ],
+      "outcome": "loss",
+      "rounds": 104,
+      "winningRound": null,
+      "totalTurns": 312,
+      "actionCounts": {
+        "buildHarvester": 21,
+        "pass": 9,
+        "muster": 8,
+        "attack": 161,
+        "buyScheme": 50,
+        "buildTower": 37,
+        "buildBabel": 26
+      },
+      "hostsSpawned": 141,
+      "hostsKilled": 136,
+      "beaconDeferrals": 1,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 230,
+          "wood": 185,
+          "brick": 195,
+          "metal": 123
+        },
+        "harvest": {
+          "food": 170,
+          "wood": 184,
+          "brick": 228,
+          "metal": 79
+        },
+        "barter": {
+          "food": 5,
+          "wood": 9,
+          "brick": 0,
+          "metal": 29
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.7371794871794872,
+          "wood": 0.592948717948718,
+          "brick": 0.625,
+          "metal": 0.3942307692307692
+        },
+        "harvest": {
+          "food": 0.5448717948717948,
+          "wood": 0.5897435897435898,
+          "brick": 0.7307692307692307,
+          "metal": 0.2532051282051282
+        },
+        "barter": {
+          "food": 0.016025641025641024,
+          "wood": 0.028846153846153848,
+          "brick": 0,
+          "metal": 0.09294871794871795
+        }
+      },
+      "harvestTriggers": 173,
+      "harvestTriggersByResource": {
+        "metal": 29,
+        "food": 50,
+        "wood": 49,
+        "brick": 45
+      },
+      "placementSuppressed": 39,
+      "placementSuppressedByReason": {
+        "lostLedgers": 39
+      },
+      "resourceWantAccess": {
+        "wanting": 83,
+        "satisfied": 56,
+        "rate": 0.6746987951807228,
+        "byResource": {
+          "food": {
+            "wanting": 15,
+            "satisfied": 8,
+            "rate": 0.5333333333333333
+          },
+          "wood": {
+            "wanting": 20,
+            "satisfied": 14,
+            "rate": 0.7
+          },
+          "brick": {
+            "wanting": 3,
+            "satisfied": 0,
+            "rate": 0
+          },
+          "metal": {
+            "wanting": 45,
+            "satisfied": 34,
+            "rate": 0.7555555555555555
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    },
+    {
+      "variant": "currentCANON",
+      "seed": "banks-20260918-validation-p3-g59",
+      "roster": [
+        "merchant",
+        "industrialist",
+        "engineer"
+      ],
+      "outcome": "loss",
+      "rounds": 71,
+      "winningRound": null,
+      "totalTurns": 213,
+      "actionCounts": {
+        "buildHarvester": 24,
+        "pass": 7,
+        "buildTower": 27,
+        "attack": 100,
+        "muster": 6,
+        "buildBabel": 23,
+        "buyScheme": 26
+      },
+      "hostsSpawned": 97,
+      "hostsKilled": 91,
+      "beaconDeferrals": 0,
+      "zeroHostGame": false,
+      "resourcesGained": {
+        "placement": {
+          "food": 121,
+          "wood": 159,
+          "brick": 146,
+          "metal": 90
+        },
+        "harvest": {
+          "food": 147,
+          "wood": 197,
+          "brick": 144,
+          "metal": 84
+        },
+        "barter": {
+          "food": 5,
+          "wood": 2,
+          "brick": 3,
+          "metal": 19
+        }
+      },
+      "resourcesGainedPerTurn": {
+        "placement": {
+          "food": 0.568075117370892,
+          "wood": 0.7464788732394366,
+          "brick": 0.6854460093896714,
+          "metal": 0.4225352112676056
+        },
+        "harvest": {
+          "food": 0.6901408450704225,
+          "wood": 0.9248826291079812,
+          "brick": 0.676056338028169,
+          "metal": 0.39436619718309857
+        },
+        "barter": {
+          "food": 0.023474178403755867,
+          "wood": 0.009389671361502348,
+          "brick": 0.014084507042253521,
+          "metal": 0.0892018779342723
+        }
+      },
+      "harvestTriggers": 145,
+      "harvestTriggersByResource": {
+        "wood": 45,
+        "food": 39,
+        "brick": 38,
+        "metal": 23
+      },
+      "placementSuppressed": 32,
+      "placementSuppressedByReason": {
+        "lostLedgers": 32
+      },
+      "resourceWantAccess": {
+        "wanting": 53,
+        "satisfied": 36,
+        "rate": 0.6792452830188679,
+        "byResource": {
+          "food": {
+            "wanting": 12,
+            "satisfied": 8,
+            "rate": 0.6666666666666666
+          },
+          "wood": {
+            "wanting": 7,
+            "satisfied": 5,
+            "rate": 0.7142857142857143
+          },
+          "brick": {
+            "wanting": 8,
+            "satisfied": 3,
+            "rate": 0.375
+          },
+          "metal": {
+            "wanting": 26,
+            "satisfied": 20,
+            "rate": 0.7692307692307693
+          }
+        }
+      },
+      "bankChoiceUsage": null
+    }
+  ],
+  "summary": {
+    "variant": "currentCANON",
+    "players": 3,
+    "games": 60,
+    "wins": 17,
+    "losses": 41,
+    "timeouts": 2,
+    "winRate": 0.2833333333333333,
+    "winRateWilson95": {
+      "low": 0.1850667860430859,
+      "high": 0.4076752504973517
+    },
+    "meanWinningRounds": 49.705882352941174,
+    "totalTurns": 8245,
+    "meanTurns": 137.41666666666666,
+    "actionCounts": {
+      "buildHarvester": 1034,
+      "pass": 587,
+      "muster": 400,
+      "buyScheme": 788,
+      "buildBabel": 1084,
+      "buildTower": 1121,
+      "attack": 3231
+    },
+    "actionShares": {
+      "buildHarvester": 0.1254093389933293,
+      "pass": 0.07119466343238326,
+      "muster": 0.04851425106124924,
+      "buyScheme": 0.095573074590661,
+      "buildBabel": 0.13147362037598545,
+      "buildTower": 0.135961188599151,
+      "attack": 0.39187386294724075
+    },
+    "zeroHostGames": 1,
+    "meanHostsSpawned": 57.666666666666664,
+    "meanHostsKilled": 45.63333333333333,
+    "meanBeaconDeferrals": 2.2,
+    "resourcesGained": {
+      "placement": {
+        "food": 4631,
+        "wood": 4719,
+        "brick": 4398,
+        "metal": 2901
+      },
+      "harvest": {
+        "food": 4543,
+        "wood": 5285,
+        "brick": 4520,
+        "metal": 2473
+      },
+      "barter": {
+        "food": 235,
+        "wood": 728,
+        "brick": 226,
+        "metal": 796
+      }
+    },
+    "resourcesGainedPerTurn": {
+      "placement": {
+        "food": 0.5616737416616131,
+        "wood": 0.5723468768950879,
+        "brick": 0.5334141904184354,
+        "metal": 0.35184960582171015
+      },
+      "harvest": {
+        "food": 0.5510006064281383,
+        "wood": 0.6409945421467557,
+        "brick": 0.5482110369921165,
+        "metal": 0.2999393571861734
+      },
+      "barter": {
+        "food": 0.02850212249848393,
+        "wood": 0.08829593693147363,
+        "brick": 0.02741055184960582,
+        "metal": 0.096543359611886
+      }
+    },
+    "harvestTriggers": 4207,
+    "harvestTriggersByResource": {
+      "wood": 1263,
+      "metal": 662,
+      "food": 1172,
+      "brick": 1110
+    },
+    "placementSuppressed": 1465,
+    "placementSuppressedByReason": {
+      "lostLedgers": 1461,
+      "featureOccupied": 4
+    },
+    "resourceWantAccess": {
+      "wanting": 4172,
+      "satisfied": 2637,
+      "rate": 0.6320709491850431,
+      "byResource": {
+        "food": {
+          "wanting": 841,
+          "satisfied": 425,
+          "rate": 0.5053507728894173
+        },
+        "wood": {
+          "wanting": 1525,
+          "satisfied": 1045,
+          "rate": 0.6852459016393443
+        },
+        "brick": {
+          "wanting": 526,
+          "satisfied": 280,
+          "rate": 0.532319391634981
+        },
+        "metal": {
+          "wanting": 1280,
+          "satisfied": 887,
+          "rate": 0.69296875
+        }
+      }
+    },
+    "bankChoiceUsage": null
+  }
+}
