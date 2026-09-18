@@ -28,7 +28,7 @@ import { RIVER_WEIGHTS, type RiverShape } from './rivers.js';
  * `setupGame` takes a RuleSet, the state keeps it, and a replay from seed plus
  * command log reproduces exactly the variant it was recorded under.
  *
- * Everything here is TUNEABLE in the GDD's sense. `CANON_RULES` is canon v0.5
+ * Everything here is TUNEABLE in the GDD's sense. `CANON_RULES` is canon v0.6
  * and is what the game uses unless a caller asks for something else.
  */
 
@@ -56,7 +56,7 @@ export type HeavenCadenceByLeaderCount = Partial<Record<LeaderCount, HeavenCaden
 export type BankMode = 'hosts' | 'resources';
 
 export type RuleSet = {
-  /** Experimental only; never set on CANON_RULES. */
+  /** River-bank routing/economy mode; canon v0.6 uses `hosts`. */
   readonly bankMode?: BankMode;
   readonly barterMode: BarterMode;
   /**
@@ -453,8 +453,8 @@ export const CANON_HEAVEN_CADENCE: HeavenCadenceByLeaderCount = {
   4: [[1], [2], [2]],
 };
 
-/** Canon v0.5 — v0.4 plus the adopted player-count Heaven cadence. */
-export const CANON_RULES: RuleSet = {
+/** Canon v0.5, frozen before the bank-routing adoption. */
+export const V05_RULES: RuleSet = {
   ...V04_RULES,
   heavenSpawn: V04_RULES.heavenSpawn
     ? {
@@ -462,6 +462,12 @@ export const CANON_RULES: RuleSet = {
         cadenceByLeaderCount: CANON_HEAVEN_CADENCE,
       }
     : null,
+};
+
+/** Canon v0.6 — v0.5 plus bank-aware Host routing and the fixed start lane. */
+export const CANON_RULES: RuleSet = {
+  ...V05_RULES,
+  bankMode: 'hosts',
 };
 
 /** At most this many Reserve slots. A guard, not a design statement. */
@@ -494,6 +500,9 @@ export const DEEP_BEACONS = DEEP_BEACON_TIERS;
 
 /** The d6 spawn table at the v0.5 default player-count cadence. */
 export const ROLLED_HEAVEN: RuleSet['heavenSpawn'] = CANON_RULES.heavenSpawn;
+
+/** Frozen v0.5 rolled Heaven for historical controls and saved experiments. */
+export const V05_ROLLED_HEAVEN: RuleSet['heavenSpawn'] = V05_RULES.heavenSpawn;
 
 /** The fixed-arrival d6 table used by v0.4 and all historical experiments. */
 export const V04_ROLLED_HEAVEN: RuleSet['heavenSpawn'] = V04_RULES.heavenSpawn;

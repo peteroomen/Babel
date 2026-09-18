@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 const ROUNDS = 12;
 const play = (variant: Parameters<typeof playGame>[0], seed: string) =>
   playGame(variant, seed, undefined, { rounds: ROUNDS });
-import { CANON_RULES } from '@babel-game/game-data';
+import { CANON_RULES, V05_RULES } from '@babel-game/game-data';
 import {
   LAKE_VARIANTS,
   RIVER_VARIANTS,
@@ -24,7 +24,10 @@ import {
 /* Look variants up by id: the list grows, and a positional index silently
    points at the wrong rules when it does. */
 const byId = (id: string) => VARIANTS.find((v) => v.id === id)!;
+/* This pairing predates v0.6's fixed bank lane; keep only its opening-board
+   comparison on the frozen v0.5 control explicitly. */
 const control = byId('control');
+const historicalControl = { ...control, rules: V05_RULES };
 const reserve1 = byId('reserve1');
 
 describe('the harness', () => {
@@ -162,7 +165,7 @@ describe('round seven: the river and the Walls', () => {
   });
 
   it('gives paired variants the same opening board', () => {
-    const a = playGame(control, 'pair', undefined, { rounds: 2, paired: true });
+    const a = playGame(historicalControl, 'pair', undefined, { rounds: 2, paired: true });
     const b = playGame(river, 'pair', undefined, { rounds: 2, paired: true });
     const first = (game: typeof a) => game.events.find((e) => e.type === 'tilePlaced');
     expect(first(a)).toEqual(first(b));

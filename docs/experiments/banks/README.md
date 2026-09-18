@@ -10,7 +10,7 @@ npm run banks -- --games 60 --players all \
   --roster-mode diverse --output ./tmp/banks
 ```
 
-The CLI runs the current canon v0.5 control plus the two bank variants. Bank
+The CLI runs the frozen v0.5 control plus the two bank variants. Bank
 variants use the core's fixed starting lane: north farmland and Babel, three
 desert river tiles to the south, a mountain source at the end, and a Beacon at
 that source. Heaven counts and cadence come from the current canon rules.
@@ -37,3 +37,11 @@ also written to `summary-pN-<variant>.json`, so parallel cells do not overwrite
 one another. The harness is headless and uses `playGame` with the same AI as the
 application. It records optional bank choice telemetry only when event fields
 identify an actual choice; ordinary banked movement is not counted as a choice.
+
+## Adoption status
+
+The 540 persisted games in this experiment were intentionally run against
+`V05_RULES`, before canon v0.6 adopted Host-only bank routing. The raw JSON and
+reported tables are unchanged and remain reproducible historical evidence.
+The live browser/default rules now use v0.6's fixed bank start; the resource
+variant remains experimental and was not adopted.

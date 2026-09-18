@@ -200,7 +200,7 @@ describe('board invariants hold across whole games', () => {
     /* Every placement the log records landed on its own square, plus GDD §5's
        fixed start tile. Games can now end early, so count what was played. */
     const placed = state.log.filter((e) => e.type === 'tilePlaced').length;
-    expect(Object.keys(state.board)).toHaveLength(placed + 1);
+    expect(Object.keys(state.board)).toHaveLength(placed + (state.rules.bankMode ? 5 : 1));
   });
 
   it('exercises every action type the core currently offers', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CANON_RULES } from '@babel-game/game-data';
+import { CANON_RULES, V05_RULES } from '@babel-game/game-data';
 import { RIVER_SHAPE_EDGES } from '@babel-game/game-data';
 import { basePayout, bankPlacementPayout } from '../src/economy/payout.js';
 import { resolveBankHarvest } from '../src/economy/harvest.js';
@@ -8,12 +8,51 @@ import { bankDistancesToBabel, bankStepOptions, dryRegions, regionTransitions } 
 import { babelRiverDistancesThroughBabel } from '../src/rivers/index.js';
 import { riverGainFor } from '../src/rivers/index.js';
 import { setupGame } from '../src/state/setup.js';
+import { resolveHeavenPhase } from '../src/heaven/phase.js';
+import { defaultRoute, isLegalRoute, newHost } from '../src/heaven/hosts.js';
+import { createRng } from '../src/rng/index.js';
 import type { Board } from '../src/map/placement.js';
 import type { LeaderState } from '../src/state/types.js';
 
 const bankRules = { ...CANON_RULES, bankMode: 'resources' as const };
 
 describe('experimental river banks', () => {
+  it('uses the bank-host start only in canon v0.6 and keeps v0.5 frozen', () => {
+    const current = setupGame(['a', 'b'], 'canon-bank');
+    const frozen = setupGame(['a', 'b'], 'canon-bank', V05_RULES);
+    expect(CANON_RULES.bankMode).toBe('hosts');
+    expect(current.beacons).toEqual([{ x: 0, y: 4, region: 0 }]);
+    expect(Object.keys(current.board)).toHaveLength(5);
+    expect(frozen.beacons).toEqual([]);
+    expect(Object.keys(frozen.board)).toEqual(['0,-1']);
+  });
+
+  it('counts the preplaced Beacon without replaying a grace period', () => {
+    const setup = setupGame(['a', 'b'], 'spawn-bank');
+    const before = resolveHeavenPhase({ ...setup, round: 2, phase: 'heaven' });
+    expect(before.events.filter((event) => event.type === 'hostSpawned')).toHaveLength(0);
+    const atSchedule = resolveHeavenPhase({ ...setup, round: 3, phase: 'heaven' });
+    expect(atSchedule.events.filter((event) => event.type === 'hostSpawned')).toHaveLength(1);
+    expect(atSchedule.state.hosts[0]?.region).toBe(0);
+  });
+
+  it('keeps the selected bank when a route changes region labels', () => {
+    const state = setupGame(['a', 'b'], 'bank-route', bankRules);
+    const host = newHost('h', 'seraph', { x: 0, y: 4, region: 0 });
+    const route = [{ x: 0, y: 3, region: 1 }, { x: 0, y: 2, region: 1 }];
+    expect(isLegalRoute(state.board, host, route, 'hosts')).toBe(true);
+    expect(defaultRoute(state.board, host, createRng('bank-route'), 'hosts').route).toEqual(
+      expect.arrayContaining([{ x: 0, y: 3, region: expect.any(Number) }]),
+    );
+  });
+
+  it('keeps flying Hosts coordinate-only in bank mode', () => {
+    const state = setupGame(['a', 'b'], 'bank-flying', bankRules);
+    const host = newHost('h', 'flier', { x: 0, y: 4 });
+    const route = [{ x: 0, y: 3 }, { x: 0, y: 2 }];
+    expect(isLegalRoute(state.board, host, route, 'hosts')).toBe(true);
+  });
+
   it('connects the south source lane through Babel and keeps the source on one region', () => {
     const state = setupGame(['a', 'b'], 'bank-test', bankRules);
     const distance = bankDistancesToBabel(state.board);

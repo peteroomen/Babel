@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { CADENCE_VARIANTS } from '../src/cadence.js';
 import { playGame, type GameRecord } from '../src/play.js';
 import type { Archetype } from '@babel-game/game-ai';
+import { V05_RULES } from '@babel-game/game-data';
 
 type SavedGame = {
   seed: string;
@@ -48,8 +49,16 @@ describe('canon replay regression after bank helper changes', () => {
     const selected = CADENCE_VARIANTS[players]?.find((candidate) => candidate.id === variant);
     if (!selected) throw new Error(`missing cadence variant ${variant}`);
 
+    /* These are bank-era regression fixtures, so freeze their non-cadence
+       rules at the pre-bank v0.5 canon. Preserve each arm's recorded Heaven
+       schedule (including the fixed-arrival control) byte-for-byte. */
+    const historical = {
+      ...selected,
+      rules: { ...V05_RULES, heavenSpawn: selected.rules.heavenSpawn },
+    };
+
     for (const expected of saved.games.slice(0, 2)) {
-      const actual = playGame(selected, expected.seed, expected.roster, { paired: true });
+      const actual = playGame(historical, expected.seed, expected.roster, { paired: true });
       expect({ outcome: actual.outcome, rounds: actual.rounds }, `${variant}/${expected.seed}`).toEqual({
         outcome: expected.outcome,
         rounds: expected.rounds,

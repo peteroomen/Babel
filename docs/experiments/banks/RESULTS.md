@@ -1,6 +1,6 @@
 # River bank experiment results
 
-This is the frozen headless comparison of the current canon control and two
+This is the frozen headless comparison of the v0.5 control and two
 bank variants. The underlying per-cell records are in
 [`validation/`](./validation/), with one 60-game cell for each player count and
 variant. Percentages in the tables are rounded; counts and resource totals are
@@ -14,7 +14,7 @@ loss. The paired seed and roster index is shared across variants, although
 changed event ordering can produce partial RNG divergence after the first
 difference. Wilson intervals use the 60-game win count.
 
-`currentCANON` is the v0.5 control. Both bank variants use the fixed bank
+`currentCANON` is the frozen v0.5 control. Both bank variants use the fixed bank
 starting lane: north farmland and Babel, three south desert river tiles, a
 mountain source, and a Beacon at that source. The Host variant changes the
 host and movement rules on that fixed map. The Host + Resources variant adds
@@ -90,6 +90,10 @@ muster / scheme / pass`, are:
 Bank-choice telemetry counts identified routing choices. Ordinary banked
 movement is excluded, and `harvesterBankChoices` was zero in every persisted
 summary. The canon has no bank-choice field.
+
+These results are not retroactively relabeled as v0.6 runs. Canon v0.6 adopts
+the Host-only bank rule based on this frozen comparison; future balance work
+must use a fresh v0.6 baseline.
 
 ## Resource totals
 

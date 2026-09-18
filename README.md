@@ -13,14 +13,16 @@ BABEL is a digital-first solo / 2–4 leader cooperative-competitive board game.
 5. `IMPLEMENTATION_PLAN.md` — milestone order.
 6. `ART_DIRECTION.md` — visual/tone brief.
 7. `docs/FINAL_BALANCE_PASS_2026-09-15.md` and `docs/MODEL_NOTES.md` — modelling evidence and tuning context.
+8. `docs/NEXT_WORK_TRIAGE.md` — current deferred-work order and scope notes.
 
 ## Canon versus tuning
 
 Rules explicitly marked **TUNEABLE** in the GDD are balance values. Do not casually change structural rules during the first implementation milestone. If a rule blocks implementation or produces an obvious contradiction, document it rather than silently redesigning it.
 
-The live default is canon v0.5: rolled Heaven uses the adopted player-count
-cadence. `V04_RULES` remains available as the frozen fixed-arrival v0.4 ruleset
-for historical comparisons.
+The live default is canon v0.6: rolled Heaven uses the adopted player-count
+cadence and Hosts route on dry river banks from the fixed Beacon start.
+`V05_RULES` and `V04_RULES` remain available as frozen rulesets for historical
+comparisons.
 
 ## First playable goal
 
@@ -92,6 +94,9 @@ npm run dev       # hot-seat app
   cycles now scale by the 2/3/4-Leader table size from the scheduled first
   Beacon round, while `V04_RULES` keeps historical fixed-arrival comparisons
   reproducible.
+- **Canon v0.6 bank-routing adoption.** Complete. Hosts use the adopted dry-bank
+  route from the fixed Beacon start; `V05_RULES` freezes the preceding canon for
+  historical controls and experiment replay.
 - **Milestone 6 — playtest instrumentation.** Next: per-game telemetry and
   deterministic replay from seed plus command log.
 

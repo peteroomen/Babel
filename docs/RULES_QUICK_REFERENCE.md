@@ -1,12 +1,13 @@
-# BABEL — Quick Rules Reference (Canon v0.5)
+# BABEL — Quick Rules Reference (Canon v0.6)
 
 Written from `CANON_RULES` in `packages/game-data/src/rules.ts`, which is the
 source of truth. Where this page and the GDD disagree, the GDD is the older
 document: it describes v0.1, and §§7, 11, 17 and 20 have been overtaken.
 
-The historical balance measurements in this repository predate the repairs
-below and the v0.5 player-count Heaven cadence. They must be rerun before they
-are used to tune the canon.
+The older balance measurements in this repository predate the repairs, v0.5
+cadence, and v0.6 bank adoption. The recent 540-game bank comparison is frozen
+against `V05_RULES`; it is evidence for the adoption, not a v0.6 balance sweep.
+All measurements should be rerun before they are used to tune the new canon.
 
 ## Turn
 **Draw 1 tile → Place → Resolve resources/buildings → Take 1 action.**
@@ -23,8 +24,12 @@ Barter is free and does not spend the action — once per turn.
 
 Placement payout = **1 + adjacent matching terrain**.
 
-A Host anywhere in a connected feature shuts down that whole feature's resource
-payout and harvesting buildings.
+A Host on a river tile travels on one of its dry regions (two on a straight or
+bend, three on a tee, and one connected region at a source). In canon, Host
+occupation still suppresses the whole connected terrain feature, as before;
+the bank determines Heaven routing and lets the bank-aware map distinguish
+where a Host stands. Resource features, buildings, Towers and combat remain
+tile-wide in canon: the bank rule does not split the economy or combat.
 
 ## Harvesting buildings
 Sawmill (2 Wood) / Farmstead (1 Wood + 1 Food) / Brickworks (1 Wood + 1 Brick) /
@@ -49,14 +54,23 @@ Prestige: **2 / 3 / 4** by Stage.
 Host reaches Babel → remove newest piece and Host. At 0 pieces, first Host
 occupies Foundation; second Host arriving while occupied = shared loss.
 
-## Rivers
-River edges must connect. River tiles and Lakes are impassable to Heaven, which
-is what makes water the one ground Heaven can never take. Beacons cannot be
-placed on them.
+## Rivers and banks
+River edges must connect. Walking Hosts cannot cross a river, but may travel on
+either dry bank; Lakes remain impassable. A straight/bend has two banks, a tee
+has three dry regions, and a source has one connected region with both exits.
+Babel is a terminal, not a transit shortcut. Beacons may be sited on a legal
+reachable dry bank, including a river tile.
+
+The v0.6 start has the fixed north Farmland tile, Babel, three south Desert
+river straights, and a Mountain river source with the starting Beacon. This
+Beacon counts toward the unchanged quota and sends Hosts on the scheduled first
+Beacon round; it does not grant setup Prestige.
 
 ### Babel's river — **+1 Prestige** (v0.4)
-A fixed Farmland tile north of Babel runs its river into the Foundation. The
-connected chain of water reaching Babel is **Babel's river**.
+A fixed Farmland tile north of Babel runs its river into the Foundation. In the
+v0.6 start the south river also reaches Babel through the Foundation as a
+virtual junction. The connected chain of water reaching Babel is **Babel's
+river**.
 
 Place a tile that joins that chain **and carries it further from Babel than it
 has ever run**, and score **1 Prestige**. Widening the river beside the

@@ -1,4 +1,4 @@
-import { CANON_RULES, RESOURCE_TYPES, type ResourceType } from '@babel-game/game-data';
+import { V05_RULES, RESOURCE_TYPES, type ResourceType } from '@babel-game/game-data';
 import { ARCHETYPES, type Archetype } from '@babel-game/game-ai';
 import type { GameRecord } from './play.js';
 import type { Variant } from './variants.js';
@@ -11,21 +11,21 @@ import type { Variant } from './variants.js';
 export const BANK_VARIANTS: readonly Variant[] = [
   {
     id: 'currentCANON',
-    label: 'Current canon v0.5',
-    note: 'Control: the live canon RuleSet.',
-    rules: CANON_RULES,
+    label: 'Frozen v0.5 control',
+    note: 'Historical control pinned to v0.5; preserves the saved 540-game evidence.',
+    rules: V05_RULES,
   },
   {
     id: 'bank-hosts',
     label: 'Banked Host routing',
     note: 'Hosts follow the bank graph; resources retain tile-wide collection.',
-    rules: { ...CANON_RULES, bankMode: 'hosts' },
+    rules: { ...V05_RULES, bankMode: 'hosts' },
   },
   {
     id: 'bank-hosts-resources',
     label: 'Banked Hosts and resources',
     note: 'Hosts follow banks and river resources collect from both banks.',
-    rules: { ...CANON_RULES, bankMode: 'resources' },
+    rules: { ...V05_RULES, bankMode: 'resources' },
   },
 ];
 

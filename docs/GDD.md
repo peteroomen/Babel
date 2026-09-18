@@ -9,12 +9,12 @@
 This document freezes the core rules that survived the design conversation and software modelling pass. Numbers marked **TUNEABLE** are balance values, not unresolved mechanics.
 
 > **Canon has moved on in places.** The live rules are `CANON_RULES` in
-> `packages/game-data/src/rules.ts`, at v0.5, and
+> `packages/game-data/src/rules.ts`, at v0.6, and
 > `docs/RULES_QUICK_REFERENCE.md` is the digest of what it actually says.
 > Sections superseded since this document was frozen carry a note where they
 > begin: **§7** (Babel's river now scores), **§8** and **§11** (Barter is free
 > and does not spend the action), **§12** (the Babel cost curve is broad),
-> **§13** (Heaven is rolled from a table with a v0.5 player-count cadence), **§17** (Walls are removed) and
+> **§13** (Heaven is rolled from a table with a v0.5 player-count cadence and Hosts use dry river banks), **§17** (Walls are removed) and
 > **§20** (the Defender identity lost one of its three legs). Everything else
 > here still stands.
 
@@ -139,6 +139,12 @@ The design principle is that the first contact with Heaven happens after roughly
 
 ## 5. Starting state
 
+> **Live v0.6 override:** the browser starts with the fixed north Farmland and
+> Babel, three south Desert river straights, and a Mountain river source with a
+> preplaced Beacon on its single connected dry region. The Beacon counts toward
+> the existing quota and earns no setup Prestige. `V05_RULES` preserves the
+> one-tile/no-Beacon setup below for historical replays.
+
 - Place the Babel Foundation at the centre.
 - Place one fixed **Farmland + straight river** tile immediately north of Babel. Its river runs north–south and feeds Babel.
 - Each Leader begins with:
@@ -194,6 +200,11 @@ Desert and Lake give no resource.
 > the Foundation — further from Babel than it has ever run pays **+1 Prestige**.
 > Widening it or branching it sideways pays nothing. See
 > `docs/ROUND7_RIVER_AND_WALLS.md`.
+>
+> **Live v0.6 movement override:** walking Hosts use the dry-bank graph rather
+> than treating every river tile as wholly impassable. Straights and bends have
+> two dry regions, tees have three, and a source has one connected region with
+> both exits. Lakes block movement and Babel is a terminal, not a transit tile.
 
 Rivers are printed through tile centres and connect through tile edges.
 
@@ -369,6 +380,11 @@ The player who adds a Babel piece gains:
 
 ## 13. Beacons and Host spawning
 
+> **Live v0.6 override:** the fixed starting Beacon is already open, so the
+> first spawn follows the scheduled player-count round (round 3 for two
+> Leaders, round 2 for three or four). Later Beacon quotas and the v0.5 rolled
+> cadence are unchanged. A Beacon may be sited on a reachable dry river bank.
+
 Beacons are physical markers placed by the players. They are the places Heaven descends into the world.
 
 ### Placing a Beacon
@@ -397,6 +413,11 @@ Multiple Hosts may occupy the same tile if movement delays cause them to stack.
 ---
 
 ## 14. Heavenly movement
+
+> **Live v0.6 override:** walking Hosts retain a bank region while traversing
+> rivers and choose a shortest route in the bank graph. Flying Hosts remain
+> coordinate-based. The rest of the movement and combat rules below remain
+> unchanged.
 
 ### Ophanim Host
 - Movement: **1 tile per Heaven Phase**.

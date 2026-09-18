@@ -297,3 +297,25 @@ historical comparisons and cadence measurements.
 **Status:** adopted 2026-09-18 as canon v0.5. Implemented in the shared Heaven
 query, browser setup, and regression tests. No Host statistics, Beacon policy,
 Babel costs/height, or AI strategy changed.
+
+---
+
+## RD-016 — v0.6 adopts bank-aware Host routing
+
+**Decision:** Canon v0.6 uses the bank-aware Host rules measured in the bank
+experiment. The fixed start contains the north Farmland tile, Babel, three
+south Desert river straights, and a Mountain source with a preplaced Beacon.
+The Beacon counts toward the existing quota and first-spawn schedule; setup
+earns no Prestige. Straight and bend tiles expose two dry regions, tees three,
+and sources one connected region with both exits. Lakes remain impassable and
+Babel is a terminal rather than a transit shortcut.
+
+Only walking Heaven routing uses banks. Host occupation remains whole-feature,
+matching the existing economy rule; the bank records where the Host stands but
+does not split occupation. Terrain features, resource collection, harvesting
+buildings, Towers, auras, and combat remain tile-wide. `V05_RULES`/`V05_ROLLED_HEAVEN` freeze the v0.5 control used by the
+540-game bank evidence; the raw experiment results are not rewritten.
+
+**Status:** adopted 2026-09-18 as canon v0.6. Balance conclusions remain
+provisional pending future validation with the adopted default and the known
+AI/geography limitations documented in the experiment report.
